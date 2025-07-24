@@ -1,0 +1,124 @@
+@use "helpers/variables" as *;
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap");
+
+html,
+body,
+div,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+img,
+ol,
+ul,
+li,
+form,
+label,
+table,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+footer,
+header,
+menu,
+nav,
+section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font-family: "Noto Sans TC";
+  vertical-align: baseline;
+}
+
+body {
+  line-height: 1;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: "Noto Serif TC", serif;
+}
+
+.bc {
+  &-1 {
+    background-color: #373838;
+  }
+}
+
+.br {
+  &-1 {
+    border-radius: 50px;
+  }
+}
+
+.pb-05 {
+  padding-bottom: 150px;
+}
+
+.logIn {
+  height: 39px;
+  width: 120px;
+  margin: 0 15px;
+  text-align: center;
+  align-content: center;
+
+  a {
+    padding: 10px 20px !important;
+  }
+}
+
+.mobile-none {
+  display: flex !important;
+
+  @media (max-width: 767px) {
+    display: none !important;
+  }
+}
+
+.desktop-none {
+  display: none !important;
+
+  @media (max-width: 767px) {
+    display: block !important;
+  }
+}
+
+.desktop-flex-none {
+  display: none !important;
+
+  @media (max-width: 767px) {
+    display: flex !important;
+  }
+}
+
+main .container {
+  @media (min-width: 1281px) {
+    max-width: 1076px !important;
+  }
+
+  @media (max-width: 1280px) {
+    width: 100%;
+  }
+}
