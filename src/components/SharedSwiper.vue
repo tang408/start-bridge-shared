@@ -18,7 +18,7 @@
       <swiper-slide v-for="card in cards" :key="card.id">
         <div class="progress-section-card">
           <img :src="card.img" class="progress-section-card-image w-100" />
-          <div class="p-2 progress-section-card-content">
+          <div class="progress-section-card-content">
             <div class="progress-section-card-title">
               {{ card.title }}
             </div>
@@ -61,7 +61,7 @@ defineProps({
   nextElClass: String,
 });
 
-const slidesPerView = ref(3);
+const slidesPerView = ref(4);
 const spaceBetween = ref(20);
 const centeredSlides = ref(false);
 const loop = ref(false);
@@ -73,7 +73,7 @@ onMounted(() => {
     spaceBetween.value = 0;
     loop.value = true;
   } else {
-    slidesPerView.value = 3;
+    slidesPerView.value = 4;
     centeredSlides.value = false;
     spaceBetween.value = 20;
     loop.value = false;
@@ -88,7 +88,7 @@ import "swiper/swiper-bundle.css";
   &-swiper {
     position: relative;
     &-content {
-      width: 1000px;
+      width: 1040px;
       @media (max-width: 767px) {
         width: 100%;
         padding: 8px 16px;
@@ -106,16 +106,16 @@ import "swiper/swiper-bundle.css";
 
   &-card {
     background: #fff;
-    border-radius: 30px;
+    border-radius: 15px;
     padding: 15px;
     margin: 5px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 350px;
-    height: 429px;
+    height: auto;
     text-align: left;
     display: flex;
     flex-flow: column;
-    gap: 20px;
+    gap: 10px;
 
     @media (max-width: 767px) {
       width: 90%;
@@ -126,7 +126,10 @@ import "swiper/swiper-bundle.css";
 
     &-image {
       width: 100%;
-      border-radius: 20px 20px 0px 0px;
+      border-radius: 15px 15px 0px 0px;
+      height: 145px;
+      object-fit: cover;
+      object-position: bottom;
     }
 
     &-tags {
@@ -153,7 +156,7 @@ import "swiper/swiper-bundle.css";
     &-content {
       display: flex;
       flex-flow: column;
-      gap: 20px;
+      gap: 10px;
       @media (max-width: 767px) {
         gap: 5px;
       }
@@ -161,7 +164,7 @@ import "swiper/swiper-bundle.css";
 
     &-title {
       font-weight: 600;
-      font-size: 18px;
+      font-size: 15px;
       line-height: 24px;
       letter-spacing: 1px;
       color: #373838;
@@ -174,7 +177,7 @@ import "swiper/swiper-bundle.css";
     &-progress-bar {
       position: relative;
       overflow: hidden;
-      height: 30px;
+      height: 15px;
       background: linear-gradient(
         90deg,
         #ffcc66 0%,
@@ -202,7 +205,7 @@ import "swiper/swiper-bundle.css";
     &-info {
       display: flex;
       justify-content: space-between;
-      font-size: 16px;
+      font-size: 14px;
       @media (max-width: 767px) {
         font-size: 14px;
       }
@@ -243,7 +246,7 @@ import "swiper/swiper-bundle.css";
   &-prev {
     &-1,
     &-2 {
-      left: -15px;
+      left: -35px;
       @media (max-width: 767px) {
         left: 20%;
       }
@@ -252,7 +255,7 @@ import "swiper/swiper-bundle.css";
   &-next {
     &-1,
     &-2 {
-      right: -15px;
+      right: -35px;
       @media (max-width: 767px) {
         right: 20%;
       }
