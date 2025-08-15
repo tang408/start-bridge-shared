@@ -1,10 +1,10 @@
 <template>
-  <Banner />
-  <Service />
+  <BannerSwiper />
+  <Main></Main>
 </template>
 
 <script setup>
-import Banner from "../components/Banner.vue";
-import Service from "../components/Service.vue";
+import BannerSwiper from "@/components/home/Banner-Swiper.vue";
+import Main from "@/components/home/Main.vue";
 </script>
 <style lang="scss" scoped></style>

@@ -42,6 +42,7 @@ section {
 
 body {
   line-height: 1;
+  overflow-x: hidden;
 }
 
 ol,
@@ -121,4 +122,63 @@ main .container {
   @media (max-width: 1280px) {
     width: 100%;
   }
+}
+
+h1 {
+  font-size: 36px !important;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 32px !important;
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 24px !important;
+  font-weight: 700;
+}
+
+h4 {
+  font-size: 22px !important;
+  font-weight: 700;
+}
+
+h5 {
+  font-size: 18px !important;
+  font-weight: 700;
+}
+
+h6 {
+  font-size: 16px !important;
+  font-weight: 400;
+}
+
+span {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.lh-43 {
+  line-height: 43px;
+}
+
+.lh-36 {
+  line-height: 36px;
+}
+
+.lh-29 {
+  line-height: 29px;
+}
+
+.lh-26 {
+  line-height: 26px;
+}
+
+.lh-24 {
+  line-height: 24px;
+}
+
+.lh-22 {
+  line-height: 22px;
 }

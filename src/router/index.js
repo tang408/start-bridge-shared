@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import DefaultLayout from "../layouts/DefaultLayout.vue";
 import Home from "../views/Home.vue";
+import Brand from "../views/Brand.vue";
+import Cooperative from "../views/Cooperative.vue";
 
 const routes = [
   {
@@ -13,11 +15,12 @@ const routes = [
         component: Home,
       },
       {
-        path: "合作刊登",
-        component: Home,
+        path: "",
+        name: "Brand",
+        component: "",
         children: [
-          { path: "品牌刊登", component: Home },
-          { path: "成功案例", component: Home },
+          { path: "brand-advertising", component: Brand },
+          { path: "cooperative-brand", component: Cooperative },
         ],
       },
     ],

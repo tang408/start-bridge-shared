@@ -108,9 +108,12 @@ onBeforeUnmount(() => {
 const navItems = [
   { label: "關於我們", link: "/" },
   {
-    label: "合作品牌",
+    label: "xxxx",
     link: "/",
-    children: [{ label: "品牌刊登", link: "/" }],
+    children: [
+      { label: "品牌刊登", link: "/brand-advertising" },
+      { label: "合作品牌", link: "/cooperative-brand" },
+    ],
   },
   { label: "專案一覽", link: "/" },
   { label: "啟動/參與", link: "/" },
@@ -174,7 +177,7 @@ const navItems = [
     }
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: 992px) {
     display: flex !important;
   }
 }
@@ -187,7 +190,7 @@ const navItems = [
   .nav-item {
     position: relative;
     &:hover {
-      border-radius: 10px;
+      border-radius: 50px;
       padding: 0;
       @media (min-width: 768px) {
         border: 2px solid #ffcc66;
@@ -211,7 +214,7 @@ const navItems = [
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
       cursor: pointer;
 
-      @media (max-width: 767px) {
+      @media (max-width: 992px) {
         padding: 15px 20px;
         width: 100%;
       }
@@ -223,10 +226,10 @@ const navItems = [
       @media (min-width: 768px) {
         position: absolute;
         top: 38px;
-        left: -8px;
+        left: 0;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         padding: 0;
-        min-width: 120px;
+        min-width: 108px;
         border-radius: 20px;
         background: linear-gradient(
           95.14deg,
@@ -241,8 +244,16 @@ const navItems = [
         box-shadow: none;
       }
 
+      li {
+        display: flex;
+        justify-content: center;
+        @media (max-width: 576px) {
+          justify-content: start;
+        }
+      }
+
       .dropdown-item {
-        width: 120px;
+        width: 108px;
         height: 38px;
         border-radius: 20px;
         text-align: center;

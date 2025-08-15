@@ -9,6 +9,10 @@
     "preview": "vite preview",
     "deploy": "vite build && gh-pages -d dist"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tang408/start-bridge.git"
+  },
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.6",
