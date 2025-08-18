@@ -91,6 +91,7 @@ import Step from "./Step.vue";
   position: relative;
   @media (max-width: 576px) {
     height: 125vh;
+    margin-bottom: 70px;
   }
   @media (min-width: 1024px) and (max-width: 1366px) {
     height: 170vh;
@@ -111,7 +112,7 @@ import Step from "./Step.vue";
   &-bc {
     width: 98%;
     @media (max-width: 576px) {
-      height: 125vh;
+      height: 140vh;
       object-fit: cover;
       object-position: center;
       width: 100%;

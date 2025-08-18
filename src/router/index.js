@@ -17,7 +17,6 @@ const routes = [
       {
         path: "",
         name: "Brand",
-        component: "",
         children: [
           { path: "brand-advertising", component: Brand },
           { path: "cooperative-brand", component: Cooperative },
