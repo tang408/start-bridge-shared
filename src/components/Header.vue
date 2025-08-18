@@ -108,7 +108,7 @@ onBeforeUnmount(() => {
 const navItems = [
   { label: "關於我們", link: "/" },
   {
-    label: "xxxx",
+    label: "品牌刊登",
     link: "/",
     children: [
       { label: "品牌刊登", link: "/brand-advertising" },
