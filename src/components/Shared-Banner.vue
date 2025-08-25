@@ -23,14 +23,20 @@ defineProps({
 
 <style lang="scss" scoped>
 .banner {
-  height: 437px;
+  height: 480px;
   position: relative;
+  @media (max-width: 576px) {
+    height: 370px;
+  }
   &-mask {
     width: 100%;
     height: 437px;
     display: inline-flex;
     position: absolute;
     z-index: 2;
+    @media (max-width: 576px) {
+      height: 370px;
+    }
     img {
       object-fit: cover;
       border-radius: 0 0 0 200px;
@@ -57,6 +63,9 @@ defineProps({
       left: 5px;
       top: 15px;
     }
+    @media (max-width: 576px) {
+      height: 370px;
+    }
   }
   &-text {
     color: #fff;
@@ -67,9 +76,13 @@ defineProps({
     font-style: normal;
     font-weight: 700;
     font-size: 36px;
-    line-height: 24px;
+    line-height: 40px;
     letter-spacing: 0.02em;
     transform: translateY(-50%);
+    @media (max-width: 576px) {
+      width: 70%;
+      font-size: 30px;
+    }
   }
 }
 </style>

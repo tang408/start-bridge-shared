@@ -40,6 +40,8 @@ export default {
   color: #fff;
   height: 230px;
   align-content: center;
+  z-index: 2;
+  position: relative;
   @media (max-width: 767px) {
     height: 596px;
   }

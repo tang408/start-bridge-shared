@@ -6,6 +6,6 @@
 <script setup>
 import Banner from "@/components/Shared-Banner.vue";
 import Main from "@/components/cooperative/Main.vue";
-import bannerImg from "@/assets/images/banner-example.jpg";
+import bannerImg from "@/assets/images/banner-brand.jpg";
 </script>
 <style lang="scss" scoped></style>

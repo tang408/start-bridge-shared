@@ -1,10 +1,10 @@
 <template>
   <Swiper />
-  <NewsBoard
+  <SharedNews
     :items="items"
-    :categories="['餐飲', '生活服務', '商人項目', '海外貿易']"
     :page-size="16"
-    :with-all-tab="false"
+    :categories="['餐飲', '生活服務', '無人商店', '海外品牌']"
+    :with-all-tab="true"
     @card-click="openDetail"
   />
   <div class="qa-content">
@@ -21,7 +21,7 @@
 
 <script setup>
 import Swiper from "./Swiper.vue";
-import NewsBoard from "./NewsBoard.vue";
+import SharedNews from "./../Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
@@ -30,7 +30,6 @@ import img4 from "@/assets/images/news-4.png";
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
 
-// 假資料
 const items = Array.from({ length: 80 }).map((_, i) => ({
   id: i + 1,
   title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
@@ -38,14 +37,13 @@ const items = Array.from({ length: 80 }).map((_, i) => ({
   category: cat[i % cat.length],
 }));
 
-function openDetail(card) {
-  console.log("click card:", card);
-}
+function openDetail(card) {}
 </script>
 
 <style lang="scss" scoped>
 .qa-content {
-  background-image: url(./../../assets/images/brand-bc-5.png);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+    url("@/assets/images/brand-bc-5.png");
   height: 550px;
   position: relative;
   &-text {

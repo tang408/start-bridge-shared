@@ -39,7 +39,7 @@
       </div>
     </div>
     <img class="advantages-bc" src="@/assets/images/brand-bc.png" />
-    <img class="advantages-star" src="@/assets/images/star.png" />
+    <img class="advantages-star" src="@/assets/images/star1.png" />
   </div>
 
   <div class="solution">
@@ -57,7 +57,7 @@
             <img src="@/assets/images/brand.png" class="w-100" />
           </div>
           <div class="col-md-7">
-            <Accordion />
+            <SharedAccordion :items="accordionItems" />
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
     <div class="process">
       <div class="container">
         <h1>合作流程</h1>
-        <Step />
+        <SharedFlow :sections="sections" v-model:active="active" />
       </div>
     </div>
   </div>
@@ -79,10 +79,54 @@
 </template>
 
 <script setup>
+import { ref } from "vue";
 import Swiper from "./Swiper.vue";
 import Tabs from "./Tabs.vue";
-import Accordion from "./Accordion.vue";
-import Step from "./Step.vue";
+import SharedAccordion from "../Shared-Accordion.vue";
+import SharedFlow from "./../Shared-Flow.vue";
+
+const accordionItems = [
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+];
+
+const active = ref({ lane: "brand", idx: 0 });
+const sections = [
+  {
+    key: "brand",
+    cols: 4,
+    startAt: 0,
+    steps: [
+      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
+      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
+      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
+      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
+    ],
+  },
+];
 </script>
 
 <style lang="scss" scoped>
@@ -145,7 +189,6 @@ import Step from "./Step.vue";
     }
   }
 
-  // .col-7,
   .col-md-6.col-content {
     position: relative;
     @media (max-width: 576px) {

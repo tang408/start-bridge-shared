@@ -18,21 +18,48 @@
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li
               class="nav-item"
-              :class="{ 'has-children': item.children }"
+              :class="{
+                'has-children': item.children,
+                active: isActive(item),
+              }"
               v-for="(item, index) in navItems"
               :key="index"
             >
-              <div
+              <router-link
+                v-if="!item.children"
                 class="nav-link d-flex align-items-center justify-content-between"
-                @click.stop="
-                  item.children ? toggleSubMenu(index) : handleLinkClick()
-                "
+                :to="item.link"
+                @click="handleLinkClick"
               >
                 <div class="d-flex align-items-center gap-1">
                   <img src="@/assets/icon/menu-icon.svg" />
                   {{ item.label }}
                 </div>
-                <span v-if="item.children" class="ms-2 nav-arrow">&#9660;</span>
+              </router-link>
+
+              <div
+                v-else
+                class="d-flex align-items-center justify-content-between"
+              >
+                <router-link
+                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                  :to="item.link"
+                  @click="handleLinkClick"
+                >
+                  <div class="d-flex align-items-center gap-1">
+                    <img src="@/assets/icon/menu-icon.svg" />
+                    {{ item.label }}
+                  </div>
+                </router-link>
+
+                <button
+                  class="ms-2 nav-arrow"
+                  type="button"
+                  @click.stop="toggleSubMenu(index)"
+                  aria-label="toggle submenu"
+                >
+                  &#9660;
+                </button>
               </div>
 
               <ul
@@ -52,13 +79,8 @@
                 </li>
               </ul>
             </li>
-
             <li class="nav-item bc-1 br-1 logIn">
-              <router-link
-                class="nav-link"
-                to="/login"
-                @click="handleLinkClick"
-              >
+              <router-link class="nav-link" @click="handleLinkClick">
                 <img src="@/assets/icon/menu-icon.svg" />
                 登入
               </router-link>
@@ -71,9 +93,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { useRoute } from "vue-router";
 import logoUrl from "@/assets/images/logo.png";
 
+const route = useRoute();
 const isMenuOpen = ref(false);
 const openIndex = ref(null);
 
@@ -106,24 +130,31 @@ onBeforeUnmount(() => {
 });
 
 const navItems = [
-  { label: "關於我們", link: "/" },
+  { label: "關於我們", link: "/about" },
   {
     label: "品牌刊登",
-    link: "/",
     children: [
       { label: "品牌刊登", link: "/brand-advertising" },
       { label: "合作品牌", link: "/cooperative-brand" },
     ],
   },
-  { label: "專案一覽", link: "/" },
-  { label: "啟動/參與", link: "/" },
+  { label: "專案一覽", link: "/project" },
+  { label: "啟動/參與", link: "/activity" },
   {
     label: "創媒之星",
-    link: "/",
-    children: [{ label: "成功案例", link: "/" }],
+    link: "/star",
+    children: [{ label: "成功案例", link: "/success" }],
   },
-  { label: "門市分布", link: "/" },
+  { label: "門市分布", link: "/store" },
 ];
+
+const isActive = (item) => {
+  const current = route.path;
+  if (!item.children) return current === item.link;
+
+  if (current === item.link) return true;
+  return item.children.some((c) => c.link === current);
+};
 </script>
 
 <style lang="scss" scoped>
@@ -194,6 +225,14 @@ const navItems = [
       padding: 0;
       @media (min-width: 768px) {
         border: 2px solid #ffcc66;
+      }
+    }
+
+    &.active > .nav-link,
+    &.active .nav-link {
+      @media (min-width: 768px) {
+        border: 2px solid #ffcc66;
+        border-radius: 50px;
       }
     }
 
@@ -303,5 +342,12 @@ const navItems = [
       }
     }
   }
+}
+
+.nav-arrow {
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding-right: 1rem;
 }
 </style>

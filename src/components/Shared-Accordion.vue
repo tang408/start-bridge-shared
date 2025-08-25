@@ -1,29 +1,25 @@
 <template>
-  <div class="accordion" id="accordionExample">
-    <div
-      class="accordion-item"
-      v-for="(item, index) in accordionItems"
-      :key="index"
-    >
-      <h2 class="accordion-header" :id="`heading${index}`">
+  <div class="accordion" :id="accordionId">
+    <div class="accordion-item" v-for="(item, index) in items" :key="index">
+      <h2 class="accordion-header" :id="`heading${accordionId}-${index}`">
         <button
           class="accordion-button"
           :class="{ collapsed: index !== 0 }"
           type="button"
           data-bs-toggle="collapse"
-          :data-bs-target="`#collapse${index}`"
+          :data-bs-target="`#collapse${accordionId}-${index}`"
           :aria-expanded="index === 0 ? 'true' : 'false'"
-          :aria-controls="`collapse${index}`"
+          :aria-controls="`collapse${accordionId}-${index}`"
         >
           {{ item.title }}
         </button>
       </h2>
       <div
-        :id="`collapse${index}`"
+        :id="`collapse${accordionId}-${index}`"
         class="accordion-collapse collapse"
         :class="{ show: index === 0 }"
-        :aria-labelledby="`heading${index}`"
-        data-bs-parent="#accordionExample"
+        :aria-labelledby="`heading${accordionId}-${index}`"
+        :data-bs-parent="`#${accordionId}`"
       >
         <div class="accordion-body">
           {{ item.content }}
@@ -34,36 +30,28 @@
 </template>
 
 <script setup>
-const accordionItems = [
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+import { defineProps } from "vue";
+
+const props = defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  accordionId: {
+    type: String,
+    default: "accordionExample",
   },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-];
+});
 </script>
 
 <style scoped lang="scss">
+.accordion-item:first-of-type {
+  border-radius: 20px;
+}
+.accordion-item:last-of-type {
+  border-radius: 20px;
+}
+
 .accordion-item:first-of-type > .accordion-header .accordion-button,
 .accordion-item:last-of-type > .accordion-header .accordion-button.collapsed {
   border-radius: 20px;
@@ -111,6 +99,7 @@ const accordionItems = [
 
 .accordion-item {
   border: none;
+  border-radius: 20px;
   background: rgba(255, 255, 255, 0.8);
 }
 

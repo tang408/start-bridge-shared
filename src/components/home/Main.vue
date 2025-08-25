@@ -113,31 +113,7 @@
     </div>
   </div>
 
-  <div class="service-partners">
-    <div class="container">
-      <div class="service-title">
-        <h1>合作夥伴</h1>
-      </div>
-      <div class="service-partners-content row mt-4">
-        <!-- <div class="service-partners-content-one">
-          <div class="col-12 col-md-6">
-            <img src="@/assets/images/LOGO2.png" class="w-100" />
-          </div>
-          <div class="col-12 col-md-6">
-            <img src="@/assets/images/LOGO1.png" class="w-100" />
-          </div>
-        </div>
-        <div class="service-partners-content-two mobile-none">
-          <div class="col-6">
-            <img src="@/assets/images/LOGO1.png" class="w-100" />
-          </div>
-          <div class="col-6">
-            <img src="@/assets/images/LOGO2.png" class="w-100" />
-          </div>
-        </div> -->
-      </div>
-    </div>
-  </div>
+  <SharedParner :count="30" />
 
   <div class="service-item">
     <img
@@ -164,6 +140,7 @@
 <script setup>
 import Icon from "./Icon.vue";
 import SharedSwiper from "./Swiper.vue";
+import SharedParner from "@/components/Shared-Parner.vue";
 import { ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import SwiperCore from "swiper";
@@ -213,6 +190,7 @@ const progressCards = [
     progress: 88,
     price: "99天",
     supporters: "9999 人瀏覽",
+    to: { name: "ProjectDetail", params: { id: 1 } },
   },
   {
     id: 2,
@@ -222,6 +200,7 @@ const progressCards = [
     progress: 72,
     price: "99天",
     supporters: "9999 人瀏覽",
+    to: { name: "ProjectDetail", params: { id: 2 } },
   },
   {
     id: 3,
@@ -231,6 +210,7 @@ const progressCards = [
     progress: 55,
     price: "99天",
     supporters: "9999 人瀏覽",
+    to: { name: "ProjectDetail", params: { id: 3 } },
   },
   {
     id: 4,
@@ -240,6 +220,7 @@ const progressCards = [
     progress: 91,
     price: "99天",
     supporters: "9999 人瀏覽",
+    to: { name: "ProjectDetail", params: { id: 4 } },
   },
   {
     id: 5,
@@ -249,6 +230,7 @@ const progressCards = [
     progress: 64,
     price: "99天",
     supporters: "9999 人瀏覽",
+    to: { name: "ProjectDetail", params: { id: 5 } },
   },
 ];
 

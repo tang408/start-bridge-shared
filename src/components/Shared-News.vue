@@ -1,15 +1,22 @@
 <template>
   <section class="news-board container">
-    <div class="filters">
-      <button
-        v-for="c in displayCategories"
-        :key="c"
-        class="chip"
-        :class="{ active: c === selectedCategory }"
-        @click="selectCategory(c)"
+    <div v-if="showFilter" class="filters">
+      <slot
+        name="filters"
+        :categories="displayCategories"
+        :selected="selectedCategory"
+        :select="selectCategory"
       >
-        {{ c }}
-      </button>
+        <button
+          v-for="c in displayCategories"
+          :key="c"
+          class="chip"
+          :class="{ active: c === selectedCategory }"
+          @click="selectCategory(c)"
+        >
+          {{ c }}
+        </button>
+      </slot>
     </div>
 
     <div class="grid">
@@ -77,45 +84,63 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-
 const props = defineProps({
-  items: {
-    type: Array,
-    default: () => [],
-  },
+  items: { type: Array, default: () => [] },
+  pageSize: { type: Number, default: 16 },
+
+  showFilter: { type: Boolean, default: true },
   categories: {
     type: Array,
     default: () => ["餐飲", "生活服務", "無人商店", "海外品牌"],
   },
-  pageSize: { type: Number, default: 16 },
   withAllTab: { type: Boolean, default: false },
+  categoryField: { type: String, default: "category" },
+  filterFn: { type: Function, default: null },
+  initialCategory: { type: String, default: "" },
 });
 
+const emit = defineEmits(["card-click", "update:category"]);
+
 const page = ref(1);
+
 const selectedCategory = ref(
-  props.withAllTab ? "全部" : props.categories[0] ?? "全部"
+  props.showFilter
+    ? props.initialCategory ||
+        (props.withAllTab ? "全部" : props.categories[0] ?? "全部")
+    : ""
 );
 
 const displayCategories = computed(() =>
-  props.withAllTab ? ["全部", ...props.categories] : props.categories
+  !props.showFilter
+    ? []
+    : props.withAllTab
+    ? ["全部", ...props.categories]
+    : props.categories
 );
 
 const filtered = computed(() => {
-  if (selectedCategory.value === "全部") return props.items;
-  return props.items.filter((i) => i.category === selectedCategory.value);
+  if (!props.showFilter) return props.items;
+  if (props.withAllTab && selectedCategory.value === "全部") return props.items;
+
+  if (typeof props.filterFn === "function") {
+    return props.filterFn(props.items, selectedCategory.value);
+  }
+  const field = props.categoryField || "category";
+  return props.items.filter((i) => i?.[field] === selectedCategory.value);
 });
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(filtered.value.length / props.pageSize))
 );
-
 const pagedItems = computed(() => {
   const start = (page.value - 1) * props.pageSize;
   return filtered.value.slice(start, start + props.pageSize);
 });
 
 function selectCategory(c) {
+  if (!props.showFilter) return;
   selectedCategory.value = c;
+  emit("update:category", c);
   page.value = 1;
 }
 function go(p) {
@@ -215,7 +240,6 @@ watch(
   right: 12px;
   bottom: 12px;
   color: #fff;
-  // font-size: 14px;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -233,29 +257,6 @@ watch(
 }
 .nav-btn {
   border: none;
-  background: transparent;
-  font-size: 18px;
-  padding: 6px 8px;
-  cursor: pointer;
-}
-.nav-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-.dot {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: none;
-  background: transparent;
-  font-size: 12px;
-  cursor: pointer;
-  &.active {
-    color: #ff5a4d;
-  }
-}
-
-.nav-btn {
   background: #ff5a4d;
   color: #fff;
   width: 26px;
@@ -265,6 +266,27 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+}
+.nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 16px;
+  cursor: pointer;
+  &.active {
+    color: #ff5a4d;
+  }
 }
 
 @media (max-width: 1200px) {

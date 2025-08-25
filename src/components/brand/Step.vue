@@ -9,7 +9,6 @@
       >
         <span class="badge">{{ i + 1 }}</span>
 
-        <!-- 用 button 當方塊 -->
         <button class="box" @click="setActive(i)">
           {{ s.title }}
         </button>
@@ -85,7 +84,6 @@ const setActive = (index) => {
     background: #3a3c3b;
     color: #fff;
     padding: 40px 0 21px;
-    // min-height: 72px;
     border: none;
     width: 100%;
     font-weight: 700;

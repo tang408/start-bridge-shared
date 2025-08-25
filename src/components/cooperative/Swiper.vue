@@ -139,7 +139,6 @@ function onSlideChange(swiper) {
 }
 
 ::v-deep(.swiper-button-prev) {
-  // left: 18%;
   left: 21%;
   @media (max-width: 768px) {
     left: 1%;
@@ -147,7 +146,6 @@ function onSlideChange(swiper) {
 }
 
 ::v-deep(.swiper-button-next) {
-  // right: 18%;
   right: 21%;
   @media (max-width: 768px) {
     right: 1%;
