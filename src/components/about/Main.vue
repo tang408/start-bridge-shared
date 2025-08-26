@@ -108,43 +108,52 @@
       </div>
     </div>
   </div>
-  <!-- <div class="about-founder">
+  <div class="about-founder">
     <h2 class="title">創辦人</h2>
     <div class="container">
-      <Swiper
-        class="founder-swiper"
-        :modules="[Navigation]"
-        :slides-per-view="1"
-        :space-between="24"
-        :loop="false"
-        :breakpoints="{
-          640: { slidesPerView: 2, spaceBetween: 24 },
-          992: { slidesPerView: 3, spaceBetween: 28 },
-          1200: { slidesPerView: 4, spaceBetween: 32 },
-        }"
-        :navigation="{ nextEl: '.founder-next', prevEl: '.founder-prev' }"
-      >
-        <SwiperSlide v-for="(p, i) in people" :key="i">
-          <div class="card-people">
-            <img class="avatar" :src="p.avatar" :alt="p.name" />
-            <h3 class="name">{{ p.name }}</h3>
-            <span class="desc">{{ p.desc }}</span>
-          </div>
-        </SwiperSlide>
+      <div v-if="foundersLoading" class="text-center py-4">
+        <div class="spinner-border text-light" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <template v-else>
+        <Swiper
+          class="founder-swiper"
+          :modules="[Navigation]"
+          :slides-per-view="1"
+          :space-between="24"
+          :loop="false"
+          :breakpoints="{
+            640: { slidesPerView: 2, spaceBetween: 24 },
+            992: { slidesPerView: 3, spaceBetween: 28 },
+            1200: { slidesPerView: 4, spaceBetween: 32 },
+          }"
+          :navigation="{ nextEl: '.founder-next', prevEl: '.founder-prev' }"
+        >
+          <SwiperSlide v-for="founder in founders" :key="founder.id">
+            <div class="card-people">
+              <img class="avatar" :src="founder.photo" :alt="founder.name" />
+              <h3 class="name">{{ founder.name }}</h3>
+              <span class="desc">{{ founder.info }}</span>
+            </div>
+          </SwiperSlide>
 
-        <div class="swiper-button-prev founder-prev"></div>
-        <div class="swiper-button-next founder-next"></div>
-      </Swiper>
-      <img src="@/assets/images/star2.png" class="bc-shape" />
+          <div class="swiper-button-prev founder-prev"></div>
+          <div class="swiper-button-next founder-next"></div>
+        </Swiper>
+        <img src="@/assets/images/star2.png" class="bc-shape" />
+      </template>
     </div>
-  </div> -->
+  </div>
 
   <SharedParner :count="30" class="mt-5" />
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import SharedParner from "@/components/Shared-Parner.vue";
+import { officialFounderApi } from "@/api/modules/officialFounder.js";
+import { getDefaultOfficialFounders } from "@/utils/aboutDefaultData.js";
 
 const stars = ref([
   { key: "sincerity", letter: "S", title: "Sincerity", subtitle: "真誠透明" },
@@ -170,6 +179,30 @@ const stars = ref([
 ]);
 
 const activeIdx = ref(0);
+const founders = ref([]);
+const foundersLoading = ref(false);
+
+// 獲取創辦人數據
+async function fetchFounders() {
+  foundersLoading.value = true;
+  try {
+    const response = await officialFounderApi.getOfficialFounders();
+    if (response.code === 0) {
+      founders.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取創辦人數據失敗:', error);
+  } finally {
+    foundersLoading.value = false;
+  }
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await fetchFounders();
+});
 
 function setActive(idx) {
   activeIdx.value = idx;
@@ -181,31 +214,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
-import people1 from "@/assets/images/people-1.png";
-import people2 from "@/assets/images/people-2.png";
-
-const people = [
-  {
-    name: "創辦人",
-    avatar: people1,
-    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
-  },
-  {
-    name: "創辦人",
-    avatar: people2,
-    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
-  },
-  {
-    name: "創辦人",
-    avatar: people1,
-    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
-  },
-  {
-    name: "創辦人",
-    avatar: people2,
-    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
-  },
-];
+// 舊的硬編碼數據已移除，現在使用 API 獲取創辦人數據
 </script>
 
 <style lang="scss" scoped>
