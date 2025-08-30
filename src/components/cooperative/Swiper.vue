@@ -24,7 +24,7 @@
         class="banner-slide"
         :class="{ center: index === activeIndex.value }"
       >
-        <img :src="item.img" alt="" />
+        <img :src="item.photo" alt="" />
         <div
           v-if="index === activeIndex.valueOf && item.title"
           class="center-content"
@@ -37,26 +37,38 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
+import {bannerApi} from "@/api/modules/banner.js";
 
-const banners = [
-  {
-    img: new URL("@/assets/images/swiper-example.jpg", import.meta.url).href,
-  },
-  {
-    img: new URL("@/assets/images/swiper-example.jpg", import.meta.url).href,
-  },
-  {
-    img: new URL("@/assets/images/swiper-example.jpg", import.meta.url).href,
-  },
-  {
-    img: new URL("@/assets/images/swiper-example.jpg", import.meta.url).href,
-  },
-];
+const banners = ref([]);
+const loading = ref(false);
+async function getBanners() {
+  loading.value = true;
+  try {
+    const formData = {
+      type: 3
+    }
+
+    const response = await bannerApi.getBanners(formData);
+    if (response.code === 0) {
+      banners.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取數據失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await getBanners();
+});
 
 const activeIndex = ref(0);
 

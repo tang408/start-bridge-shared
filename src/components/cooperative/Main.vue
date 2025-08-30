@@ -3,7 +3,7 @@
   <SharedNews
     :items="items"
     :page-size="16"
-    :categories="['餐飲', '生活服務', '無人商店', '海外品牌']"
+    :categories="industryTypes"
     :with-all-tab="true"
     @card-click="openDetail"
   />
@@ -26,6 +26,9 @@ import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
+import {aboutMeApi as aboutMeApiApi} from "@/api/modules/aboutMe.js";
+import {onMounted, ref} from "vue";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
@@ -38,6 +41,34 @@ const items = Array.from({ length: 80 }).map((_, i) => ({
 }));
 
 function openDetail(card) {}
+
+const loading = ref(false);
+const industryTypes = ref([]);
+async function getIndustryTypes() {
+  loading.value = true;
+  try {
+    const response = await industryTypeApi.getIndustryTypes();
+    if (response.code === 0) {
+      industryTypes.value = response.data.map(item => item.name);
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await Promise.all([
+    getIndustryTypes()
+  ]);
+});
+
 </script>
 
 <style lang="scss" scoped>

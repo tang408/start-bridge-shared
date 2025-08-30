@@ -7,8 +7,8 @@
       :pagination="{ clickable: true }"
       class="banner-swiper"
     >
-      <swiper-slide v-for="(img, index) in images" :key="index">
-        <img :src="img" alt="banner" />
+      <swiper-slide v-for="(img, index) in banners" :key="index">
+        <img :src="img.photo"  alt="banner" />
       </swiper-slide>
     </swiper>
   </div>
@@ -18,13 +18,36 @@
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
+import {onMounted, ref} from "vue";
+import {bannerApi} from "@/api/modules/banner.js";
 
 const modules = [Autoplay, Pagination];
-const images = [
-  new URL("@/assets/images/banner.jpg", import.meta.url).href,
-  new URL("@/assets/images/banner.jpg", import.meta.url).href,
-  new URL("@/assets/images/banner.jpg", import.meta.url).href,
-];
+const banners = ref([]);
+const loading = ref(false);
+async function getBanners() {
+  loading.value = true;
+  try {
+    const formData = {
+      type: 1
+    }
+
+    const response = await bannerApi.getBanners(formData);
+    if (response.code === 0) {
+      banners.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取數據失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await getBanners();
+});
+
 </script>
 
 <style lang="scss" scoped>

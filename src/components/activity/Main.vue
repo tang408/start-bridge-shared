@@ -73,7 +73,7 @@
     <div class="container qa-content-img">
       <img src="@/assets/images/qa-img.png" />
       <h1>Q&A</h1>
-      <SharedAccordion :items="accordionItems" />
+      <SharedAccordion />
     </div>
   </div>
 </template>
@@ -173,34 +173,6 @@ const sectionsCoCreate = [
       { num: 5, title: "退還意象金", desc: "" },
       { num: 6, title: "結案", desc: "" },
     ],
-  },
-];
-
-const accordionItems = [
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
-  },
-  {
-    title: "Blishing industries for previewing layouts and visual mockups?",
-    content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
   },
 ];
 </script>

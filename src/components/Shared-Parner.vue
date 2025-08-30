@@ -6,17 +6,39 @@
       </div>
 
       <div class="logo-grid" role="list">
-        <!-- 先隱藏 -->
-        <!-- <div v-for="i in count" :key="i" class="logo-item" role="listitem">
-        <img :src="imgSrc" :alt="`${altBase}-${i}`" loading="lazy" />
-      </div> -->
+        <!-- 載入狀態 -->
+        <div v-if="loading" class="loading-state">
+          <p>載入中...</p>
+        </div>
+
+        <!-- 顯示合作夥伴圖片 -->
+        <div
+            v-else
+            v-for="partner in partnerPhotos"
+            :key="partner.id"
+            class="logo-item"
+            role="listitem"
+        >
+          <img
+              :src="partner.photo"
+              :alt="partner.name"
+              loading="lazy"
+              @error="handleImageError"
+          />
+        </div>
+
+        <!-- 如果沒有資料時的備用顯示 -->
+        <div v-if="!loading && partnerPhotos.length === 0" class="no-data">
+          <p>暫無合作夥伴資料</p>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import {computed, onMounted, ref} from "vue";
+import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 
 const props = defineProps({
   title: { type: String, default: "合作夥伴" },
@@ -30,6 +52,36 @@ const imgSrc = computed(() =>
     ? props.src
     : new URL("@/assets/images/logo-only.png", import.meta.url).href
 );
+
+const loading = ref(false);
+const partnerPhotos = ref([]);
+async function getOfficialPartnerPhotos() {
+  loading.value = true;
+  try {
+    const response = await officialPartnerApi.getOfficialPartnerPhotos();
+    if (response.code === 0) {
+      partnerPhotos.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取創辦人數據失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await getOfficialPartnerPhotos();
+});
+
+// 圖片載入錯誤處理
+function handleImageError(event) {
+  console.warn('圖片載入失敗:', event.target.src);
+  // 可以設置預設圖片
+  event.target.src = imgSrc.value;
+}
 </script>
 
 <style lang="scss" scoped>

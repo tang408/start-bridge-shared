@@ -3,19 +3,16 @@
     <div class="container">
       <div class="d-flex-block row">
         <div class="col-md-6 col-12">
-          <h4 class="color-1 lh-24">成為亞洲最值得信賴的創業共創平台</h4>
+          <h4 class="color-1 lh-24">{{ aboutMes[0]?.title }}</h4>
           <span class="lh-36">
-            在星橋，創業不是遙不可及的大夢，而是可以被拆解、被理解、被一起完成的目標。
-            我們把創業變成可媒合的組合，讓你用一杯杯咖啡的金額，也能參與一間你熟悉的店。
-            你可以是領頭創業者，也可以是默默支持的合作夥伴。
-            每個人，都能用自己的方式加入這場品牌旅程。
+            {{ aboutMes[0]?.content }}
           </span>
           <img src="@/assets/images/about-sign.png" height="38" />
         </div>
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/star1.png" class="icon-1" />
           <img src="@/assets/images/about-color-bc-1.png" class="w-100" />
-          <img src="@/assets/images/about-pic1.png" class="pic-1" />
+          <img :src="aboutMes[0]?.photo || '@/assets/images/about-pic1.png'" class="pic-1" />
         </div>
       </div>
     </div>
@@ -29,16 +26,14 @@
           <img src="@/assets/images/shape.png" class="shape" />
           <img src="@/assets/images/star1.png" class="icon-2" />
           <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
-          <img src="@/assets/images/about-pic2.png" class="pic-2" />
+          <img :src="aboutMes[1]?.photo || '@/assets/images/about-pic2.png'" class="pic-2" />
         </div>
         <div class="col-md-6 col-12 block-text">
           <h4 class="color-1 lh-24">
-            打造讓每一個人都能參與、投資、實踐的創業新生態圈
+            {{ aboutMes[1]?.title }}
           </h4>
           <span class="lh-36">
-            創業的門檻，不該是一道厚重的牆。
-            在星橋，一杯咖啡的金額，也能種下一顆參與的種子。
-            你熟悉的那間早餐店，也許明天起，你就是它的共有人。
+            {{ aboutMes[1]?.content }}
           </span>
           <button>啟動／參與</button>
         </div>
@@ -111,7 +106,7 @@
   <div class="about-founder">
     <h2 class="title">創辦人</h2>
     <div class="container">
-      <div v-if="foundersLoading" class="text-center py-4">
+      <div v-if="loading" class="text-center py-4">
         <div class="spinner-border text-light" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -153,7 +148,12 @@
 import { ref, onMounted } from "vue";
 import SharedParner from "@/components/Shared-Parner.vue";
 import { officialFounderApi } from "@/api/modules/officialFounder.js";
-import { getDefaultOfficialFounders } from "@/utils/aboutDefaultData.js";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import {aboutMeApi as aboutMeApiApi, aboutMeApi} from "@/api/modules/aboutMe.js";
 
 const stars = ref([
   { key: "sincerity", letter: "S", title: "Sincerity", subtitle: "真誠透明" },
@@ -180,11 +180,13 @@ const stars = ref([
 
 const activeIdx = ref(0);
 const founders = ref([]);
-const foundersLoading = ref(false);
+const aboutMes = ref([]);
+const loading = ref(false);
+
 
 // 獲取創辦人數據
-async function fetchFounders() {
-  foundersLoading.value = true;
+async function getOfficialFounders() {
+  loading.value = true;
   try {
     const response = await officialFounderApi.getOfficialFounders();
     if (response.code === 0) {
@@ -195,26 +197,39 @@ async function fetchFounders() {
   } catch (error) {
     console.error('獲取創辦人數據失敗:', error);
   } finally {
-    foundersLoading.value = false;
+    loading.value = false;
   }
+}
+
+// 關於我們的內容
+async function getAboutMes() {
+  loading.value = true;
+  try {
+    const response = await aboutMeApiApi.getAboutMes();
+    if (response.code === 0) {
+      aboutMes.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+
 }
 
 // 組件掛載時獲取數據
 onMounted(async () => {
-  await fetchFounders();
+  await Promise.all([
+    getOfficialFounders(),
+    getAboutMes()
+  ]);
 });
 
 function setActive(idx) {
   activeIdx.value = idx;
 }
-
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-
-// 舊的硬編碼數據已移除，現在使用 API 獲取創辦人數據
 </script>
 
 <style lang="scss" scoped>

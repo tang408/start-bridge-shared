@@ -3,7 +3,7 @@
     <li
       class="nav-item"
       role="presentation"
-      v-for="(item, index) in plans"
+      v-for="(item, index) in options"
       :key="index"
     >
       <button
@@ -30,7 +30,7 @@
 
   <div class="tab-content" id="myTabContent">
     <div
-      v-for="(item, index) in plans"
+      v-for="(item, index) in options"
       :key="'pane-' + index"
       class="tab-pane fade"
       :class="{ 'show active': activeTab === index }"
@@ -49,7 +49,8 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
+import {optionApi} from "@/api/modules/option.js";
 
 const activeTab = ref(0);
 const activeIcon = new URL("@/assets/icon/btn-icon.svg", import.meta.url).href;
@@ -76,6 +77,29 @@ const plans = ref([
       "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
   },
 ]);
+const options = ref([]);
+const loading = ref(false);
+async function getOptions() {
+  loading.value = true;
+  try {
+    const response = await optionApi.getOptions();
+    if (response.code === 0) {
+      options.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取數據失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await getOptions();
+});
+
 </script>
 
 <style scoped lang="scss">

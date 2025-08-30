@@ -1,6 +1,6 @@
 <template>
   <div class="accordion" :id="accordionId">
-    <div class="accordion-item" v-for="(item, index) in items" :key="index">
+    <div class="accordion-item" v-for="(item, index) in faqs" :key="index">
       <h2 class="accordion-header" :id="`heading${accordionId}-${index}`">
         <button
           class="accordion-button"
@@ -11,7 +11,7 @@
           :aria-expanded="index === 0 ? 'true' : 'false'"
           :aria-controls="`collapse${accordionId}-${index}`"
         >
-          {{ item.title }}
+          {{ item.question }}
         </button>
       </h2>
       <div
@@ -22,7 +22,7 @@
         :data-bs-parent="`#${accordionId}`"
       >
         <div class="accordion-body">
-          {{ item.content }}
+          {{ item.answer }}
         </div>
       </div>
     </div>
@@ -30,18 +30,40 @@
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import {defineProps, onMounted, ref} from "vue";
+import {FAQApi as FAQApiApi} from "@/api/modules/faq.js";
 
 const props = defineProps({
-  items: {
-    type: Array,
-    required: true,
-  },
   accordionId: {
     type: String,
     default: "accordionExample",
   },
 });
+
+
+const loading = ref(false);
+const faqs = ref([]);
+async function getfaqs() {
+  loading.value = true;
+  try {
+    const response = await FAQApiApi.getFAQs();
+    if (response.code === 0) {
+      faqs.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取數據失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await getfaqs();
+});
+
 </script>
 
 <style scoped lang="scss">
