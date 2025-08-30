@@ -36,12 +36,12 @@
                   {{ item.label }}
                 </div>
               </router-link>
-
               <div
                 v-else
                 class="d-flex align-items-center justify-content-between"
               >
                 <router-link
+                  v-if="item.link"
                   class="nav-link d-flex align-items-center justify-content-between flex-grow"
                   :to="item.link"
                   @click="handleLinkClick"
@@ -51,6 +51,16 @@
                     {{ item.label }}
                   </div>
                 </router-link>
+
+                <span
+                  v-else
+                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                >
+                  <div class="d-flex align-items-center gap-1">
+                    <img src="@/assets/icon/menu-icon.svg" />
+                    {{ item.label }}
+                  </div>
+                </span>
 
                 <button
                   class="ms-2 nav-arrow"
@@ -70,12 +80,16 @@
               >
                 <li v-for="(child, cIdx) in item.children" :key="cIdx">
                   <router-link
+                    v-if="child.link"
                     class="dropdown-item"
                     :to="child.link"
                     @click="handleLinkClick"
                   >
                     {{ child.label }}
                   </router-link>
+                  <span v-else class="dropdown-item disabled">{{
+                    child.label
+                  }}</span>
                 </li>
               </ul>
             </li>
@@ -139,11 +153,22 @@ const navItems = [
     ],
   },
   { label: "專案一覽", link: "/project" },
-  { label: "啟動/參與", link: "/activity" },
+  {
+    label: "啟動/參與",
+    children: [
+      { label: "啟動", link: { path: "/activity", query: { tab: "startup" } } },
+      {
+        label: "參與",
+        link: { path: "/activity", query: { tab: "coCreate" } },
+      },
+    ],
+  },
   {
     label: "創媒之星",
-    link: "/star",
-    children: [{ label: "成功案例", link: "/success" }],
+    children: [
+      { label: "創媒之星", link: "/star" },
+      { label: "成功案例", link: "/success" },
+    ],
   },
   { label: "門市分布", link: "/store" },
 ];

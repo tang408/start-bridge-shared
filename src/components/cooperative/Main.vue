@@ -20,6 +20,7 @@
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
 import Swiper from "./Swiper.vue";
 import SharedNews from "./../Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
@@ -27,6 +28,7 @@ import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
 
+const router = useRouter();
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
 
@@ -37,7 +39,9 @@ const items = Array.from({ length: 80 }).map((_, i) => ({
   category: cat[i % cat.length],
 }));
 
-function openDetail(card) {}
+function openDetail(card) {
+  router.push({ name: "CooperativeBrandDetail", params: { id: card.id } });
+}
 </script>
 
 <style lang="scss" scoped>

@@ -8,7 +8,8 @@ import Project from "../views/Project.vue";
 import Store from "../views/Store.vue";
 import Star from "../views/MediaStar.vue";
 import Activity from "../views/Activity.vue";
-import ProjectText from "../views/Project-content.vue";
+import ProjectContent from "../views/Project-content.vue";
+import CooperativeContent from "../views/Cooperative-content.vue";
 import Success from "../views/SuccessCase.vue";
 
 const routes = [
@@ -21,13 +22,11 @@ const routes = [
         name: "Home",
         component: Home,
       },
+      { path: "brand-advertising", name: "BrandAdvertising", component: Brand },
       {
-        path: "",
-        name: "Brand",
-        children: [
-          { path: "brand-advertising", component: Brand },
-          { path: "cooperative-brand", component: Cooperative },
-        ],
+        path: "cooperative-brand",
+        name: "CooperativeBrand",
+        component: Cooperative,
       },
       {
         path: "about",
@@ -62,7 +61,13 @@ const routes = [
       {
         path: "project/:id",
         name: "ProjectDetail",
-        component: ProjectText,
+        component: ProjectContent,
+        props: true,
+      },
+      {
+        path: "cooperative-brand/:id",
+        name: "CooperativeBrandDetail",
+        component: CooperativeContent,
         props: true,
       },
     ],
