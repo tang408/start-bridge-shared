@@ -5,7 +5,7 @@
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'startup' }"
-          @click="activeTab = 'startup'"
+          @click="setTab('startup')"
         >
           <img :src="activeTab === 'startup' ? iconActive : icon" />
           【啟動】創業
@@ -14,7 +14,7 @@
         <button
           class="tab-btn"
           :class="{ active: activeTab === 'coCreate' }"
-          @click="activeTab = 'coCreate'"
+          @click="setTab('coCreate')"
         >
           <img :src="activeTab === 'coCreate' ? iconActive : icon" />
           【參與】共創
@@ -79,13 +79,33 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import SharedFlow from "./../Shared-Flow.vue";
 import icon from "@/assets/icon/btn-icon2.svg";
 import iconActive from "@/assets/icon/btn-icon.svg";
 import SharedAccordion from "../Shared-Accordion.vue";
 
+const route = useRoute();
+const router = useRouter();
 const activeTab = ref("startup");
+const syncFromRoute = () => {
+  const q = route.query.tab;
+  activeTab.value = q === "coCreate" ? "coCreate" : "startup";
+};
+
+const setTab = (tab) => {
+  activeTab.value = tab;
+  router.replace({ path: route.path, query: { ...route.query, tab } });
+};
+
+onMounted(syncFromRoute);
+
+watch(
+  () => route.query.tab,
+  () => syncFromRoute()
+);
+
 const activeStartup = ref({ lane: "init", idx: 0 });
 const activeCoCreate = ref({ lane: "init", idx: 0 });
 
