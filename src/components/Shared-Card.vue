@@ -4,7 +4,7 @@
     class="progress-section-card"
     @click="$emit('card-click', card)"
   >
-    <img :src="card.img" class="progress-section-card-image w-100" />
+    <img :src="card.photo" class="progress-section-card-image w-100" />
 
     <div class="progress-section-card-content">
       <slot name="tags">
@@ -46,7 +46,7 @@
   </div>
 
   <div v-else-if="mode === 'store'" class="store-section-card">
-    <img :src="card.img" class="store-section-card-image w-100 mb-2" />
+    <img :src="card.photo" class="store-section-card-image w-100 mb-2" />
     <slot name="store-address">
       <div>門市地址 | {{ storeAddress }}</div>
     </slot>

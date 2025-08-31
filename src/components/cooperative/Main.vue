@@ -1,9 +1,9 @@
 <template>
   <Swiper />
   <SharedNews
-    :items="items"
+    :items="transformedItems"
     :page-size="16"
-    :categories="['餐飲', '生活服務', '無人商店', '海外品牌']"
+    :categories="industryTypeNames"
     :with-all-tab="true"
     @card-click="openDetail"
   />
@@ -27,6 +27,9 @@ import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
+import {officialPartnerApi} from "@/api/modules/officialPartner.js";
+import {computed, onMounted, ref} from "vue";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 
 const router = useRouter();
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
@@ -40,8 +43,109 @@ const items = Array.from({ length: 80 }).map((_, i) => ({
 }));
 
 function openDetail(card) {
-  router.push({ name: "CooperativeBrandDetail", params: { id: card.id } });
+  if (card.mode === 'url' && card.redirectUrl) {
+    window.open(card.redirectUrl, '_blank');
+    return;
+  } else if (card.mode === 'data') {
+    router.push({ name: "CooperativeBrandDetail", params: { id: card.id } });
+  }
 }
+
+const loading = ref(false);
+
+const officialPartnersData = ref([]);
+const industryTypesData = ref([]);
+const selectedIndustryType = ref('全部');
+
+const industryTypeNames = computed(() => {
+  return industryTypesData.value.map(item => item.name);
+});
+
+// 根據分類名稱找到對應的 ID
+const selectedCategoryId = computed(() => {
+  if (selectedIndustryType.value === '全部') {
+    return 0; // 全部分類傳 0
+  }
+
+  const industryType = industryTypesData.value.find(item => item.name === selectedIndustryType.value);
+  return industryType ? industryType.id : 0; // 找不到也傳 0
+});
+
+function getIndustryTypeName(industryTypeId) {
+  const industryType = industryTypesData.value.find(item => item.id === industryTypeId);
+  return industryType ? industryType.name : '未分類';
+}
+
+function handleCategoryChange(industryTypeName) {
+  selectedIndustryType.value = industryTypeName;
+  const industryTypeId = selectedCategoryId.value;
+  getOfficialPartners(industryTypeId);
+}
+
+// 獲取行業類型
+async function getIndustryTypes() {
+  loading.value = true;
+  try {
+    const response = await industryTypeApi.getIndustryTypes();
+    if (response.code === 0) {
+      // 保存完整的資料（包含 id 和 name）
+      industryTypesData.value = response.data;
+      console.log('獲取的行業類型:', response.data);
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取行業類型失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function getOfficialPartners(industryType = 0) {
+  loading.value = true;
+  try {
+    const formData = {
+      industryType: industryType // 傳入選中的分類 ID
+    }
+    const response = await officialPartnerApi.getOfficialPartners(formData);
+    if (response.code === 0) {
+      officialPartnersData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+const transformedItems = computed(() => {
+  if (!officialPartnersData.value || !Array.isArray(officialPartnersData.value)) {
+    return [];
+  }
+
+  return officialPartnersData.value.map(partner => ({
+    id: partner.id,
+    title: partner.name,
+    cover: partner.photo || '@/assets/images/default-cover.png', // 使用 API 圖片或預設圖片
+    category: getIndustryTypeName(partner.industryType), // 根據 industryType 轉換為分類名稱
+    description: partner.description,
+    mode: partner.mode, // 保留模式資訊
+    redirectUrl: partner.redirectUrl, // 保留跳轉 URL
+    rawData: partner // 保留完整的原始資料
+  }));
+});
+
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await Promise.all([
+    getIndustryTypes(),
+    getOfficialPartners(0)
+  ]);
+});
+
 </script>
 
 <style lang="scss" scoped>

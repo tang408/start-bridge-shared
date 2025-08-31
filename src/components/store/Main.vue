@@ -1,10 +1,10 @@
 <template>
   <SharedFilter
     mode="store"
-    :items="items"
+    :items="storeLocationsData"
     :filters="filtersB"
-    @update:city="() => {}"
-    @update:category="() => {}"
+    @update:city="changeCity"
+    @update:industryType="changeIndustryType"
     @card-click="
       (item) => $router.push({ name: 'ProjectDetail', params: { id: item.id } })
     "
@@ -12,8 +12,12 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {computed, onMounted, ref} from "vue";
 import SharedFilter from "@/components/Shared-Filter.vue";
+import {aboutMeApi as aboutMeApiApi} from "@/api/modules/aboutMe.js";
+import {cityApi} from "@/api/modules/city.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
+import {storeLocationApi} from "@/api/modules/storeLocation.js";
 
 const items = ref([
   {
@@ -75,20 +79,129 @@ const items = ref([
   },
 ]);
 
-const filtersB = [
+
+const loading = ref(false);
+const selectedCity = ref(0);
+const selectedIndustryType = ref(0);
+
+const citiesData = ref([]);
+const industryTypesData = ref([]);
+const storeLocationsData = ref([]);
+async function getCities() {
+  loading.value = true;
+  try {
+    const response = await cityApi.getCities();
+    if (response.code === 0) {
+      citiesData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+
+}
+
+async function getIndustryTypes() {
+  loading.value = true;
+  try {
+    const response = await industryTypeApi.getIndustryTypes();
+    if (response.code === 0) {
+      industryTypesData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await Promise.all([
+    getCities(),
+    getIndustryTypes()
+
+  ]);
+});
+
+const filtersB = computed(() => [
   {
     key: "city",
     placeholder: "縣市",
     anyLabel: "全部縣市",
-    options: ["台北市", "新北市", "桃園市", "台中市", "台南市", "高雄市"],
+    options:  citiesData.value.map(city => city.name || city)
   },
   {
-    key: "category",
-    placeholder: "餐飲-咖啡",
+    key: "industryType",
+    placeholder: "類別",
     anyLabel: "全部類別",
-    options: ["餐飲-咖啡", "餐飲-早午餐", "餐飲-輕食", "零售-雜貨"],
+    options: industryTypesData.value.map(industryType => industryType.name || industryType),
   },
-];
+]);
+
+// 獲取店鋪位置資料
+async function getStoreLocations(city = 0, industryType = 0) {
+  loading.value = true;
+  try {
+    const params = {
+      city: selectedCity.value,
+      industryType: selectedIndustryType.value
+    };
+
+    const response = await storeLocationApi.getStoreLocations(params);
+    if (response.code === 0) {
+      storeLocationsData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取店鋪位置資料失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function changeCity(cityName) {
+  const cityId = getCityId(cityName);
+  selectedCity.value = cityId;
+  getStoreLocations();
+}
+
+function changeIndustryType(industryTypeName) {
+  const industryTypeId = getIndustryTypeId(industryTypeName);
+  selectedIndustryType.value = industryTypeId;
+  getStoreLocations();
+}
+
+function getCityId(cityName) {
+  if (!cityName) return 0; // 如果沒有選擇，返回0表示全部
+  const city = citiesData.value.find(item => item.name === cityName);
+  return city ? city.id : 0;
+}
+
+function getIndustryTypeId(industryTypeName) {
+  if (!industryTypeName) return 0; // 如果沒有選擇，返回0表示全部
+  const industryType = industryTypesData.value.find(item => item.name === industryTypeName);
+  return industryType ? industryType.id : 0;
+}
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await Promise.all([
+    getCities(),
+    getIndustryTypes(),
+  ]);
+
+  // 獲取初始店鋪資料
+  await getStoreLocations();
+});
+
 </script>
 
 <style lang="scss" scoped>

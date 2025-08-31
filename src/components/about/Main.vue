@@ -205,7 +205,7 @@ async function getOfficialFounders() {
 async function getAboutMes() {
   loading.value = true;
   try {
-    const response = await aboutMeApiApi.getAboutMes();
+    const response = await aboutMeApi.getAboutMes();
     if (response.code === 0) {
       aboutMes.value = response.data;
     } else {

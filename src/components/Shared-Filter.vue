@@ -60,7 +60,7 @@
           :show-progress="mode === 'progress'"
           :show-info="mode === 'progress'"
           :store-address="mode === 'store' ? item.address : undefined"
-          :store-phone="mode === 'store' ? item.phone : undefined"
+          :store-phone="mode === 'store' ? item.contactNumber : undefined"
           @card-click="emit('card-click', $event)"
         />
       </div>
