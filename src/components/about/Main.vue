@@ -134,8 +134,8 @@
           </div>
         </SwiperSlide>
 
-        <div v-if="people.length > 0" class="swiper-button-prev founder-prev"></div>
-        <div v-if="people.length > 0" class="swiper-button-next founder-next"></div>
+        <div v-if="people.length > 4" class="swiper-button-prev founder-prev"></div>
+        <div v-if="people.length > 4" class="swiper-button-next founder-next"></div>
       </Swiper>
       <img src="@/assets/images/star2.png" class="bc-shape" />
     </div>
