@@ -110,7 +110,7 @@
       </div>
     </div>
   </div>
-  <div class="about-founder">
+  <!-- <div class="about-founder">
     <h2 class="title">創辦人</h2>
     <div class="container">
       <Swiper
@@ -124,7 +124,7 @@
           992: { slidesPerView: 3, spaceBetween: 28 },
           1200: { slidesPerView: 4, spaceBetween: 32 },
         }"
-        :navigation="{ nextEl: '.founder-next', prevEl: '.founder-prev' }"
+         :navigation="people.length > 4 ? { nextEl: '.founder-next', prevEl: '.founder-prev' } : false"
       >
         <SwiperSlide v-for="(p, i) in people" :key="i">
           <div class="card-people">
@@ -134,12 +134,12 @@
           </div>
         </SwiperSlide>
 
-        <div class="swiper-button-prev founder-prev"></div>
-        <div class="swiper-button-next founder-next"></div>
+        <div v-if="people.length > 0" class="swiper-button-prev founder-prev"></div>
+        <div v-if="people.length > 0" class="swiper-button-next founder-next"></div>
       </Swiper>
       <img src="@/assets/images/star2.png" class="bc-shape" />
     </div>
-  </div>
+  </div> -->
 
   <SharedParner :count="30" class="mt-5" />
 </template>
