@@ -155,6 +155,7 @@ const sections = [
   }
   &-bc {
     width: 98%;
+    height: 152vh;
     @media (max-width: 576px) {
       height: 140vh;
       object-fit: cover;

@@ -28,8 +28,10 @@
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/shape.png" class="shape" />
           <img src="@/assets/images/star1.png" class="icon-2" />
-          <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
-          <img src="@/assets/images/about-pic2.png" class="pic-2" />
+          <div class="about-pic-2">
+            <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
+            <img src="@/assets/images/about-pic2.png" class="pic-2" />
+          </div>
         </div>
         <div class="col-md-6 col-12 block-text">
           <h4 class="color-1 lh-24">
@@ -108,7 +110,7 @@
       </div>
     </div>
   </div>
-  <!-- <div class="about-founder">
+  <div class="about-founder">
     <h2 class="title">創辦人</h2>
     <div class="container">
       <Swiper
@@ -137,7 +139,7 @@
       </Swiper>
       <img src="@/assets/images/star2.png" class="bc-shape" />
     </div>
-  </div> -->
+  </div>
 
   <SharedParner :count="30" class="mt-5" />
 </template>
@@ -223,9 +225,12 @@ const people = [
     position: relative;
     img {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      left: 50%;
+      bottom: 50%;
+      transform: translate(-50%, 50%);
+      left: 43%;
+      @media (max-width: 576px) {
+        left: 50%;
+      }
     }
   }
 
@@ -279,6 +284,16 @@ const people = [
     left: -20% !important;
   }
 
+  .about-pic-2 {
+    width: 600px;
+    height: 500px;
+    position: relative;
+    @media (max-width: 576px) {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   .pic {
     &-1 {
       width: 82%;
@@ -287,10 +302,13 @@ const people = [
     }
 
     &-2 {
-      top: 35% !important;
-      left: 38% !important;
+      bottom: 63% !important;
+      left: 33% !important;
       width: 73%;
       border-radius: 50px;
+      @media (max-width: 576px) {
+        left: 40% !important;
+      }
     }
   }
 
@@ -391,12 +409,7 @@ const people = [
       z-index: 2;
     }
 
-    .star-box:hover {
-      transform: translateY(-22px) scale(1.02);
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
-      z-index: 6;
-    }
-
+    .star-box:hover,
     .star-box.active {
       background: linear-gradient(325.61deg, #ff6634 48.16%, #ff9966 92.68%);
       box-shadow: 4px 16px 8px rgba(0, 0, 0, 0.1),
@@ -406,10 +419,10 @@ const people = [
       color: #fff;
       transform: translateY(-28px) scale(1.04) !important;
       z-index: 7;
-    }
-    .star-box.active .letter,
-    .star-box.active p {
-      color: #fff;
+      .letter,
+      p {
+        color: #fff;
+      }
     }
 
     @media (max-width: 767px) {
@@ -451,7 +464,7 @@ const people = [
   margin-top: -60px;
   margin-bottom: -230px;
   position: relative;
-  z-index: 2;
+  z-index: 0;
   @media (max-width: 576px) {
     margin-top: 0;
     margin-bottom: 0;
@@ -631,7 +644,7 @@ const people = [
   min-height: 80vh;
   align-content: center;
   position: relative;
-  z-index: 1;
+  z-index: -1;
   @media (max-width: 576px) {
     min-height: 100vh;
   }
@@ -654,7 +667,7 @@ const people = [
 
   .founder-swiper {
     width: 100%;
-    padding: 8px 56px;
+    padding: 20px 10px;
     @media (max-width: 576px) {
       padding: 0;
     }
