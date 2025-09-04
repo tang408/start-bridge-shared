@@ -3,9 +3,9 @@
     :modules="[Navigation]"
     :space-between="10"
     :centered-slides="true"
-    :loop="true"
+    :loop="banners.length > 1"
     :initial-slide="0"
-    navigation
+    :navigation="banners.length > 1"
     class="banner-swiper"
     @slideChange="onSlideChange"
     :breakpoints="{

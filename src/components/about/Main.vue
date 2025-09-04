@@ -3,16 +3,19 @@
     <div class="container">
       <div class="d-flex-block row">
         <div class="col-md-6 col-12">
-          <h4 class="color-1 lh-24">{{ aboutMes[0]?.title }}</h4>
+          <h4 class="color-1 lh-24">成為亞洲最值得信賴的創業共創平台</h4>
           <span class="lh-36">
-            {{ aboutMes[0]?.content }}
+            在星橋，創業不是遙不可及的大夢，而是可以被拆解、被理解、被一起完成的目標。
+            我們把創業變成可媒合的組合，讓你用一杯杯咖啡的金額，也能參與一間你熟悉的店。
+            你可以是領頭創業者，也可以是默默支持的合作夥伴。
+            每個人，都能用自己的方式加入這場品牌旅程。
           </span>
           <img src="@/assets/images/about-sign.png" height="38" />
         </div>
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/star1.png" class="icon-1" />
           <img src="@/assets/images/about-color-bc-1.png" class="w-100" />
-          <img :src="aboutMes[0]?.photo || '@/assets/images/about-pic1.png'" class="pic-1" />
+          <img src="@/assets/images/about-pic1.png" class="pic-1" />
         </div>
       </div>
     </div>
@@ -25,9 +28,11 @@
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/shape.png" class="shape" />
           <img src="@/assets/images/star1.png" class="icon-2" />
+          <div class="about-pic-2">
           <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
           <img :src="aboutMes[1]?.photo || '@/assets/images/about-pic2.png'" class="pic-2" />
         </div>
+          </div>
         <div class="col-md-6 col-12 block-text">
           <h4 class="color-1 lh-24">
             {{ aboutMes[1]?.title }}
@@ -133,8 +138,8 @@
             </div>
           </SwiperSlide>
 
-          <div class="swiper-button-prev founder-prev"></div>
-          <div class="swiper-button-next founder-next"></div>
+          <div v-if="founders.length > 4" class="swiper-button-prev founder-prev"></div>
+          <div v-if="founders.length > 4" class="swiper-button-next founder-next"></div>
         </Swiper>
         <img src="@/assets/images/star2.png" class="bc-shape" />
       </template>
@@ -230,6 +235,38 @@ onMounted(async () => {
 function setActive(idx) {
   activeIdx.value = idx;
 }
+
+import { Swiper, SwiperSlide } from "swiper/vue";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
+import people1 from "@/assets/images/people-1.png";
+import people2 from "@/assets/images/people-2.png";
+
+const people = [
+  {
+    name: "創辦人",
+    avatar: people1,
+    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+  },
+  {
+    name: "創辦人",
+    avatar: people2,
+    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+  },
+  {
+    name: "創辦人",
+    avatar: people1,
+    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+  },
+  {
+    name: "創辦人",
+    avatar: people2,
+    desc: "Lorem er magna aliqua. Ut enim ad minim am, quis nostrud exercitation ullamco laboris nisi ut aliquip.",
+  },
+];
 </script>
 
 <style lang="scss" scoped>
@@ -247,9 +284,12 @@ function setActive(idx) {
     position: relative;
     img {
       position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      left: 50%;
+      bottom: 50%;
+      transform: translate(-50%, 50%);
+      left: 43%;
+      @media (max-width: 576px) {
+        left: 50%;
+      }
     }
   }
 
@@ -303,6 +343,16 @@ function setActive(idx) {
     left: -20% !important;
   }
 
+  .about-pic-2 {
+    width: 600px;
+    height: 500px;
+    position: relative;
+    @media (max-width: 576px) {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   .pic {
     &-1 {
       width: 82%;
@@ -311,10 +361,13 @@ function setActive(idx) {
     }
 
     &-2 {
-      top: 35% !important;
-      left: 38% !important;
+      bottom: 63% !important;
+      left: 33% !important;
       width: 73%;
       border-radius: 50px;
+      @media (max-width: 576px) {
+        left: 40% !important;
+      }
     }
   }
 
@@ -415,12 +468,7 @@ function setActive(idx) {
       z-index: 2;
     }
 
-    .star-box:hover {
-      transform: translateY(-22px) scale(1.02);
-      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
-      z-index: 6;
-    }
-
+    .star-box:hover,
     .star-box.active {
       background: linear-gradient(325.61deg, #ff6634 48.16%, #ff9966 92.68%);
       box-shadow: 4px 16px 8px rgba(0, 0, 0, 0.1),
@@ -430,10 +478,10 @@ function setActive(idx) {
       color: #fff;
       transform: translateY(-28px) scale(1.04) !important;
       z-index: 7;
-    }
-    .star-box.active .letter,
-    .star-box.active p {
-      color: #fff;
+      .letter,
+      p {
+        color: #fff;
+      }
     }
 
     @media (max-width: 767px) {
@@ -475,7 +523,7 @@ function setActive(idx) {
   margin-top: -60px;
   margin-bottom: -230px;
   position: relative;
-  z-index: 2;
+  z-index: 0;
   @media (max-width: 576px) {
     margin-top: 0;
     margin-bottom: 0;
@@ -655,7 +703,7 @@ function setActive(idx) {
   min-height: 80vh;
   align-content: center;
   position: relative;
-  z-index: 1;
+  z-index: -1;
   @media (max-width: 576px) {
     min-height: 100vh;
   }
@@ -678,7 +726,7 @@ function setActive(idx) {
 
   .founder-swiper {
     width: 100%;
-    padding: 8px 56px;
+    padding: 20px 10px;
     @media (max-width: 576px) {
       padding: 0;
     }

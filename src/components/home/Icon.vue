@@ -43,6 +43,7 @@ defineProps({
       backdrop-filter: blur(2px);
       padding: 20px;
       gap: 10px;
+      text-align: start;
     }
     img {
       @media (max-width: 767px) {

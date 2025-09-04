@@ -618,7 +618,7 @@ function onSlideChange(swiper) {
   }
   &-tooltip {
     margin-top: -1rem;
-    padding: 25px 8px;
+    padding: 30px 8px 20px 8px;
     width: 250px;
     border-radius: 20px;
     position: relative;
