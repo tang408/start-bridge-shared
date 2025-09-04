@@ -236,8 +236,6 @@ function setActive(idx) {
   activeIdx.value = idx;
 }
 
-import { Swiper, SwiperSlide } from "swiper/vue";
-import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
