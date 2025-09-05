@@ -114,7 +114,7 @@ async function getOfficialPartners(industryType = 0) {
       throw new Error('API 響應格式錯誤');
     }
   } catch (error) {
-    console.error('獲取關於我們內容失敗:', error);
+    console.error('獲取內容失敗:', error);
   } finally {
     loading.value = false;
   }

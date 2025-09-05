@@ -44,29 +44,47 @@
         <div class="container">
           <div class="row">
             <div
-                v-for="(image, index) in brandImage"
+                v-for="(item, index) in allBrandContent"
                 :key="index"
-                class="col-md-4"
+                class="col-md-4 mb-3"
             >
-              <img :src="image" class="w-100" :alt="`品牌圖片 ${index + 1}`" />
+              <!-- 如果是 YouTube 連結 -->
+              <div v-if="item.type === 'youtube'" class="ratio ratio-16x9">
+                <iframe
+                    :src="getYouTubeEmbedUrl(item.url)"
+                    :title="`品牌影片 ${index + 1}`"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                    class="rounded"
+                ></iframe>
+              </div>
+
+              <!-- 如果是圖片 -->
+              <img
+                  v-else-if="item.type === 'image'"
+                  :src="item.url"
+                  class="w-100 rounded"
+                  :alt="`品牌圖片 ${index + 1}`"
+              />
             </div>
 
-            <!-- 如果沒有品牌圖片，顯示預設圖片 -->
-            <template v-if="brandImage.length === 0">
+            <!-- 如果沒有任何品牌內容，顯示預設圖片 -->
+            <template v-if="allBrandContent.length === 0">
               <div class="col-md-4">
-                <img src="/src/assets/images/success1.jpg" class="w-100" />
+                <img src="/src/assets/images/success1.jpg" class="w-100 rounded" />
               </div>
               <div class="col-md-4">
-                <img src="/src/assets/images/success2.jpg" class="w-100" />
+                <img src="/src/assets/images/success2.jpg" class="w-100 rounded" />
               </div>
               <div class="col-md-4">
-                <img src="/src/assets/images/success3.jpg" class="w-100" />
+                <img src="/src/assets/images/success3.jpg" class="w-100 rounded" />
               </div>
             </template>
           </div>
         </div>
       </div>
-      <Tabs :project-data="projectData" :loading="loading"/>
+      <Tabs :project-data="projectDataWithExtraFields" :loading="loading"/>
     </div>
   </div>
   <div class="project-footer">
@@ -110,6 +128,29 @@ async function getProjectDetail(id) {
   }
 }
 
+const projectDataWithExtraFields = computed(() => {
+  if (!projectData.value) {
+    return null;
+  }
+  // 將 customFields 轉換為 extraFields 格式
+  const extraFields = {};
+
+  if (projectData.value.customFields) {
+    Object.entries(projectData.value.customFields).forEach(([categoryKey, fields]) => {
+      extraFields[categoryKey] = fields.map(field => ({
+        key: field.fieldKey.toString(),
+        displayName: field.fieldName,
+        value: field.fieldValue
+      }));
+    });
+  }
+
+  return {
+    ...projectData.value,
+    extraFields: extraFields
+  };
+});
+
 // 處理營運項目圖片
 const brandImage = computed(() => {
   if (!projectData.value?.brandImage) return [];
@@ -123,9 +164,76 @@ const brandImage = computed(() => {
   }
 });
 
+// 處理 YouTube 連結
+const youtubeUrls = computed(() => {
+  if (!projectData.value?.youtubeUrls) return [];
+
+  try {
+    // 如果是 JSON 字串，解析它
+    return JSON.parse(projectData.value.youtubeUrls);
+  } catch (error) {
+    // 如果不是有效的 JSON，當作單一連結處理
+    return [projectData.value.youtubeUrls];
+  }
+});
+
+// 合併所有品牌內容（圖片 + YouTube）
+const allBrandContent = computed(() => {
+  const content = [];
+
+  // 加入圖片
+  brandImage.value.forEach(imageUrl => {
+    if (imageUrl) {
+      content.push({
+        type: 'image',
+        url: imageUrl
+      });
+    }
+  });
+
+  // 加入 YouTube 影片
+  youtubeUrls.value.forEach(youtubeUrl => {
+    if (youtubeUrl && isYouTubeUrl(youtubeUrl)) {
+      content.push({
+        type: 'youtube',
+        url: youtubeUrl
+      });
+    }
+  });
+
+  return content;
+});
+
+// 將 YouTube 連結轉換為嵌入格式
+const getYouTubeEmbedUrl = (url) => {
+  let videoId = '';
+
+  // 處理 youtube.com/watch?v= 格式
+  if (url.includes('youtube.com/watch?v=')) {
+    videoId = url.split('watch?v=')[1].split('&')[0];
+  }
+  // 處理 youtu.be/ 格式
+  else if (url.includes('youtu.be/')) {
+    videoId = url.split('youtu.be/')[1].split('?')[0];
+  }
+  // 處理已經是 embed 格式
+  else if (url.includes('youtube.com/embed/')) {
+    return url;
+  }
+
+  return `https://www.youtube.com/embed/${videoId}`;
+};
+
+
+// 檢查是否為 YouTube 連結的輔助函數
+const isYouTubeUrl = (url) => {
+  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/)|youtu\.be\/)[\w-]+/;
+  return youtubeRegex.test(url);
+};
+
 // 從 API 數據動態生成 detailItems
 const detailItems = computed(() => {
-  console.log('projectData.value:', projectData.value)
+  console.log('projectData.value:', projectDataWithExtraFields.value)
   if (!projectData.value) {
     // 預設數據
     return [
@@ -202,9 +310,10 @@ const getCompanyStatusName = (status) => {
 // 組件掛載時獲取數據
 onMounted(async () => {
   const projectId = route.params.id;
+  console.log('路由參數 id:', projectId)
   if (projectId) {
-    await getProjectDetail(projectId);
     await getIndustryTypeName();
+    await getProjectDetail(projectId);
   }
 });
 </script>
