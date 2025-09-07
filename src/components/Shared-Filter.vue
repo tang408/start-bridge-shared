@@ -61,7 +61,7 @@
           :show-info="mode === 'progress'"
           :store-address="mode === 'store' ? item.address : undefined"
           :store-phone="mode === 'store' ? item.contactNumber : undefined"
-          @card-click="emit('card-click', $event)"
+          @card-click="handleCardClick"
         />
       </div>
 
@@ -137,6 +137,16 @@ const emit = defineEmits([
   "update:feature",
   "card-click",
 ]);
+
+
+function handleCardClick(item) {
+  console.log('卡片被點擊了:', item);
+  console.log('模式:', props.mode);
+    // 店鋪模式：打開 Google Maps
+    const address = encodeURIComponent(item.address);
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
+    window.open(googleMapsUrl, '_blank');
+}
 
 function normalizeOption(opt) {
   return typeof opt === "string" ? { value: opt, label: opt } : opt;

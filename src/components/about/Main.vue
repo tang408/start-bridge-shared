@@ -3,19 +3,18 @@
     <div class="container">
       <div class="d-flex-block row">
         <div class="col-md-6 col-12">
-          <h4 class="color-1 lh-24">成為亞洲最值得信賴的創業共創平台</h4>
+          <h4 class="color-1 lh-24">
+            {{ aboutMes[0]?.title }}
+          </h4>
           <span class="lh-36">
-            在星橋，創業不是遙不可及的大夢，而是可以被拆解、被理解、被一起完成的目標。
-            我們把創業變成可媒合的組合，讓你用一杯杯咖啡的金額，也能參與一間你熟悉的店。
-            你可以是領頭創業者，也可以是默默支持的合作夥伴。
-            每個人，都能用自己的方式加入這場品牌旅程。
+            {{ aboutMes[0]?.content }}
           </span>
           <img src="@/assets/images/about-sign.png" height="38" />
         </div>
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/star1.png" class="icon-1" />
           <img src="@/assets/images/about-color-bc-1.png" class="w-100" />
-          <img src="@/assets/images/about-pic1.png" class="pic-1" />
+          <img :src="aboutMes[0]?.photo || '@/assets/images/about-sign.png'" class="pic-1" />
         </div>
       </div>
     </div>

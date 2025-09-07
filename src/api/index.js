@@ -4,7 +4,7 @@ const LocalHost = 'http://localhost:8080/api';
 const ReleaseHost ='http://43.213.118.243:8080/api';
 // 創建 axios 實例
 const api = axios.create({
-  baseURL: LocalHost,
+  baseURL: ReleaseHost,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
