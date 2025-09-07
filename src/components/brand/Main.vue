@@ -82,8 +82,8 @@
 import { ref } from "vue";
 import Swiper from "./Swiper.vue";
 import Tabs from "./Tabs.vue";
-import SharedAccordion from "../Shared-Accordion.vue";
-import SharedFlow from "./../Shared-Flow.vue";
+import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
+import SharedFlow from "@/components/shared/Shared-Flow.vue";
 
 const accordionItems = [
   {

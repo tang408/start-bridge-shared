@@ -20,7 +20,7 @@
 
 <script setup>
 import Swiper from "./Swiper.vue";
-import SharedNews from "./../Shared-News.vue";
+import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";

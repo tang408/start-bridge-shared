@@ -140,7 +140,7 @@
 <script setup>
 import Icon from "./Icon.vue";
 import SharedSwiper from "./Swiper.vue";
-import SharedParner from "@/components/Shared-Parner.vue";
+import SharedParner from "@/components/shared/Shared-Parner.vue";
 import { ref } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import SwiperCore from "swiper";
@@ -275,7 +275,7 @@ function onSlideChange(swiper) {
 .service {
   background-image: url("@/assets/images/service.png");
   background-repeat: no-repeat;
-  background-size: 100%;
+  background-size: cover;
   padding: 2rem 0;
   text-align: center;
   @media (max-width: 767px) {

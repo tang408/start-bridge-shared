@@ -5,14 +5,25 @@
         <router-link class="navbar-brand logo" to="/">
           <img :src="logoUrl" alt="Logo" height="32" />
         </router-link>
+        <div class="d-flex">
+          <button
+            class="navbar-toggler"
+            type="button"
+            @click.stop="isMenuOpen = !isMenuOpen"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-        <button
-          class="navbar-toggler"
-          type="button"
-          @click.stop="isMenuOpen = !isMenuOpen"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
+          <button
+            v-if="isAccountPage"
+            class="user-toggler d-lg-none"
+            type="button"
+            aria-label="open account user page"
+            @click.stop="toggleMobileAccountSidebar()"
+          >
+            <img src="@/assets/icon/user.png" alt="user" />
+          </button>
+        </div>
 
         <div :class="['navbar-collapse', { open: isMenuOpen }]" id="navbarNav">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -36,6 +47,7 @@
                   {{ item.label }}
                 </div>
               </router-link>
+
               <div
                 v-else
                 class="d-flex align-items-center justify-content-between"
@@ -52,15 +64,27 @@
                   </div>
                 </router-link>
 
-                <span
+                <button
                   v-else
+                  type="button"
                   class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                  @click.stop="toggleSubMenu(index)"
                 >
                   <div class="d-flex align-items-center gap-1">
                     <img src="@/assets/icon/menu-icon.svg" />
                     {{ item.label }}
                   </div>
-                </span>
+                </button>
+                <!-- <router-link
+                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                  :to="item.link"
+                  @click="handleLinkClick"
+                >
+                  <div class="d-flex align-items-center gap-1">
+                    <img src="@/assets/icon/menu-icon.svg" />
+                    {{ item.label }}
+                  </div>
+                </router-link> -->
 
                 <button
                   class="ms-2 nav-arrow"
@@ -80,24 +104,41 @@
               >
                 <li v-for="(child, cIdx) in item.children" :key="cIdx">
                   <router-link
-                    v-if="child.link"
                     class="dropdown-item"
                     :to="child.link"
                     @click="handleLinkClick"
                   >
                     {{ child.label }}
                   </router-link>
-                  <span v-else class="dropdown-item disabled">{{
-                    child.label
-                  }}</span>
                 </li>
               </ul>
             </li>
-            <li class="nav-item bc-1 br-1 logIn">
-              <router-link class="nav-link" @click="handleLinkClick">
+            <!-- <li class="nav-item bc-1 br-1 logIn">
+              <router-link
+                class="nav-link"
+                to="/login"
+                @click="handleLinkClick"
+              >
                 <img src="@/assets/icon/menu-icon.svg" />
                 登入
               </router-link>
+            </li> -->
+            <li class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
+              <router-link
+                class="nav-link"
+                to="/login"
+                @click="handleLinkClick"
+              >
+                <img src="@/assets/icon/menu-icon.svg" />
+                登入
+              </router-link>
+            </li>
+
+            <li class="nav-item bc-1 br-1 logIn" v-else>
+              <button class="nav-link" type="button" @click="handleLogout">
+                <img src="@/assets/icon/menu-icon.svg" />
+                登出
+              </button>
             </li>
           </ul>
         </div>
@@ -107,33 +148,56 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from "vue";
-import { useRoute } from "vue-router";
+import { ref, watch, onMounted, onBeforeUnmount, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import logoUrl from "@/assets/images/logo.png";
+import { toggleMobileAccountSidebar } from "@/composables/useAccountSidebar";
+import { useAuth } from "@/composables/useAuth";
 
 const route = useRoute();
+const router = useRouter();
 const isMenuOpen = ref(false);
 const openIndex = ref(null);
+const { isLoggedIn, logout } = useAuth();
+const isAccountPage = computed(() => route.path.startsWith("/account"));
+const isBelowLg = () => window.matchMedia("(max-width: 991.98px)").matches;
+
+const closeAllMenusOnMobile = () => {
+  if (isBelowLg()) {
+    isMenuOpen.value = false;
+    openIndex.value = null;
+    toggleMobileAccountSidebar(false);
+  }
+};
 
 const toggleSubMenu = (index) => {
-  if (window.innerWidth <= 767) {
+  if (isBelowLg()) {
     openIndex.value = openIndex.value === index ? null : index;
   }
 };
 
 const handleLinkClick = () => {
-  if (window.innerWidth <= 767) {
+  if (isBelowLg()) {
     isMenuOpen.value = false;
     openIndex.value = null;
+    toggleMobileAccountSidebar(false);
   }
 };
 
 const closeMenus = () => {
-  if (window.innerWidth <= 767) {
+  if (isBelowLg()) {
     isMenuOpen.value = false;
     openIndex.value = null;
+    toggleMobileAccountSidebar(false);
   }
 };
+
+watch(
+  () => route.fullPath,
+  () => {
+    closeAllMenusOnMobile();
+  }
+);
 
 onMounted(() => {
   document.body.addEventListener("click", closeMenus);
@@ -180,6 +244,12 @@ const isActive = (item) => {
   if (current === item.link) return true;
   return item.children.some((c) => c.link === current);
 };
+
+const handleLogout = async () => {
+  await logout();
+  handleLinkClick();
+  router.push("/");
+};
 </script>
 
 <style lang="scss" scoped>
@@ -212,7 +282,24 @@ const isActive = (item) => {
   .navbar-toggler {
     border: none;
     background: none;
-    color: #fff;
+    color: transparent;
+  }
+}
+
+.user-toggler {
+  border: none;
+  background: transparent;
+  margin-left: auto;
+  margin-right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 44px;
+  padding: 0;
+  img {
+    width: 24px;
+    height: 24px;
   }
 }
 

@@ -65,17 +65,17 @@ const props = defineProps({
 .accordion-button {
   position: relative;
   padding-right: 2rem;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: $fs-18;
+  font-weight: $fw-600;
   color: #373a36;
-  border-radius: 20px;
+  border-radius: $br-20;
   box-shadow: 2px 2px 9px rgba(55, 58, 54, 0.5);
   @media (max-width: 576px) {
-    font-size: 17px;
+    font-size: $fs-17;
   }
   &::after {
     content: "+";
-    font-size: 1.5rem;
+    font-size: $fs-19;
     font-weight: bold;
     position: absolute;
     right: 1rem;
@@ -99,7 +99,7 @@ const props = defineProps({
 
 .accordion-item {
   border: none;
-  border-radius: 20px;
+  border-radius: $br-20;
   background: rgba(255, 255, 255, 0.8);
 }
 
@@ -107,7 +107,7 @@ const props = defineProps({
   box-shadow: 2px 2px 9px rgba(55, 58, 54, 0.5);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  font-weight: 400;
+  font-weight: $fw-400;
   color: #373a36;
   padding: 0.25rem 1.25rem 1rem 1.25rem;
 }

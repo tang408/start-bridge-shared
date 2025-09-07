@@ -13,7 +13,7 @@
 
 <script setup>
 import { ref } from "vue";
-import SharedFilter from "@/components/Shared-Filter.vue";
+import SharedFilter from "@/components/shared/Shared-Filter.vue";
 
 const items = ref([
   {

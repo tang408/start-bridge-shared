@@ -60,6 +60,10 @@ body {
   font-family: "Noto Serif TC", serif;
 }
 
+input {
+  background-color: transparent;
+}
+
 .bc {
   &-1 {
     background-color: #373838;
@@ -122,6 +126,12 @@ main .container {
   }
 }
 
+.back-background .container {
+  @media (min-width: 1281px) {
+    max-width: 1320px !important;
+  }
+}
+
 h1 {
   font-size: 36px !important;
   font-weight: 700 !important;
@@ -155,6 +165,10 @@ h6 {
 span {
   font-size: 16px;
   font-weight: 400;
+}
+
+.fs-30 {
+  font-size: 30px;
 }
 
 .lh-43 {
@@ -222,5 +236,154 @@ span {
   width: 25% !important;
   @media (max-width: 576px) {
     width: 50% !important;
+  }
+}
+
+.back {
+  &-background {
+    background: url("@/assets/images/back-background.jpg") no-repeat center
+      center;
+    background-size: cover;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    padding: 20vh 0 100px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @media (max-width: 576px) {
+      padding: 20vh 20px 100px;
+      align-items: start;
+    }
+  }
+
+  &-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 30px;
+    padding: 50px;
+    gap: 30px;
+    @media (max-width: 576px) {
+      padding: 25px !important;
+    }
+
+    .fs-30 {
+      font-weight: 700;
+      font-size: 30px;
+      line-height: 36px;
+      text-align: center;
+    }
+    .form {
+      width: 500px;
+      gap: 30px;
+      display: flex;
+      flex-flow: column;
+      @media (max-width: 576px) {
+        width: auto;
+      }
+
+      .form-display {
+        gap: 30px;
+        display: flex;
+        flex-flow: column;
+      }
+
+      .form-group {
+        text-align: left;
+
+        label {
+          font-weight: 500;
+          font-size: 18px;
+          line-height: 22px;
+        }
+
+        input {
+          width: 100%;
+          padding: 10px 12px;
+          border: 1px solid #ddd;
+          border-radius: 6px;
+          font-size: 14px;
+          &.is-invalid {
+            border-color: #db3838;
+          }
+        }
+        .error-msg {
+          font-size: 13px;
+          color: #db3838;
+          margin-top: 4px;
+        }
+      }
+
+      .btn-login {
+        width: 100%;
+        margin-top: 10px;
+        color: #fff;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 19px;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+        background: #ff6634;
+        border-radius: 8px;
+        height: 40px;
+
+        &:hover {
+          background: #d84a12;
+        }
+      }
+
+      .links {
+        margin-top: 16px;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 19px;
+        text-align: center;
+        color: #555555;
+        a {
+          color: #ff6634;
+          margin: 0 4px;
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+}
+
+.form-group {
+  .label-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+    label {
+      margin: 0;
+    }
+    .public-opt {
+      margin-left: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      input {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #ff5a24;
+      }
+      span {
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 18px;
+        color: #555555;
+      }
+    }
   }
 }

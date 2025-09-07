@@ -120,7 +120,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import SharedCard from "@/components/Shared-Card.vue";
+import SharedCard from "@/components/shared/Shared-Card.vue";
 
 const props = defineProps({
   items: { type: Array, required: true },
@@ -287,7 +287,7 @@ onBeforeUnmount(() => {
     height: 40px;
     padding: 0 40px 0 16px;
     border: 1px solid #e0e0e0;
-    border-radius: 999px;
+    border-radius: 50%;
     background: #fff;
     color: var(--text);
     font-size: 14px;
@@ -359,7 +359,7 @@ onBeforeUnmount(() => {
   &-dot {
     width: 28px;
     height: 28px;
-    border-radius: 999px;
+    border-radius: 50%;
     border: none;
     cursor: pointer;
     font-weight: 700;

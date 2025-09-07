@@ -14,8 +14,10 @@
         </div>
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/star1.png" class="icon-1" />
-          <img src="@/assets/images/about-color-bc-1.png" class="w-100" />
-          <img src="@/assets/images/about-pic1.png" class="pic-1" />
+          <div class="about-pic-2">
+            <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
+            <img src="@/assets/images/about-pic2.png" class="pic-2" />
+          </div>
         </div>
       </div>
     </div>
@@ -28,10 +30,8 @@
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/shape.png" class="shape" />
           <img src="@/assets/images/star1.png" class="icon-2" />
-          <div class="about-pic-2">
-            <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
-            <img src="@/assets/images/about-pic2.png" class="pic-2" />
-          </div>
+          <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
+          <img src="@/assets/images/about-pic2.png" class="pic-2" />
         </div>
         <div class="col-md-6 col-12 block-text">
           <h4 class="color-1 lh-24">
@@ -146,7 +146,7 @@
 
 <script setup>
 import { ref } from "vue";
-import SharedParner from "@/components/Shared-Parner.vue";
+import SharedParner from "@/components/shared/Shared-Parner.vue";
 
 const stars = ref([
   { key: "sincerity", letter: "S", title: "Sincerity", subtitle: "真誠透明" },
@@ -599,7 +599,6 @@ const people = [
     text-align: justify;
   }
 
-  /* RWD */
   @media (max-width: 992px) {
     .features-inner {
       grid-template-columns: 1fr 1fr;
@@ -704,7 +703,6 @@ const people = [
     padding: 0 10px;
   }
 
-  /* 自訂箭頭 */
   .swiper-button-next,
   .swiper-button-prev {
     width: 38px;

@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import SharedProjectContent from "@/components/Shared-project-content.vue";
+import SharedProjectContent from "@/components/shared/Shared-project-content.vue";
 </script>
 
 <style lang="scss" scoped>

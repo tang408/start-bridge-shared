@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import SharedCard from "@/components/Shared-Card.vue";
+import SharedCard from "@/components/shared/Shared-Card.vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import SwiperCore from "swiper";
 import { Navigation } from "swiper/modules";
