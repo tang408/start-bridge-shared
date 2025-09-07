@@ -3,6 +3,11 @@
     <div class="spinner">載入中...</div>
   </div>
   <div v-else class="project-content">
+    <!-- 預覽模式提示 -->
+    <div v-if="previewMode" class="preview-notice">
+      <p>🔍 您正在預覽合作夥伴資料，此為後台管理員預覽功能</p>
+    </div>
+
     <div class="container">
       <div class="row pt-5 pb-5 g-4">
         <div class="col-md-4">
@@ -103,6 +108,13 @@ import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import Tabs from "./Tabs.vue";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 
+// 新增 props
+const props = defineProps({
+  previewMode: { type: Boolean, default: false },
+  partnerId: { type: [String, Number], required: false }
+});
+
+
 // 獲取路由參數
 const route = useRoute();
 const projectData = ref(null);
@@ -112,22 +124,48 @@ const loading = ref(false);
 async function getProjectDetail(id) {
   loading.value = true;
   try {
-    const formData = {
-      officialPartnerId : Number(id)
-    }
-    const response = await officialPartnerApi.getOfficialPartner(formData);
-    if (response.code === 0) {
-      projectData.value = response.data;
+    let response;
+
+    if (props.previewMode || route.query.preview === 'true') {
+      // 預覽模式：調用預覽 API
+      const formData = {
+        id: Number(id)
+      }
+      response = await officialPartnerApi.getOfficialPartnerPreviewData(formData);
+
+      if (response.code === 0 && response.data) {
+        // 檢查 response.data 的結構
+        if (Array.isArray(response.data) && response.data.length > 0) {
+          projectData.value = response.data[0];
+        } else if (typeof response.data === 'object') {
+          projectData.value = response.data;
+        } else {
+          throw new Error('預覽數據格式錯誤');
+        }
+
+      } else {
+        throw new Error('API 響應格式錯誤或無資料');
+      }
     } else {
-      throw new Error('API 響應格式錯誤');
+      // 正常模式：使用原有 API
+      const formData = {
+        officialPartnerId: Number(id)
+      }
+      response = await officialPartnerApi.getOfficialPartner(formData);
+      if (response.code === 0) {
+        projectData.value = response.data;
+      } else {
+        throw new Error('API 響應格式錯誤');
+      }
     }
+
+
   } catch (error) {
     console.error('獲取專案詳情失敗:', error);
   } finally {
     loading.value = false;
   }
 }
-
 const projectDataWithExtraFields = computed(() => {
   if (!projectData.value) {
     return null;
@@ -233,7 +271,6 @@ const isYouTubeUrl = (url) => {
 
 // 從 API 數據動態生成 detailItems
 const detailItems = computed(() => {
-  console.log('projectData.value:', projectDataWithExtraFields.value)
   if (!projectData.value) {
     // 預設數據
     return [
@@ -307,13 +344,27 @@ const getCompanyStatusName = (status) => {
   return statuses[status] || "未知";
 };
 
+const getCurrentId = () => {
+  // 預覽模式：route.query.id
+  if (route.query.preview === 'true' && route.query.id) {
+    return route.query.id;
+  }
+  // Props 模式：props.partnerId
+  if (props.partnerId) {
+    return props.partnerId;
+  }
+  // 正常模式：route.params.id
+  return route.params.id;
+};
+
 // 組件掛載時獲取數據
 onMounted(async () => {
-  const projectId = route.params.id;
-  console.log('路由參數 id:', projectId)
+  const projectId = getCurrentId();
   if (projectId) {
     await getIndustryTypeName();
     await getProjectDetail(projectId);
+  } else {
+    console.error('無法獲取有效的項目 ID');
   }
 });
 </script>

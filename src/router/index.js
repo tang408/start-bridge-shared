@@ -70,6 +70,19 @@ const routes = [
         component: CooperativeContent,
         props: true,
       },
+      {
+        path: '/cooperative-content',
+        name: 'CooperativeContentPreview',
+        component: CooperativeContent,
+        beforeEnter: (to, from, next) => {
+          // 檢查是否為預覽模式
+          if (to.query.preview === 'true' && to.query.id) {
+            to.meta.isPreview = true;
+            to.meta.previewId = to.query.id;
+          }
+          next();
+        }
+      }
     ],
   },
 ];
