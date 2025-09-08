@@ -34,7 +34,7 @@ defineProps({
   }
 
   &-icon {
-    @media (max-width: 767px) {
+    @media (max-width: 576px) {
       display: flex;
       align-items: center;
       border-radius: 15px;

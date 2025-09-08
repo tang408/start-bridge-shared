@@ -25,7 +25,7 @@
 </template>
 
 <script setup>
-import SharedProjectContent from "@/components/Shared-project-content.vue";
+import SharedProjectContent from "@/components/shared/Shared-project-content.vue";
 import Swiper from "./Project-Swiper.vue";
 import Tabs from "./Tabs.vue";
 

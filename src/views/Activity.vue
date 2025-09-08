@@ -4,7 +4,7 @@
 </template>
 
 <script setup>
-import Banner from "@/components/Shared-Banner.vue";
+import Banner from "@/components/shared/Shared-Banner.vue";
 import Main from "@/components/activity/Main.vue";
 import bannerImg from "@/assets/images/project-banner.png";
 </script>

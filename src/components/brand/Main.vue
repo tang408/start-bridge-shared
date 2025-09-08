@@ -82,10 +82,41 @@
 import {onMounted, ref} from "vue";
 import Swiper from "./Swiper.vue";
 import Tabs from "./Tabs.vue";
-import SharedAccordion from "../Shared-Accordion.vue";
-import SharedFlow from "./../Shared-Flow.vue";
+
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {FAQApi as FAQApiApi, FAQApi} from "@/api/modules/faq.js";
+
+import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
+import SharedFlow from "@/components/shared/Shared-Flow.vue";
+
+const accordionItems = [
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+  {
+    title: "Blishing industries for previewing layouts and visual mockups?",
+    content:
+      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+  },
+];
+
 
 const active = ref({ lane: "brand", idx: 0 });
 const sections = [

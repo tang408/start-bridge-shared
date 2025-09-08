@@ -13,7 +13,7 @@
 
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import SharedFilter from "@/components/Shared-Filter.vue";
+import SharedFilter from "@/components/shared/Shared-Filter.vue";
 import {aboutMeApi as aboutMeApiApi} from "@/api/modules/aboutMe.js";
 import {cityApi} from "@/api/modules/city.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";

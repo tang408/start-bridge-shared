@@ -74,10 +74,10 @@ defineProps({
     left: 19%;
     z-index: 3;
     font-style: normal;
-    font-weight: 700;
-    font-size: 36px;
-    line-height: 40px;
-    letter-spacing: 0.02em;
+    font-weight: $fw-700;
+    font-size: $fs-36;
+    line-height: $lh-40;
+    letter-spacing: $ls-002;
     transform: translateY(-50%);
     @media (max-width: 576px) {
       width: 70%;

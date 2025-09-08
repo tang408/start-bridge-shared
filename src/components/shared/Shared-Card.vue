@@ -75,20 +75,20 @@ defineEmits(["card-click"]);
   &-card {
     cursor: pointer;
     background: #fff;
-    border-radius: 15px;
+    border-radius: $br-15;
     padding: 15px;
     margin: 5px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     text-align: left;
     display: flex;
     flex-flow: column;
-    gap: 10px;
+    gap: $gap-10;
 
     @media (max-width: 767px) {
       width: 90%;
       height: 100%;
       margin: auto;
-      gap: 5px;
+      gap: $gap-5;
     }
 
     &-image {
@@ -106,8 +106,8 @@ defineEmits(["card-click"]);
         background: #f65332;
         color: white;
         padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 12px;
+        border-radius: $br-4;
+        font-size: $fs-12;
         margin-right: 5px;
       }
 
@@ -115,29 +115,29 @@ defineEmits(["card-click"]);
         background: #333;
         color: white;
         padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 12px;
+        border-radius: $br-4;
+        font-size: $fs-12;
       }
     }
 
     &-content {
       display: flex;
       flex-flow: column;
-      gap: 10px;
+      gap: $gap-10;
       @media (max-width: 767px) {
-        gap: 5px;
+        gap: $gap-5;
       }
     }
 
     &-title {
-      font-weight: 600;
-      font-size: 15px;
-      line-height: 24px;
+      font-weight: $fw-500;
+      font-size: $fs-15;
+      line-height: $lh-24;
       letter-spacing: 1px;
       color: #373838;
 
       @media (max-width: 767px) {
-        font-size: 15px;
+        font-size: $fs-15;
       }
     }
 
@@ -147,12 +147,12 @@ defineEmits(["card-click"]);
       height: 15px;
       background: linear-gradient(
         90deg,
-        #ffcc66 0%,
+        $brand-yellow 0%,
         #ff5f31 86.53%,
         rgba(255, 255, 255, 0) 86.54%
       );
       border: 1px solid #d9d9d9;
-      border-radius: 20px;
+      border-radius: $br-20;
       @media (max-width: 767px) {
         height: 20px;
       }
@@ -161,8 +161,8 @@ defineEmits(["card-click"]);
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 12px;
-        font-weight: bold;
+        font-size: $fs-12;
+        font-weight: $fw-900;
         color: #fff;
         z-index: 1;
         pointer-events: none;
@@ -172,23 +172,19 @@ defineEmits(["card-click"]);
     &-info {
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
-      @media (max-width: 767px) {
-        font-size: 14px;
-      }
+      font-size: $fs-14;
     }
   }
 }
 
 .store-section-card {
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 19px;
-  letter-spacing: 2px;
+  font-weight: $fw-500;
+  font-size: $fs-16;
+  line-height: $lh-19;
+  letter-spacing: $ls-2;
   cursor: pointer; // 新增
-
   &-image {
-    border-radius: 20px;
+    border-radius: $br-20;
   }
 }
 </style>

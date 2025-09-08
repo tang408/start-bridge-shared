@@ -21,8 +21,9 @@
 
 <script setup>
 import { useRouter } from "vue-router";
+
 import Swiper from "./Swiper.vue";
-import SharedNews from "./../Shared-News.vue";
+import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
@@ -32,6 +33,7 @@ import {computed, onMounted, ref} from "vue";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 
 const router = useRouter();
+
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
 

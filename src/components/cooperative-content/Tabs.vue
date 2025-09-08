@@ -232,7 +232,7 @@ onMounted(() => {
   border: 2px solid #ff6634;
   color: #ff6634;
   font-weight: 700;
-  border-radius: 999px;
+  border-radius: 50%;
   padding: 0.6rem 1rem;
   background: #fff;
   display: inline-flex;
@@ -272,7 +272,7 @@ onMounted(() => {
   border: 2px solid #ffcc00 !important;
   color: #000 !important;
   font-weight: 700;
-  border-radius: 999px;
+  border-radius: 50%;
   padding: 0.6rem 1rem;
   display: inline-flex;
   align-items: center;

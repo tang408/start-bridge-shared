@@ -130,7 +130,7 @@ const setActive = (index) => {
         transform: translateX(-50%);
         border-width: 10px 10px 0 10px;
         border-style: solid;
-        border-color: #ff6634 transparent transparent transparent; /* 高亮色 + 透明邊 */
+        border-color: #ff6634 transparent transparent transparent;
       }
     }
   }

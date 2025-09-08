@@ -42,7 +42,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import SharedFilter from "@/components/Shared-Filter.vue";
+import SharedFilter from "@/components/shared/Shared-Filter.vue";
 const router = useRouter();
 const items = ref([
   {

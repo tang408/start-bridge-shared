@@ -114,7 +114,6 @@ function setActive(lane, idx) {
   }
 }
 
-/* grid 尺寸控制（方便上面三段用不同欄數） */
 .flow-steps {
   display: grid;
   gap: 28px;

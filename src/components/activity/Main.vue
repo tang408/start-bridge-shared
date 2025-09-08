@@ -81,13 +81,14 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import SharedFlow from "./../Shared-Flow.vue";
+
+import SharedFlow from "@/components/shared/Shared-Flow.vue";
 import icon from "@/assets/icon/btn-icon2.svg";
 import iconActive from "@/assets/icon/btn-icon.svg";
-import SharedAccordion from "../Shared-Accordion.vue";
-
+import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
 const route = useRoute();
 const router = useRouter();
+
 const activeTab = ref("startup");
 const syncFromRoute = () => {
   const q = route.query.tab;

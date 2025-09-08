@@ -33,6 +33,13 @@ export default defineConfig(({ command, mode }) => {
     build: {
       // 可以根據需要調整輸出目錄
       outDir: mode === 'production' ? 'dist' : 'dist-dev'
-    }
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          additionalData: `@use "@/assets/styles/scss/variables.scss" as *;`,
+        },
+      },
+    },
   };
 });
