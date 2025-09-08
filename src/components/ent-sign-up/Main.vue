@@ -104,8 +104,8 @@
           <SharedInput
             id="line"
             label="創業預算*(自備款2成)"
-            v-model="form.line"
-            :error="errors.line"
+            v-model="form.budget"
+            :error="errors.budget"
             required
           />
 
@@ -115,10 +115,18 @@
           <!-- 最低 & 最高可投入資產 -->
           <SharedInput
             id="asset"
-            label="最低 & 最高可投入資產*"
-            v-model="form.asset"
-            :error="errors.asset"
+            label="最低可投入資產*"
+            v-model="form.minBudget"
+            :error="errors.minBudget"
             required
+          />
+
+          <SharedInput
+              id="asset"
+              label="最高可投入資產*"
+              v-model="form.maxBudget"
+              :error="errors.maxBudget"
+              required
           />
 
           <!-- 預計參與產業 -->
@@ -126,48 +134,54 @@
             id="industry"
             label="預計參與產業*"
             placeholder="請選擇"
-            v-model="form.industry"
+            v-model="form.industryType"
             :options="[
-              { value: '餐飲', text: '餐飲' },
-              { value: '零售', text: '零售' },
-              { value: '科技', text: '科技' },
-              { value: '服務', text: '服務' },
-              { value: '其他', text: '其他' },
+              ...industryTypesData.map(item => ({ value: item.id, text: item.name }))
             ]"
-            :error="errors.industry"
+            :error="errors.industryType"
             required
           />
           <div>
             <SharedUpload
-              id="idDoc"
-              label="身份證明上傳*"
-              accept=".jpg,.jpeg,.png,application/pdf"
-              v-model="form.idDoc"
-              :error="errors.idDoc"
-              :maxSizeMb="10"
-              @invalid="(msg) => (errors.idDoc = msg)"
-              :required="true"
+                id="idDoc"
+                label="身份證明上傳*"
+                accept=".jpg,.jpeg,.png,application/pdf"
+                :account="form.phone"
+                :name="'idDoc'"
+                v-model="form.idDoc"
+                :error="errors.idDoc"
+                :maxSizeMb="10"
+                @invalid="(msg) => (errors.idDoc = msg)"
+                @upload-success="(result) => handleUploadSuccess('idDoc', result)"
+                :required="true"
             />
 
             <SharedUpload
-              id="assetDoc"
-              label="資產證明上傳*"
-              accept=".jpg,.jpeg,.png,application/pdf"
-              v-model="form.assetDoc"
-              :error="errors.assetDoc"
-              :maxSizeMb="10"
-              @invalid="(msg) => (errors.assetDoc = msg)"
-              :required="true"
+                id="assetDoc"
+                label="資產證明上傳*"
+                accept=".jpg,.jpeg,.png,application/pdf"
+                :account="form.phone"
+                :name="'assetDoc'"
+                v-model="form.assetDoc"
+                :error="errors.assetDoc"
+                :maxSizeMb="10"
+                @invalid="(msg) => (errors.assetDoc = msg)"
+                @upload-success="(result) => handleUploadSuccess('assetDoc', result)"
+                :required="true"
             />
 
             <SharedUpload
-              id="addressDoc"
-              label="良民證上傳上傳*"
-              accept=".jpg,.jpeg,.png,application/pdf"
-              :multiple="true"
-              v-model="form.addressDoc"
-              :error="errors.addressDoc"
-              :required="true"
+                id="addressDoc"
+                label="良民證上傳*"
+                accept=".jpg,.jpeg,.png,application/pdf"
+                :account="form.phone"
+                :name="'pcrcDoc'"
+                v-model="form.pcrcDoc"
+                :error="errors.pcrcDoc"
+                :maxSizeMb="10"
+                @invalid="(msg) => (errors.pcrcDoc = msg)"
+                @upload-success="(result) => handleUploadSuccess('pcrcDoc', result)"
+                :required="true"
             />
           </div>
 
@@ -175,8 +189,8 @@
           <SharedInput
             id="code"
             label="推薦碼"
-            v-model="form.code"
-            :error="errors.code"
+            v-model="form.referralCode"
+            :error="errors.referralCode"
             required
           />
 
@@ -212,13 +226,15 @@
 </template>
 
 <script setup>
-import { reactive, onBeforeUnmount, watch } from "vue";
+import {reactive, onBeforeUnmount, watch, onMounted, ref} from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 import SharedSelect from "@/components/shared/Shared-Select.vue";
 import SharedUpload from "@/components/shared/Shared-Upload.vue";
 import SharedPassword from "@/components/shared/Shared-Password.vue";
 import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
+import {industryTypeApi} from "@/api/modules/industryType.js";
+import {userApi} from "@/api/modules/user.js";
 
 const form = reactive({
   phone: "",
@@ -231,12 +247,14 @@ const form = reactive({
   email: "",
   topics: [],
   job: "",
-  assetMin: null,
-  assetMax: null,
-  industry: "",
+  minBudget: "",
+  maxBudget: "",
+  industryType: "",
+  budget: "",
+  referralCode: "",
   idDoc: null,
   assetDoc: null,
-  addressDoc: null,
+  pcrcDoc: null,
   resumeDoc: null,
   note: "",
   agree: false,
@@ -250,13 +268,18 @@ const errors = reactive({
   birthday: "",
   line: "",
   email: "",
-  industry: "",
+  industryType: "",
+  budget: "",
   idDoc: "",
   assetDoc: "",
   addressDoc: "",
   code: "",
   asset: "",
   agree: "",
+  minBudget: "",
+  maxBudget: "",
+  job: "",
+  referralCode: "",
 });
 
 const phoneOtp = reactive({ sent: false, seconds: 0, timer: null });
@@ -286,14 +309,65 @@ function startTimer(state, total = 100) {
   }, 1000);
 }
 
-function handleRegister() {
-  errors.password = state.passwordOk
-    ? ""
-    : "請輸入至少8碼，並包含大小寫、數字與符號。";
-  errors.confirmPassword =
-    form.password === form.confirmPassword ? "" : "輸入密碼不相符。";
+const loading = ref(false);
+function getFileId(fileObj) {
+  if (!fileObj) return null;
+  if (typeof fileObj === 'object' && fileObj.id) {
+    return fileObj.id;
+  }
+  return null;
+}
 
-  if (errors.password || errors.confirmPassword) return;
+function convertGender(gender) {
+  return gender === 'male' ? 1 : gender === 'female' ? 2 : 0;
+}
+
+async function handleRegister() {
+  if (loading.value) return;
+  loading.value = true;
+
+  try {
+    // 準備 API 參數
+    const params = {
+      account: form.phone, // 使用手機號碼作為帳號
+      password: form.password,
+      name: form.name,
+      sex: convertGender(form.gender),
+      birthday: form.birthday,
+      lineId: form.line,
+      email: form.email,
+      budget: parseInt(form.budget) || 0,
+      workStatus: form.job, // 根據你的 API 需求，可能需要轉換為數字
+      minBudget: parseInt(form.minBudget) || 0,
+      maxBudget: parseInt(form.maxBudget) || 0,
+      expectIndustryType: parseInt(form.industryType) || 0,
+      identityCertification: getFileId(form.idDoc),
+      assetsCertification: getFileId(form.assetDoc),
+      pcrCertification: getFileId(form.pcrcDoc),
+      referralCode: form.referralCode || ""
+    };
+
+    console.log('提交參數:', params);
+
+    // 調用 API
+    const response = await userApi.founderRegister(params);
+
+    if (response.code === 0) {
+      // 註冊成功
+      alert('註冊申請提交成功！請等待審核。');
+
+    } else {
+      // 處理錯誤
+      console.error('註冊失敗:', response);
+      alert(response.message || '註冊失敗，請稍後再試');
+    }
+
+  } catch (error) {
+    console.error('註冊過程發生錯誤:', error);
+    alert('註冊過程發生錯誤，請稍後再試');
+  } finally {
+    loading.value = false;
+  }
 }
 
 async function sendPhoneOTP() {
@@ -311,6 +385,52 @@ async function sendEmailOTP() {
 async function resendEmailOTP() {
   if (emailOtp.seconds === 0) startTimer(emailOtp, 100);
 }
+
+
+const industryTypesData = ref([]);
+async function getIndustryTypes() {
+    const response = await industryTypeApi.getIndustryTypes();
+    if (response.code === 0) {
+      // 保存完整的資料（包含 id 和 name）
+      industryTypesData.value = response.data;
+      console.log('獲取的行業類型:', response.data);
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+}
+
+
+// 檔案上傳成功處理函數
+function handleUploadSuccess(fileType, result) {
+  console.log(`${fileType} 上傳成功:`, result);
+
+  // 將檔案 ID 存儲到對應的表單欄位
+  const fileId = result.data?.id;
+  if (fileId) {
+    switch (fileType) {
+      case 'idDoc':
+        form.idDoc = { ...form.idDoc, id: fileId };
+        break;
+      case 'assetDoc':
+        form.assetDoc = { ...form.assetDoc, id: fileId };
+        break;
+      case 'pcrcDoc':
+        form.pcrcDoc = { ...form.pcrcDoc, id: fileId };
+        break;
+    }
+  }
+}
+
+
+
+
+// 組件掛載時獲取數據
+onMounted(async () => {
+  await Promise.all([
+    getIndustryTypes()
+  ]);
+});
+
 
 onBeforeUnmount(() => {
   if (phoneOtp.timer) clearInterval(phoneOtp.timer);

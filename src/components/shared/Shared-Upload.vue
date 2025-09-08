@@ -5,36 +5,38 @@
     <div class="upload-row">
       <div class="fake-input-wrap">
         <input
-          class="fake-input"
-          type="text"
-          :value="displayName"
-          :placeholder="placeholder"
-          :class="{ 'is-invalid': error }"
-          readonly
-          @click="openDialog"
+            class="fake-input"
+            type="text"
+            :value="displayName"
+            :placeholder="placeholder"
+            :class="{ 'is-invalid': error }"
+            readonly
+            @click="openDialog"
         />
         <button
-          v-if="hasFile"
-          type="button"
-          class="btn-clear-x"
-          aria-label="清除檔案"
-          title="清除檔案"
-          @click.stop="clearFiles"
+            v-if="hasFile"
+            type="button"
+            class="btn-clear-x"
+            aria-label="清除檔案"
+            title="清除檔案"
+            @click.stop="clearFiles"
         >
           ×
         </button>
       </div>
 
-      <button type="button" class="btn-upload" @click="openDialog">上傳</button>
+      <button type="button" class="btn-upload" @click="openDialog" :disabled="uploading">
+        {{ uploading ? '上傳中...' : '上傳' }}
+      </button>
 
       <input
-        class="real-input"
-        :id="id"
-        ref="fileInput"
-        type="file"
-        :accept="accept"
-        :multiple="multiple"
-        @change="onChange"
+          class="real-input"
+          :id="id"
+          ref="fileInput"
+          type="file"
+          :accept="accept"
+          :multiple="multiple"
+          @change="onChange"
       />
     </div>
 
@@ -47,6 +49,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { fileApi } from "@/api/modules/file.js";
 
 const model = defineModel({
   type: [File, Object, String, Array, null],
@@ -63,10 +66,13 @@ const props = defineProps({
   error: { type: String, default: "" },
   placeholder: { type: String, default: "" },
   buttonText: { type: String, default: "" },
+  account: { type: String, required: true }, // 新增 account 參數
+  name: { type: String, default: null }, // 新增 name 參數
 });
 
-const emit = defineEmits(["invalid"]);
+const emit = defineEmits(["invalid", "upload-success", "upload-error"]);
 const fileInput = ref(null);
+const uploading = ref(false);
 
 function normOne(v) {
   if (!v) return null;
@@ -78,6 +84,7 @@ function normOne(v) {
       name,
       url: v.url,
       file: v.file instanceof File ? v.file : undefined,
+      id: v.id, // 新增 id 屬性用於刪除
     };
   }
   return null;
@@ -101,28 +108,70 @@ const displayName = computed(() => {
   if (!props.multiple) return filesArray.value[0].name || "";
   const names = filesArray.value.map((x) => x.name || "").filter(Boolean);
   return names.length > 1
-    ? `已選 ${names.length} 個檔案：${names.join("、")}`
-    : names[0] || "";
+      ? `已選 ${names.length} 個檔案：${names.join("、")}`
+      : names[0] || "";
 });
 
 function openDialog() {
+  if (uploading.value) return;
   fileInput.value?.click();
 }
 
-function onChange(e) {
+async function onChange(e) {
   const picked = Array.from(e.target.files || []);
   if (!picked.length) return;
 
+  // 檢查檔案大小
   const over = picked.find((f) => f.size > props.maxSizeMb * 1024 * 1024);
   if (over) {
     emit("invalid", `檔案「${over.name}」超過 ${props.maxSizeMb}MB`);
     resetInput();
     return;
   }
-  model.value = props.multiple ? picked : picked[0];
+
+  uploading.value = true;
+
+  try {
+      const file = picked[0];
+      const result = await fileApi.uploadFile(file, props.account, props.name);
+
+      model.value = {
+        name: file.name,
+        file: file,
+        id: result.data?.id,
+        url: result.data?.url,
+      };
+
+      emit("upload-success", result);
+
+  } catch (error) {
+    console.error('上傳失敗:', error);
+    emit("invalid", error.message);
+    emit("upload-error", error);
+    resetInput();
+  } finally {
+    uploading.value = false;
+  }
 }
 
-function clearFiles() {
+async function clearFiles() {
+  if (uploading.value) return;
+
+  // 如果有檔案 ID，嘗試從伺服器刪除
+  const filesToDelete = filesArray.value.filter(f => f.id);
+
+  if (filesToDelete.length > 0) {
+    try {
+      const deletePromises = filesToDelete.map(file =>
+          fileApi.deleteFile({ id: file.id })
+      );
+      await Promise.all(deletePromises);
+    } catch (error) {
+      console.error('刪除檔案失敗:', error);
+      // 即使刪除失敗也繼續清除本地狀態
+    }
+  }
+
   model.value = props.multiple ? [] : null;
   resetInput();
 }
@@ -192,8 +241,13 @@ function resetInput() {
     font-weight: $fw-600;
     cursor: pointer;
     transition: 0.2s;
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
   }
-  .btn-upload:hover {
+  .btn-upload:hover:not(:disabled) {
     background: $text-red;
   }
 

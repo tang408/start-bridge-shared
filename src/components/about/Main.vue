@@ -150,7 +150,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import SharedParner from "@/components/Shared-Parner.vue";
+import SharedParner from "@/components/shared/Shared-Parner.vue";
 import { officialFounderApi } from "@/api/modules/officialFounder.js";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Navigation } from "swiper/modules";

@@ -42,13 +42,15 @@
 <script setup>
 import { ref } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
+import {userApi} from "@/api/modules/user.js";
+import router from "@/router/index.js";
 
 const username = ref("");
 const password = ref("");
 const errors = ref({ username: "", password: "" });
 
-function handleLogin() {
-  errors.value = { username: "", password: "" };
+async function handleLogin() {
+  errors.value = {username: "", password: ""};
 
   if (!username.value) {
     errors.value.username = "請輸入帳號";
@@ -60,23 +62,28 @@ function handleLogin() {
 
   if (errors.value.username || errors.value.password) return;
 
-  const fakeApiResponse = {
-    success: false,
-    errors: {
-      username: true,
-      password: true,
-    },
+  const params = {
+    account: username.value,
+    password: password.value,
   };
 
-  if (!fakeApiResponse.success) {
-    if (fakeApiResponse.errors.username) {
-      errors.value.username = "查無此帳號";
+  try {
+    const response = await userApi.login(params);
+    if (response.code === 0) {
+      try {
+        setTimeout(() => {
+          if (router.currentRoute.value.path !== '/account/profile') {
+            window.location.href = '/account/profile';
+          }
+        }, 100);
+      } catch (routerError) {
+        window.location.href = '/account/profile';
+      }
+    } else {
+      alert(response.message);
     }
-    if (fakeApiResponse.errors.password) {
-      errors.value.password = "密碼錯誤，請重新輸入。";
-    }
-  } else {
-    router.push({ path: "/account/profile" });
+  } catch (error) {
+    alert('登入失敗，請稍後再試');
   }
 }
 </script>
