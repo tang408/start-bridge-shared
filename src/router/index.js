@@ -104,7 +104,7 @@ const routes = [
         children: [
           { path: "", redirect: { name: "profile" } },
           { path: "profile", name: "profile", component: Profile },
-          { path: "inbox", name: "inbox", component: Message },
+          { path: "email", name: "email", component: Message },
         ],
       },
       {

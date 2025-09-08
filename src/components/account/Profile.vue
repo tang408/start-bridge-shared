@@ -355,6 +355,32 @@
           required
         />
 
+        <!-- 身分證明*（持證件自拍） -->
+        <SharedUpload
+          id="idProofSelfie"
+          label="身分證明*（持證件自拍）"
+          v-model="formCo.idProofSelfie"
+          :error="errCo.idProofSelfie"
+          :required="true"
+          accept=".jpg,.jpeg,.png"
+          placeholder="檔案名稱.jpg"
+          button-text="上傳"
+          @invalid="(msg) => (errCo.idProofSelfie = msg)"
+        />
+
+        <!-- 第二證件＊（必填） -->
+        <SharedUpload
+          id="secondId"
+          label="第二證件*"
+          v-model="formCo.secondId"
+          :error="errCo.secondId"
+          :required="true"
+          accept=".jpg,.jpeg,.png,.pdf"
+          placeholder="檔案名稱.jpg"
+          button-text="上傳"
+          @invalid="(msg) => (errCo.secondId = msg)"
+        />
+
         <!-- 出生年月日* -->
         <SharedBirthday
           id="birthday"

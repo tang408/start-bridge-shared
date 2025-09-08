@@ -130,7 +130,7 @@ defineEmits(["card-click"]);
     }
 
     &-title {
-      font-weight: 600;
+      font-weight: $fw-500;
       font-size: $fs-15;
       line-height: $lh-24;
       letter-spacing: 1px;

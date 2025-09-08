@@ -146,7 +146,7 @@
               :error="errors.idDoc"
               :maxSizeMb="10"
               @invalid="(msg) => (errors.idDoc = msg)"
-              required
+              :required="true"
             />
 
             <SharedUpload
@@ -157,7 +157,7 @@
               :error="errors.assetDoc"
               :maxSizeMb="10"
               @invalid="(msg) => (errors.assetDoc = msg)"
-              required
+              :required="true"
             />
 
             <SharedUpload
@@ -167,6 +167,7 @@
               :multiple="true"
               v-model="form.addressDoc"
               :error="errors.addressDoc"
+              :required="true"
             />
           </div>
 

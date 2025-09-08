@@ -36,7 +36,7 @@
             <span class="label"
               >{{ item.label }}
               <span
-                v-if="item.key === 'inbox' && item.count > 0"
+                v-if="item.key === 'email' && item.count > 0"
                 class="notice"
                 >{{ item.count }}</span
               >
@@ -74,7 +74,7 @@ useRoute();
 
 const items = [
   { key: "profile", label: "基本資料", icon: side1 },
-  { key: "inbox", label: "我的信箱", icon: side2, count: 1 },
+  { key: "email", label: "我的信箱", icon: side2, count: 1 },
   { key: "favorites", label: "我的收藏", icon: side3 },
   { key: "participation", label: "參與專案管理", icon: side4 },
   { key: "startup", label: "創業計劃管理", icon: side5 },
