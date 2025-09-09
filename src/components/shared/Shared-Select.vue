@@ -3,17 +3,17 @@
     <div class="label-row">
       <label :for="id">{{ label }}</label>
       <label v-if="publicable" class="public-opt">
-        <input type="checkbox" v-model="publicModel" />
+        <input type="checkbox" v-model="publicModel" :disabled="disabled" />
         <span>{{ publicLabel }}</span>
       </label>
     </div>
 
     <div class="custom-select" @click="toggleDropdown">
-      <div class="selected" :class="{ 'is-invalid': error }">
+      <div class="selected" :class="{ 'is-invalid': error, 'disabled': disabled }">
         {{ selectedLabel || placeholder }}
-        <span class="arrow" :class="{ open }"></span>
+        <span class="arrow" :class="{ open: open && !disabled }"></span>
       </div>
-      <ul v-if="open" class="dropdown">
+      <ul v-if="open && !disabled" class="dropdown">
         <li
           v-for="opt in options"
           :key="opt.value"
@@ -43,6 +43,7 @@ const props = defineProps({
   error: { type: String, default: "" },
   publicable: { type: Boolean, default: false },
   publicLabel: { type: String, default: "公開" },
+  disabled: { type: Boolean, default: false },
 });
 
 const open = ref(false);

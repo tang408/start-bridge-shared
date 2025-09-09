@@ -14,6 +14,10 @@ const api = axios.create({
 // 請求攔截器
 api.interceptors.request.use(
   (config) => {
+    const auth = JSON.parse(localStorage.getItem('auth') || '{}');
+    if (auth.token) {
+        config.headers['Authorization'] = `Bearer ${auth.token}`;
+        }
     console.log('發送請求:', config);
     return config;
   },

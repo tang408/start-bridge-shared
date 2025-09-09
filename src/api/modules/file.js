@@ -34,13 +34,57 @@ export const fileApi = {
 
     async deleteFile(params = {}) {
         const defaultParams = {
-            id: 0
+            id: 0,
+            name: null,
         };
         const finalParams = { ...defaultParams, ...params };
         if (typeof finalParams.id !== 'number' || finalParams.id <= 0) {
             throw new Error('請提供有效的檔案 ID');
         }
+        if (params.name === 'companyLogo') {
+            return api.post('/f/public/file/delete-image-file', finalParams)
+        } else {
+            return api.post('/f/public/file/delete-proof-file', finalParams)
+        }
 
-        return api.post('/f/public/file/delete-proof-file', finalParams)
-    }
+    },
+
+    async getProofFiles(params = {}) {
+        const defaultParams = {
+            userId: 0
+        };
+        const finalParams = { ...defaultParams, ...params };
+
+        return api.post('/f/public/file/get-proof-files', finalParams)
+    },
+
+    async uploadImageFile(file, account, name = null) {
+        // 檢查檔案類型
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error('檔案類型不支援。僅支援 JPG, PNG, GIF 格式');
+        }
+
+        // 檢查檔案大小 (10MB = 10 * 1024 * 1024 bytes)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            throw new Error('檔案大小不能超過 10MB');
+        }
+
+        // 創建 FormData
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('account', account);
+
+        if (name) {
+            formData.append('name', name);
+        }
+
+        // 上傳檔案
+        return api.post('/f/public/file/create-image-file', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    },
 }

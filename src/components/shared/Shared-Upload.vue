@@ -68,6 +68,7 @@ const props = defineProps({
   buttonText: { type: String, default: "" },
   account: { type: String, required: true }, // 新增 account 參數
   name: { type: String, default: null }, // 新增 name 參數
+  disabled: { type: Boolean, default: false }, // 新增 disabled 參數
 });
 
 const emit = defineEmits(["invalid", "upload-success", "upload-error"]);
@@ -113,11 +114,15 @@ const displayName = computed(() => {
 });
 
 function openDialog() {
+  if (props.disabled) return;
+
   if (uploading.value) return;
   fileInput.value?.click();
 }
 
 async function onChange(e) {
+  if (props.disabled) return;
+
   const picked = Array.from(e.target.files || []);
   if (!picked.length) return;
 
@@ -133,7 +138,12 @@ async function onChange(e) {
 
   try {
       const file = picked[0];
-      const result = await fileApi.uploadFile(file, props.account, props.name);
+      let result = null;
+      if (props.name === 'companyLogo') {
+        result = await fileApi.uploadImageFile(file, props.account,props.name)
+      } else {
+        result = await fileApi.uploadFile(file, props.account, props.name);
+      }
 
       model.value = {
         name: file.name,
@@ -155,6 +165,8 @@ async function onChange(e) {
 }
 
 async function clearFiles() {
+  if (props.disabled) return;
+
   if (uploading.value) return;
 
   // 如果有檔案 ID，嘗試從伺服器刪除
@@ -163,7 +175,7 @@ async function clearFiles() {
   if (filesToDelete.length > 0) {
     try {
       const deletePromises = filesToDelete.map(file =>
-          fileApi.deleteFile({ id: file.id })
+          fileApi.deleteFile({ id: file.id, name: props.name})
       );
       await Promise.all(deletePromises);
     } catch (error) {

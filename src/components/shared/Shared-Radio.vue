@@ -8,9 +8,10 @@
           :id="`${uid}-${opt.value}`"
           :name="name || uid"
           :value="opt.value"
+          :disabled="disabled"
           v-model="model"
         />
-        <label class="option-label" :for="`${uid}-${opt.value}`">
+        <label class="option-label" :for="`${uid}-${opt.value}`" :class="{ 'disabled': disabled }">
           {{ opt.text }}
         </label>
       </div>
@@ -29,6 +30,7 @@ const props = defineProps({
   required: { type: Boolean, default: false },
   error: { type: String, default: "" },
   name: { type: String, default: "" },
+  disabled: { type: Boolean, default: false },
 });
 const uid = computed(() => `rg-${Math.random().toString(36).slice(2, 9)}`);
 </script>
