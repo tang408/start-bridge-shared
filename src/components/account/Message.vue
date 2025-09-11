@@ -43,6 +43,8 @@
 
           <SharedFabActions
             :favorite="m.favorite"
+            iconType="star"
+            :showTrash="true"
             size="md"
             @favorite-toggle="(val) => setFavorite(m.id, val)"
             @remove="removeMsg(m.id)"

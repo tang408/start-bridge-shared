@@ -7,11 +7,19 @@
       :title="favorite ? favoriteTitleOn : favoriteTitleOff"
       @click="$emit('favorite-toggle', !favorite)"
     >
-      <span class="icon icon-star" />
+      <span
+        class="icon"
+        :class="iconType === 'star' ? 'icon-star' : 'icon-heart'"
+      />
     </button>
 
     <!-- 垃圾桶 -->
-    <button class="circle-btn trash" :title="removeTitle" @click="onRemove">
+    <button
+      v-if="showTrash"
+      class="circle-btn trash"
+      :title="removeTitle"
+      @click="onRemove"
+    >
       <span class="icon icon-trash" />
     </button>
   </div>
@@ -26,6 +34,8 @@ const props = defineProps({
   favoriteTitleOff: { type: String, default: "加入收藏" },
   removeTitle: { type: String, default: "丟到垃圾桶" },
   size: { type: String, default: "md" },
+  iconType: { type: String, default: "star" },
+  showTrash: { type: Boolean, default: true },
 });
 const emit = defineEmits(["favorite-toggle", "remove"]);
 
@@ -92,6 +102,9 @@ function onRemove() {
   }
   .icon-trash {
     mask-image: url("@/assets/icon/back-trash.png");
+  }
+  .icon-heart {
+    mask-image: url("@/assets/icon/back-heart.png");
   }
 }
 </style>

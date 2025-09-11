@@ -1,5 +1,5 @@
 <template>
-  <div class="tabs">
+  <div class="tabs mb-4">
     <button
       v-for="tab in tabs"
       :key="tab.value"
@@ -31,6 +31,10 @@ defineEmits(["update:modelValue"]);
 .tabs {
   display: flex;
   gap: $gap-10;
+  justify-content: center;
+  @media (max-width: 576px) {
+    gap: 3px;
+  }
 }
 .tab-btn {
   padding: $pd-1020;

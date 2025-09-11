@@ -1,5 +1,5 @@
 <template>
-  <div class="fs-30">訊息</div>
+  <div class="fs-30">基本資料</div>
   <SharedTabs
     v-model="activeTab"
     :tabs="[
@@ -583,6 +583,8 @@ const formCo = reactive({
   yearLimit: "三年",
   resume: "參與三間新創，主要負責 BD 與營運。",
   philosophy: "以資料驅動決策，長期主義經營品牌。",
+  idProofSelfie: "asset-proof-demo.pdf",
+  secondId: "asset-proof-demo.pdf",
 });
 const errCo = reactive(
   Object.fromEntries(Object.keys(formCo).map((k) => [k, ""]))

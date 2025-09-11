@@ -15,9 +15,11 @@ import Success from "../views/SuccessCase.vue";
 import Login from "../views/Login.vue";
 import EntSignUp from "../views/EntSignUp.vue";
 import CoFounder from "../views/CoFounder.vue";
-import Message from "../components/account/Message.vue";
 import Account from "../views/Account.vue";
+import Message from "../components/account/Message.vue";
 import Profile from "../components/account/Profile.vue";
+import Participation from "../components/account/Participation.vue";
+import Startup from "../components/account/Startup.vue";
 
 const routes = [
   {
@@ -103,23 +105,41 @@ const routes = [
         component: Account,
         children: [
           { path: "", redirect: { name: "profile" } },
+
           { path: "profile", name: "profile", component: Profile },
           { path: "email", name: "email", component: Message },
+          {
+            path: "participation",
+            name: "participation",
+            component: Participation,
+            props: (route) => {
+              const tab = ["progress", "details", "records"].includes(
+                route.query.tab
+              )
+                ? route.query.tab
+                : "progress";
+              return {
+                entry: route.query.source === "brand" ? "brand" : "account",
+                preselectTab: tab,
+                brandId: route.query.brandId
+                  ? Number(route.query.brandId)
+                  : null,
+                brandName: route.query.brandName || "",
+              };
+            },
+          },
         ],
       },
       {
         path: "/terms",
-        // component: () => import("@/pages/terms/TermsLayout.vue"),
         children: [
           {
             path: "platform",
             name: "terms-platform",
-            // component: () => import("@/pages/terms/Platform.vue"),
           },
           {
             path: "service",
             name: "terms-service",
-            // component: () => import("@/pages/terms/Service.vue"),
           },
         ],
       },
@@ -127,7 +147,6 @@ const routes = [
       {
         path: "/privacy",
         name: "privacy",
-        // component: () => import("@/pages/Privacy.vue"),
       },
     ],
   },
