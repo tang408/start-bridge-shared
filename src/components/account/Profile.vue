@@ -32,17 +32,17 @@
 
         <!-- 密碼 + 修改 -->
         <SharedInput
-          id="password"
-          type="password"
-          label="密碼*"
-          autocomplete="new-password"
-          v-model="formFounder.password"
-          :error="errFounder.password"
-          :readonly="ro('password')"
-          required
-          buttonText="修改"
-          @button-click="onChangePassword"
-
+            id="password"
+            type="password"
+            label="密碼*"
+            autocomplete="new-password"
+            v-model="formFounder.password"
+            :error="errFounder.password"
+            :readonly="ro('password')"
+            :buttonReadonly="false"
+            required
+            buttonText="修改"
+            @button-click="onChangePassword"
         />
 
         <!-- 姓名 -->
@@ -354,13 +354,56 @@
           </div>
         </div>
     </form>
+
+    <!-- 修改密碼 Dialog -->
+    <!-- 修改密碼 Dialog -->
+    <dialog ref="passwordDialog" class="password-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>修改密碼</h3>
+          <button type="button" class="close-btn" @click="closeDialog">&times;</button>
+        </div>
+
+        <form @submit.prevent="handleUpdatePassword" class="modal-body">
+          <div class="form-group">
+            <label for="newPassword">新密碼*</label>
+            <input
+                id="newPassword"
+                type="password"
+                v-model="newPasswordForm.newPassword"
+                required
+                placeholder="請輸入新密碼"
+            />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">確認新密碼*</label>
+            <input
+                id="confirmPassword"
+                type="password"
+                v-model="newPasswordForm.confirmPassword"
+                required
+                placeholder="請再次輸入新密碼"
+            />
+          </div>
+          <p v-if="newPasswordForm.error" class="error-msg">{{ newPasswordForm.error }}</p>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" @click="closeDialog">取消</button>
+            <button type="submit" class="btn-confirm" :disabled="isUpdating">
+              {{ isUpdating ? '更新中...' : '確認修改' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
+
   </div>
   <div v-else>
     <form @submit.prevent="handleRegister" class="form">
       <div class="form-display">
         <div class="form-group d-grid">
           <label class="mb-2">審核狀態</label>
-          <span class="ps-2">未審核</span>
+          <span class="ps-2">{{ getStatusText(formCo.status) }}</span>
         </div>
 
         <!-- 連絡電話 -->
@@ -379,16 +422,17 @@
 
         <!-- 密碼 + 修改 -->
         <SharedInput
-          id="password"
-          type="password"
-          label="密碼*"
-          autocomplete="new-password"
-          v-model="formCo.password"
-          :error="errCo.password"
-          required
-          buttonText="修改"
-          @button-click="onChangePassword"
-          :readonly="ro('password')"
+            id="password"
+            type="password"
+            label="密碼*"
+            autocomplete="new-password"
+            v-model="formCo.password"
+            :error="errCo.password"
+            :readonly="ro('password')"
+            :buttonReadonly="false"
+            required
+            buttonText="修改"
+            @button-click="onChangePassword"
         />
 
         <!-- 姓名 -->
@@ -562,7 +606,6 @@
           required
           publicable
           :disabled="ro('yearLimit')"
-
         />
 
         <!-- 創業經驗及工作履歷 -->
@@ -600,6 +643,47 @@
         </div>
       </div>
     </form>
+
+    <!-- 修改密碼 Dialog -->
+    <dialog ref="passwordDialog" class="password-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>修改密碼</h3>
+          <button type="button" class="close-btn" @click="closeDialog">&times;</button>
+        </div>
+
+        <form @submit.prevent="handleUpdatePassword" class="modal-body">
+          <div class="form-group">
+            <label for="newPassword">新密碼*</label>
+            <input
+                id="newPassword"
+                type="password"
+                v-model="newPasswordForm.newPassword"
+                required
+                placeholder="請輸入新密碼"
+            />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">確認新密碼*</label>
+            <input
+                id="confirmPassword"
+                type="password"
+                v-model="newPasswordForm.confirmPassword"
+                required
+                placeholder="請再次輸入新密碼"
+            />
+          </div>
+          <p v-if="newPasswordForm.error" class="error-msg">{{ newPasswordForm.error }}</p>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-cancel" @click="closeDialog">取消</button>
+            <button type="submit" class="btn-confirm" :disabled="isUpdating">
+              {{ isUpdating ? '更新中...' : '確認修改' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </dialog>
   </div>
 </template>
 
@@ -613,6 +697,7 @@ import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
 import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedSelect from "@/components/shared/Shared-Select.vue";
 import {userApi} from "@/api/modules/user.js";
+
 
 import { useAuth } from "@/composables/useAuth";
 import {fileApi} from "@/api/modules/file.js";
@@ -731,6 +816,7 @@ const formCo = reactive({
   yearLimit: "",
   experience: "",
   intro: "",
+  status: 0,
 });
 // const formFounder = reactive({
 //   phone: "0987456123",
@@ -925,6 +1011,7 @@ watch(userProfile, (newValue) => {
     formCo.experienceIsShow = newValue.coreFounderData?.experienceIsShow || false;
     formCo.intro = newValue.coreFounderData?.introduce || "";
     formCo.introIsShow = newValue.coreFounderData?.introduceIsShow || false;
+    formCo.status = newValue.coreFounderData?.status || "";
   }
 }, { immediate: true });
 
@@ -950,8 +1037,6 @@ const getActiveForm = () =>
   activeTab.value === "founder" ? formFounder : formCo;
 const getActiveErrors = () =>
   activeTab.value === "founder" ? errFounder : errCo;
-
-function onChangePassword() {}
 
 function handleRegister() {
   Object.keys(errors).forEach((k) => (errors[k] = ""));
@@ -1133,6 +1218,65 @@ function getStatusText(status) {
   }
 }
 
+
+
+const passwordDialog = ref(null)
+const isUpdating = ref(false)
+
+const newPasswordForm = reactive({
+  newPassword: '',
+  confirmPassword: '',
+  error: ''
+})
+
+function onChangePassword() {
+  // 清空表單
+  newPasswordForm.newPassword = ''
+  newPasswordForm.confirmPassword = ''
+  newPasswordForm.error = ''
+  // 打開 dialog
+  passwordDialog.value.showModal()
+}
+
+function closeDialog() {
+  passwordDialog.value.close()
+}
+
+async function handleUpdatePassword() {
+  try {
+    // 驗證密碼
+    if (newPasswordForm.newPassword !== newPasswordForm.confirmPassword) {
+      newPasswordForm.error = '密碼確認不一致'
+      return
+    }
+
+    if (newPasswordForm.newPassword.length < 6) {
+      newPasswordForm.error = '密碼長度至少需要6個字元'
+      return
+    }
+
+    isUpdating.value = true
+    newPasswordForm.error = ''
+
+    // 發送 API 請求
+    await userApi.updateUserPassword({
+      userId: currentUser.value,
+      newPassword: newPasswordForm.newPassword
+    })
+
+    // 成功後關閉 dialog
+    closeDialog()
+
+    // 可以顯示成功訊息
+    alert('密碼修改成功')
+
+  } catch (error) {
+    newPasswordForm.error = error.response?.data?.message || '修改密碼失敗'
+  } finally {
+    isUpdating.value = false
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -1169,5 +1313,98 @@ function getStatusText(status) {
 .btn-yellow {
   background: $brand-yellow;
   color: #373a36;
+}
+
+.password-modal {
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 400px;
+  width: 90vw;
+}
+
+.password-modal::backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  padding: 20px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-cancel, .btn-confirm {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-cancel {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.btn-confirm {
+  background-color: #ff6634;
+  color: white;
+}
+
+.btn-confirm:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-msg {
+  color: #db3838;
+  font-size: 13px;
+  margin: 10px 0;
 }
 </style>

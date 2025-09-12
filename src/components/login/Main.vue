@@ -44,13 +44,15 @@ import { ref } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {userApi} from "@/api/modules/user.js";
 import router from "@/router/index.js";
+import { useAuth } from "@/composables/useAuth.js";
 
+const { login, redirectTo } = useAuth();
 const username = ref("");
 const password = ref("");
 const errors = ref({ username: "", password: "" });
 
 async function handleLogin() {
-  errors.value = {username: "", password: ""};
+  errors.value = { username: "", password: "" };
 
   if (!username.value) {
     errors.value.username = "請輸入帳號";
@@ -70,6 +72,12 @@ async function handleLogin() {
   try {
     const response = await userApi.login(params);
     if (response.code === 0) {
+      await login({
+        token: response.data.token,  // 根據你的 API 回傳結構調整
+        user: response.data.userId,  // 根據你的 API 回傳結構調整
+      });
+
+      // 跳轉到目標頁面
       try {
         setTimeout(() => {
           if (router.currentRoute.value.path !== '/account/profile') {
@@ -83,6 +91,7 @@ async function handleLogin() {
       alert(response.message);
     }
   } catch (error) {
+    console.error('Login error:', error);
     alert('登入失敗，請稍後再試');
   }
 }

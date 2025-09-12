@@ -73,11 +73,12 @@ const props = defineProps({
   pattern: { type: String, default: "" },
   enableIf: { type: Function, default: null },
   readonly: { type: Boolean, default: false },
+  buttonReadonly: { type: Boolean, default: false }, // 新增這個屬性
 });
 const emit = defineEmits(["button-click", "resend"]);
 
 const canClick = computed(() => {
-  if (props.readonly) return false;
+  if (props.buttonReadonly) return false;
   if (!props.buttonText) return true;
   const val = String(model.value ?? "").trim();
   if (props.enableIf) return !!props.enableIf(val);

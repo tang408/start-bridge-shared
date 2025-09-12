@@ -116,5 +116,15 @@ export const userApi = {
     async updateCoreFounder(params = {}) {
         const finalParams = {...params};
         return api.post('/f/private/user/update-core-founder', finalParams);
+    },
+    /**
+     * 更新使用者共創者資訊
+     * @param {{}} params - 參數物件
+     * @param {number} params.userId - 使用者 id
+     * @param {string} params.newPassword - 舊密碼
+     */
+    async updateUserPassword(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/private/user/update-user-password', finalParams);
     }
 }
