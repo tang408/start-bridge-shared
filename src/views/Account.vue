@@ -45,15 +45,36 @@ import {
   mobileAccountSidebarOpen,
   toggleMobileAccountSidebar,
 } from "@/composables/useAccountSidebar";
+import {onMounted, ref} from "vue";
+import {userApi} from "@/api/modules/user.js";
+import {useAuth} from "@/composables/useAuth.js";
 
 const router = useRouter();
 const route = useRoute();
+const { isLoggedIn, currentUser } = useAuth();
 
-const user = {
-  name: "帳號名稱帳號名稱",
-  avatar: new URL("@/assets/images/avatar.png", import.meta.url).href,
-};
+const user = ref({
+  name: "",
+  avatar: ""
+});
 
+
+async function getUserNameAndAvatar() {
+  const formData = {
+    userId: currentUser.value,
+  }
+  const response = await userApi.getUserNameAndAvatar(formData);
+  user.value = response.data;
+  console.log(response.data)
+}
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    getUserNameAndAvatar();
+  } else {
+    router.push({ name: "Login" });
+  }
+});
 function onSelect(item) {
   if (route.name !== item.key) {
     router.push({ name: item.key });

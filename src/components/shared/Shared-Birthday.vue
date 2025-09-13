@@ -30,6 +30,7 @@ const props = defineProps({
   required: { type: Boolean, default: false },
   min: { type: String, default: "" },
   max: { type: String, default: "" },
+  readonly: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["update:modelValue", "valid-change"]);
@@ -37,6 +38,7 @@ const emit = defineEmits(["update:modelValue", "valid-change"]);
 const inputEl = ref(null);
 
 function openPicker() {
+  if (props.readonly) return;
   const el = inputEl.value;
   if (!el) return;
   if (typeof el.showPicker === "function") {

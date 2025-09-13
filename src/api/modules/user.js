@@ -126,5 +126,14 @@ export const userApi = {
     async updateUserPassword(params = {}) {
         const finalParams = {...params};
         return api.post('/f/private/user/update-user-password', finalParams);
+    },
+
+    /**
+     * 取得使用者名稱+頭像
+     */
+
+    async getUserNameAndAvatar(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/private/user/get-user-name-and-avatar', finalParams);
     }
 }

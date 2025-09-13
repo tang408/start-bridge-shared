@@ -73,7 +73,7 @@ const props = defineProps({
   pattern: { type: String, default: "" },
   enableIf: { type: Function, default: null },
   readonly: { type: Boolean, default: false },
-  buttonReadonly: { type: Boolean, default: false }, // 新增這個屬性
+  buttonReadonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["button-click", "resend"]);
 

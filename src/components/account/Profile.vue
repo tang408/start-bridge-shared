@@ -71,14 +71,13 @@
 
         <!-- 出生年月日* -->
         <SharedBirthday
-          id="birthday-display"
+          id="birthday"
           label="出生年月日*"
           v-model="formFounder.birthday"
           :error="errFounder.birthday"
           :required="true"
           :max="new Date().toISOString().slice(0, 10)"
-          :readonly="ro('birthday-display')"
-
+          :readonly="ro('birthday')"
         />
 
         <!-- 電子郵件* -->
@@ -356,7 +355,6 @@
     </form>
 
     <!-- 修改密碼 Dialog -->
-    <!-- 修改密碼 Dialog -->
     <dialog ref="passwordDialog" class="password-modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -456,7 +454,7 @@
           ]"
           :error="errCo.gender"
           required
-          :readonly="ro('gender')"
+          :disabled="ro('gender')"
 
         />
 
@@ -811,7 +809,7 @@ const formCo = reactive({
   idProofSecond: "",
   refCode: "",
   work: "",
-  asset: "",
+  asset: 0,
   industryType: "",
   yearLimit: "",
   experience: "",
@@ -999,7 +997,7 @@ watch(userProfile, (newValue) => {
     formCo.birthday = newValue.userInfoData?.birthday || "";
     formCo.email = newValue.userInfoData?.email || "";
     formCo.line = newValue.userInfoData?.lineId || "";
-    formCo.asset = newValue.userInfoData?.budget || "";
+    formCo.asset = newValue.userInfoData?.budget || 0;
     formCo.refCode = newValue.userInfoData?.referralCode || "";
     formCo.work = newValue.coreFounderData?.workStatus || "";
     formCo.minBudget = newValue.coreFounderData?.minBudget || "";
@@ -1134,7 +1132,7 @@ function submitForFounderAndCompany() {
     birthday: formFounder.birthday,
     lineId: formFounder.line,
     email: formFounder.email,
-    budget: formFounder.budget,
+    budget: Number(formFounder.budget),
     city: formFounder.region,
     workStatus: formFounder.work,
     industryType: formFounder.brand,
@@ -1145,7 +1143,7 @@ function submitForFounderAndCompany() {
     companyName: formFounder.companyName,
     companyNameEn: formFounder.companyNameEn,
     businessId: formFounder.taxId,
-    logo: formFounder.companyLogo.id,
+    logo: formFounder.companyLogoId,
     slogan: formFounder.slogan,
     info: formFounder.companyBrief,
     bankAccountName: formFounder.bankName,
@@ -1175,10 +1173,10 @@ function submitForCoreFounder() {
     birthday: formCo.birthday,
     lineId: formCo.line,
     email: formCo.email,
-    budget: formCo.asset,
+    budget: Number(formCo.asset),
     workStatus: formCo.work,
-    minBudget: formCo.minBudget,
-    maxBudget: formCo.maxBudget,
+    minBudget: Number(formCo.minBudget),
+    maxBudget: Number(formCo.maxBudget),
     expectIndustryType: formCo.industryType,
     industryType: formCo.industryType,
     investLimitYear: formCo.yearLimit,
