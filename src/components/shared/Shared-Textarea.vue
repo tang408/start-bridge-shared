@@ -7,12 +7,16 @@
         <span>{{ publicLabel }}</span>
       </label>
     </div>
+    <div v-if="description || hasDescSlot" class="desc" :id="descId">
+      <slot name="description">{{ description }}</slot>
+    </div>
     <textarea
       :id="id"
       v-model="model"
       :rows="rows"
       :required="required"
       :class="{ 'is-invalid': error }"
+      :aria-describedby="description || hasDescSlot ? descId : undefined"
       v-bind="$attrs"
     ></textarea>
     <p v-if="error" class="error-msg">{{ error }}</p>
@@ -20,6 +24,7 @@
 </template>
 
 <script setup>
+import { computed, useSlots } from "vue";
 defineOptions({ inheritAttrs: false });
 const model = defineModel({ type: String, default: "" });
 const publicModel = defineModel("public", { type: Boolean, default: false });
@@ -32,19 +37,16 @@ const props = defineProps({
   error: { type: String, default: "" },
   publicable: { type: Boolean, default: false },
   publicLabel: { type: String, default: "公開" },
+  description: { type: String, default: "" },
 });
+
+const slots = useSlots();
+const hasDescSlot = computed(() => !!slots.description);
+const descId = computed(() => `${props.id}-desc`);
 </script>
 
 <style scoped lang="scss">
 .form-group {
-  text-align: left;
-  label {
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 22px;
-    margin-bottom: 6px;
-    display: block;
-  }
   textarea {
     width: 100%;
     padding: 10px 12px;
@@ -59,10 +61,11 @@ const props = defineProps({
     border-color: #db3838;
     background: #fff0f0;
   }
-  .error-msg {
-    font-size: 13px;
-    color: #db3838;
-    margin-top: 4px;
+
+  .desc {
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 22px;
   }
 }
 </style>

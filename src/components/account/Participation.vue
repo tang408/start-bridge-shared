@@ -1,5 +1,5 @@
 <template>
-  <div class="fs-30">參與專案管理</div>
+  <div class="fs-24">參與專案管理</div>
   <section v-if="mode === 'account'">
     <SharedTabs
       v-model="activeTab"
@@ -15,7 +15,7 @@
       <article
         v-for="p in projects"
         :key="p.id"
-        class="card"
+        class="article-card"
         :class="{ expanded: expandedId === p.id }"
       >
         <button
@@ -26,17 +26,17 @@
           :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="p.status">{{
-              statusText(p.status)
+            <span class="status-pill" :class="statusClass(p.status)">{{
+              statusLabel(p.status)
             }}</span>
-            <span class="time" v-if="p.status === 'running'"
+            <span class="time" v-if="isRunning(p.status)"
               >剩餘 {{ p.lastUpdate }}</span
             >
           </header>
 
           <div class="title">{{ p.title }}</div>
 
-          <div class="progress-wrap" v-if="p.status === 'running'">
+          <div class="progress-wrap" v-if="isRunning(p.status)">
             <div
               class="progress-bar"
               role="progressbar"
@@ -123,7 +123,7 @@
       <article
         v-for="p in details"
         :key="p.id"
-        class="card"
+        class="article-card"
         :class="{ expanded: expandedDetailsId === p.id }"
       >
         <button
@@ -134,10 +134,10 @@
           :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="p.status">{{
-              statusText(p.status)
+            <span class="status-pill" :class="statusClass(p.status)">{{
+              statusLabel(p.status)
             }}</span>
-            <span class="time" v-if="p.status === 'running'"
+            <span class="time" v-if="isRunning(p.status)"
               >剩餘 {{ p.lastUpdate }}</span
             >
             <span class="time" v-if="p.status === 'match-failed'">退款中</span>
@@ -157,13 +157,15 @@
                     :key="i"
                     class="tx-row"
                     :class="[
-                      `is-${t.statusKey}`,
+                      txRowClass(t.statusKey),
                       { 'is-disabled': t.statusKey === 'failed' },
                     ]"
                   >
                     <div class="tx-date">{{ t.date }}</div>
                     <div class="tx-label">共創金額</div>
-                    <div class="tx-status">{{ t.statusText }}</div>
+                    <div class="tx-status">
+                      {{ txStatusLabel(t.statusKey) }}
+                    </div>
                     <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
                   </div>
                 </div>
@@ -271,7 +273,7 @@
     <article
       v-for="p in projectsData"
       :key="p.id"
-      class="card"
+      class="article-card"
       :class="{ expanded: expandedId === p.id }"
     >
       <button
@@ -282,10 +284,10 @@
         :aria-controls="`details-${p.id}`"
       >
         <header class="card-head">
-          <span class="status-pill" :class="p.status">{{
-            statusText(p.status)
+          <span class="status-pill" :class="statusClass(p.status)">{{
+            statusLabel(p.status)
           }}</span>
-          <span class="time" v-if="p.status === 'running'"
+          <span class="time" v-if="isRunning(p.status)"
             >剩餘 {{ p.lastUpdate }}</span
           >
         </header>
@@ -293,7 +295,7 @@
         <div class="title">{{ p.title }}</div>
 
         <div>
-          <div class="progress-wrap" v-if="p.status === 'running'">
+          <div class="progress-wrap" v-if="isRunning(p.status)">
             <div
               class="progress-bar"
               role="progressbar"
@@ -315,7 +317,6 @@
           </div>
 
           <hr />
-          <!-- 同意條款 -->
           <div class="form-group">
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree" />
@@ -347,7 +348,6 @@
       </button>
     </article>
   </section>
-  <button type="button" @click="testFromBrand">模擬：前台品牌卡進來</button>
 </template>
 
 <script setup>
@@ -356,6 +356,13 @@ import { ref, reactive, computed, onMounted, watch } from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
+import {
+  statusLabel,
+  statusClass,
+  isRunning,
+  txStatusLabel,
+  txRowClass,
+} from "@/utils/status";
 
 const router = useRouter();
 const route = useRoute();
@@ -457,19 +464,16 @@ const details = reactive([
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 1200000,
       },
       {
         date: "2024-12-03",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "failed",
-        statusText: "失敗",
         amount: 1200000,
       },
     ],
@@ -484,19 +488,16 @@ const details = reactive([
       {
         date: "2024-12-01",
         statusKey: "success",
-        statusText: "成功",
         amount: 300000,
       },
       {
         date: "2024-12-02",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 180000,
       },
     ],
@@ -511,19 +512,16 @@ const details = reactive([
       {
         date: "2024-12-01",
         statusKey: "success",
-        statusText: "成功",
         amount: 300000,
       },
       {
         date: "2024-12-02",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 180000,
       },
     ],
@@ -538,19 +536,16 @@ const details = reactive([
       {
         date: "2024-12-01",
         statusKey: "success",
-        statusText: "成功",
         amount: 300000,
       },
       {
         date: "2024-12-02",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 180000,
       },
     ],
@@ -565,19 +560,16 @@ const details = reactive([
       {
         date: "2024-12-01",
         statusKey: "success",
-        statusText: "成功",
         amount: 300000,
       },
       {
         date: "2024-12-02",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 180000,
       },
     ],
@@ -592,19 +584,16 @@ const details = reactive([
       {
         date: "2024-12-01",
         statusKey: "success",
-        statusText: "成功",
         amount: 300000,
       },
       {
         date: "2024-12-02",
         statusKey: "pending",
-        statusText: "核對中",
         amount: 200000,
       },
       {
         date: "2024-12-03",
         statusKey: "success",
-        statusText: "成功",
         amount: 180000,
       },
     ],
@@ -660,15 +649,6 @@ function removeProject(id) {
 function fmtMoney(n) {
   if (n === null || n === undefined || isNaN(n)) return "—";
   return Number(n).toLocaleString("zh-Hant-TW");
-}
-
-function statusText(s) {
-  if (s === "running") return "媒合中";
-  if (s === "failed") return "募資失敗";
-  if (s === "success") return "募資結束";
-  if (s === "match-success") return "媒合成功";
-  if (s === "match-failed") return "媒合不成立";
-  return "";
 }
 
 function handleIncrease(p) {
@@ -752,35 +732,19 @@ watch(
 );
 
 function participate(p) {}
-
-function testFromBrand() {
-  mode.value = "brand";
-  activeTab.value = "progress";
-  router.replace({ query: { source: "brand", tab: activeTab.value } });
-}
 </script>
 
 <style lang="scss" scoped>
-.fs-30 {
-  font-weight: 700;
-  font-size: 30px;
-  line-height: 36px;
-  color: #373a36;
-  margin-bottom: 16px;
-}
-
-section {
-  width: 100%;
-}
-
 .stack,
 .details {
-  display: grid;
+  display: flex;
+  flex-flow: column;
   gap: 20px;
   width: 100%;
 }
 
-.card {
+.article-card {
+  width: 100%;
   position: relative;
   background: rgba(255, 255, 255, 0.5);
   box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.05);
@@ -794,7 +758,7 @@ section {
   }
 }
 
-.stack .card.expanded {
+.stack .article-card.expanded {
   padding: 30px 30px 120px;
   @media (max-width: 576px) {
     gap: 0;
@@ -802,7 +766,7 @@ section {
   }
 }
 
-.details .card.expanded {
+.details .article-card.expanded {
   padding: 30px;
   @media (max-width: 576px) {
     padding: 20px;
@@ -922,24 +886,21 @@ section {
 
 .remain {
   font-weight: $fw-500;
-  font-size: $fs-18;
+  font-size: $fs-15;
   line-height: $lh-22;
   color: $text-dark;
 }
 
 .dollar {
   font-weight: $fw-500;
-  font-size: $fs-18;
+  font-size: $fs-15;
   line-height: $lh-19;
   color: $btn-orange;
 }
 
-.details {
-  overflow: hidden;
-}
 .details-dollar {
   font-weight: 500;
-  font-size: 16px;
+  font-size: $fs-15;
   line-height: 19px;
   color: #ff6634;
   gap: 30px;

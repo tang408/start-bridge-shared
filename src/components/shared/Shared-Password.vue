@@ -105,16 +105,6 @@ watch(basicOk, (v) => emit("valid-change", v), { immediate: true });
 </script>
 
 <style lang="scss" scoped>
-.form-group {
-  text-align: left;
-
-  label {
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 22px;
-  }
-}
-
 .pwd-wrap {
   position: relative;
   display: flex;
@@ -196,11 +186,5 @@ watch(basicOk, (v) => emit("valid-change", v), { immediate: true });
   &.ok {
     color: #2c7a3f;
   }
-}
-
-.error-msg {
-  font-size: 13px;
-  color: #db3838;
-  margin-top: 4px;
 }
 </style>

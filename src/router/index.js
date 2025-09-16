@@ -128,6 +128,11 @@ const routes = [
               };
             },
           },
+          {
+            path: "startup",
+            name: "startup",
+            component: Startup,
+          },
         ],
       },
       {

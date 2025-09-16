@@ -1,5 +1,5 @@
 <template>
-  <div class="fs-30">基本資料</div>
+  <div class="fs-24">基本資料</div>
   <SharedTabs
     v-model="activeTab"
     :tabs="[
@@ -671,15 +671,6 @@ function submitForReview() {
 </script>
 
 <style lang="scss" scoped>
-.back-content {
-  .fs-30 {
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 36px;
-    color: #373a36;
-  }
-}
-
 .actions.two {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -134,14 +134,6 @@ function resetInput() {
 
 <style scoped lang="scss">
 .form-group {
-  text-align: left;
-
-  label {
-    font-weight: $fw-500;
-    font-size: $fs-18;
-    line-height: $lh-22;
-  }
-
   .upload-row {
     display: flex;
     align-items: center;
@@ -205,11 +197,6 @@ function resetInput() {
     margin-top: 6px;
     font-size: $fs-12;
     color: #888;
-  }
-  .error-msg {
-    font-size: $fs-13;
-    color: $text-red;
-    margin-top: 4px;
   }
 }
 </style>

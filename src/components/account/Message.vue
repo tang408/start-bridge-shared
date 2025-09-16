@@ -1,5 +1,5 @@
 <template>
-  <div class="fs-30">訊息</div>
+  <div class="fs-24">訊息</div>
   <SharedTabs
     v-model="activeTab"
     :tabs="[
@@ -149,15 +149,6 @@ function removeMsg(id) {
 </script>
 
 <style lang="scss" scoped>
-.back-content {
-  .fs-30 {
-    font-weight: 700;
-    font-size: 30px;
-    line-height: 36px;
-    color: #373a36;
-  }
-}
-
 .stack {
   display: grid;
   gap: 20px;

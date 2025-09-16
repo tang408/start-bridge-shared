@@ -1,6 +1,6 @@
 <template>
   <div class="form-group">
-    <label :for="id">{{ label }}</label>
+    <label v-if="label" :for="id">{{ label }}</label>
     <div class="row-inline" v-if="buttonText">
       <input
         :id="id"
@@ -59,7 +59,7 @@ const model = defineModel({ type: [String, Number], default: "" });
 
 const props = defineProps({
   id: { type: String, required: true },
-  label: { type: String, required: true },
+  label: { type: String, default: "" },
   type: { type: String, default: "text" },
   placeholder: { type: String, default: "" },
   autocomplete: { type: String, default: "off" },
@@ -103,12 +103,6 @@ function onButtonClick() {
 </script>
 
 <style lang="scss" scoped>
-.error-msg {
-  font-size: 13px;
-  color: #db3838;
-  margin-top: 4px;
-}
-
 .row-inline {
   display: flex;
   gap: 5px;

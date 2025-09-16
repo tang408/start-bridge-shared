@@ -1,7 +1,7 @@
 <template>
   <div class="back-background">
     <div class="back-content container">
-      <div class="fs-30">註冊</div>
+      <div class="fs-24">註冊</div>
 
       <form @submit.prevent="handleRegister" class="form">
         <div class="form-display">
@@ -318,37 +318,4 @@ onBeforeUnmount(() => {
 });
 </script>
 
-<style lang="scss" scoped>
-.agree-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  font-size: 16px;
-  line-height: 22px;
-
-  input[type="checkbox"] {
-    width: 16px !important;
-    height: 16px;
-    margin: 0 2px 0 0;
-    accent-color: #ff6634;
-    cursor: pointer;
-  }
-
-  label {
-    margin: 0;
-    cursor: pointer;
-  }
-
-  .agree-link {
-    color: #ff6634;
-    text-decoration: none;
-    cursor: pointer;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-</style>
+<style lang="scss" scoped></style>

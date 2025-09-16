@@ -174,7 +174,8 @@ const displayNum = (step, sec, i) => {
     background: #3a3c3b;
     color: #fff;
     padding: 30px 0 20px;
-    width: 100%;
+    width: 218px;
+
     border: none;
     font-weight: 700;
     font-size: 24px;
@@ -182,7 +183,6 @@ const displayNum = (step, sec, i) => {
     letter-spacing: 0.1em;
 
     cursor: pointer;
-
     &::before {
       content: "";
       position: absolute;
