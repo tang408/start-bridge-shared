@@ -1,7 +1,7 @@
 <template>
   <div class="back-background">
     <div class="back-content container">
-      <div class="fs-30">登入</div>
+      <div class="fs-24">登入</div>
       <form @submit.prevent="handleLogin" class="form">
         <div class="form-display">
           <SharedInput

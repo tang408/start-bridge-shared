@@ -1,7 +1,8 @@
 <template>
   <div class="form-group">
     <label>{{ label }}</label>
-    <div class="checks mt-3">
+    <p v-if="desc" class="fs-14">{{ desc }}</p>
+    <div class="checks mt-2">
       <div class="option" v-for="opt in options" :key="opt.value">
         <input
           type="radio"
@@ -14,6 +15,14 @@
         <label class="option-label" :for="`${uid}-${opt.value}`" :class="{ 'disabled': disabled }">
           {{ opt.text }}
         </label>
+        <input
+          v-if="opt.withInput"
+          class="textline ms-2"
+          type="text"
+          :value="(extra && extra[opt.value]) || ''"
+          :disabled="model !== opt.value"
+          @input="updateExtra($event.target.value, opt.value)"
+        />
       </div>
     </div>
     <p class="error-msg" v-if="error">{{ error }}</p>
@@ -21,11 +30,13 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 const model = defineModel({ type: String, default: "" });
+const extra = defineModel("extra");
 
 const props = defineProps({
   label: { type: String, required: true },
+  desc: { type: String, default: "" },
   options: { type: Array, required: true },
   required: { type: Boolean, default: false },
   error: { type: String, default: "" },
@@ -33,53 +44,33 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
 });
 const uid = computed(() => `rg-${Math.random().toString(36).slice(2, 9)}`);
+function updateExtra(val, optValue) {
+  extra.value = { ...extra.value, [optValue]: val };
+}
 </script>
 <style lang="scss" scoped>
-.checks {
+.option {
   display: flex;
-  gap: 20px;
-  .option {
-    input {
-      position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  @media (max-width: 576px) {
+    display: block;
+  }
+
+  .option-label {
+    flex: 0 0 auto;
+    padding-left: 28px;
+  }
+
+  .textline {
+    flex: 1;
+    max-width: 200px;
+    @media (max-width: 576px) {
+      flex: 1 1 100%;
+      margin-left: 28px;
+      max-width: 100%;
     }
-    &-label {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-      &::before {
-        content: "";
-        display: inline-block;
-        width: 18px;
-        height: 18px;
-        margin-right: 8px;
-        border: 2px solid #bbb;
-        border-radius: 4px;
-        background: #fff;
-        box-sizing: border-box;
-        transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
-      }
-    }
-  }
-
-  .option input:checked + .option-label::before {
-    background: #ff6634;
-    border-color: #ff6634;
-    box-shadow: 0 0 0 2px rgba(255, 102, 52, 0.2);
-  }
-
-  .option input:focus-visible + .option-label::before {
-    outline: 2px solid #333;
-    outline-offset: 2px;
-  }
-
-  .option input:disabled + .option-label {
-    opacity: 0.6;
-    cursor: not-allowed;
   }
 }
 </style>

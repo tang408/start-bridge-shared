@@ -80,16 +80,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .form-group {
-  text-align: left;
-
-  label {
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 22px;
-    margin-bottom: 6px;
-    display: block;
-  }
-
   .custom-select {
     position: relative;
     user-select: none;
@@ -141,12 +131,6 @@ onBeforeUnmount(() => {
         }
       }
     }
-  }
-
-  .error-msg {
-    font-size: 13px;
-    color: #db3838;
-    margin-top: 4px;
   }
 }
 </style>

@@ -24,7 +24,9 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link btn-yellow" role="button">參與專案</a>
+        <a class="nav-link btn-yellow" role="button" @click="goToParticipation">
+          參與專案
+        </a>
       </li>
     </ul>
 
@@ -145,8 +147,10 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import Tab from "bootstrap/js/dist/tab";
 
+const router = useRouter();
 const tabs = [
   { key: "brand", label: "品牌資訊" },
   { key: "joinInfo", label: "加盟資訊" },
@@ -173,6 +177,18 @@ onMounted(() => {
     })
   );
 });
+
+function goToParticipation() {
+  router.push({
+    name: "participation",
+    query: {
+      source: "brand",
+      tab: "progress",
+      brandId: 101,
+      brandName: "顏太煮奶茶",
+    },
+  });
+}
 </script>
 
 <style scoped lang="scss">
@@ -180,7 +196,7 @@ onMounted(() => {
   border: 2px solid #ff6634;
   color: #ff6634;
   font-weight: 700;
-  border-radius: 50%;
+  border-radius: 50px;
   padding: 0.6rem 1rem;
   background: #fff;
   display: inline-flex;
@@ -258,7 +274,7 @@ onMounted(() => {
   border: 2px solid #ffcc00 !important;
   color: #000 !important;
   font-weight: 700;
-  border-radius: 50%;
+  border-radius: 50px;
   padding: 0.6rem 1rem;
   display: inline-flex;
   align-items: center;

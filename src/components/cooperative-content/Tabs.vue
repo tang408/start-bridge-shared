@@ -26,7 +26,9 @@
         <a class="nav-link btn-yellow" role="button">媒合中專案</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link btn-yellow" role="button">申請創業</a>
+        <a class="nav-link btn-yellow" role="button" @click="goToStartup">
+          申請創業
+        </a>
       </li>
     </ul>
 
@@ -120,6 +122,8 @@
 <script setup>
 import { onMounted, ref, computed } from "vue";
 import Tab from "bootstrap/js/dist/tab";
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const props = defineProps({
   projectData: {
@@ -225,6 +229,16 @@ onMounted(() => {
       })
   );
 });
+
+function goToStartup() {
+  router.push({
+    path: "/account/startup",
+    query: {
+      source: "business",
+      step: "step1",
+    },
+  });
+}
 </script>
 
 <style scoped lang="scss">
@@ -232,7 +246,7 @@ onMounted(() => {
   border: 2px solid #ff6634;
   color: #ff6634;
   font-weight: 700;
-  border-radius: 50%;
+  border-radius: 50px;
   padding: 0.6rem 1rem;
   background: #fff;
   display: inline-flex;
@@ -272,7 +286,7 @@ onMounted(() => {
   border: 2px solid #ffcc00 !important;
   color: #000 !important;
   font-weight: 700;
-  border-radius: 50%;
+  border-radius: 50px;
   padding: 0.6rem 1rem;
   display: inline-flex;
   align-items: center;
