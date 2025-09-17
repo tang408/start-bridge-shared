@@ -20,6 +20,12 @@ import Message from "../components/account/Message.vue";
 import Profile from "../components/account/Profile.vue";
 import Participation from "../components/account/Participation.vue";
 import Startup from "../components/account/Startup.vue";
+import ForgotPassword from "../views/ForgotPassword.vue";
+import ResetPassword from "../views/ResetPassword.vue";
+import Contracts from "../components/account/Contracts.vue";
+import Faq from "../components/account/Faq.vue";
+import Courses from "../components/account/Courses.vue";
+import Favorites from "../components/account/Favorites.vue";
 
 const routes = [
   {
@@ -91,6 +97,16 @@ const routes = [
         component: Login,
       },
       {
+        path: "forgot-password",
+        name: "ForgotPassword",
+        component: ForgotPassword,
+      },
+      {
+        path: "reset-password",
+        name: "ResetPassword",
+        component: ResetPassword,
+      },
+      {
         path: "entSignUp",
         name: "EntSignUp",
         component: EntSignUp,
@@ -133,6 +149,27 @@ const routes = [
             name: "startup",
             component: Startup,
           },
+          {
+            path: "contracts",
+            name: "contracts",
+            component: Contracts,
+          },
+          {
+            path: "faq",
+            name: "faq",
+            component: Faq,
+          },
+          {
+            path: "courses",
+            name: "courses",
+            component: Courses,
+          },
+
+          {
+            path: "favorites",
+            name: "favorites",
+            component: Favorites,
+          },
         ],
       },
       {
@@ -148,7 +185,6 @@ const routes = [
           },
         ],
       },
-
       {
         path: "/privacy",
         name: "privacy",

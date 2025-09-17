@@ -78,8 +78,7 @@ const items = [
   { key: "favorites", label: "我的收藏", icon: side3 },
   { key: "participation", label: "參與專案管理", icon: side4 },
   { key: "startup", label: "創業計劃管理", icon: side5 },
-  { key: "contracts", label: "公告合約", icon: side6 },
-  { key: "bookings", label: "預約活動及記錄", icon: side7 },
+  { key: "contracts", label: "公版合約", icon: side6 },
   { key: "courses", label: "課程/講座報名", icon: side8 },
   { key: "faq", label: "幫助中心(FAQ)", icon: side9 },
 ];
