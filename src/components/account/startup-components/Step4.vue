@@ -35,7 +35,7 @@
         v-model="local.q4"
         label="4. 請問您創業的初創團隊是如何組成？(可複選)"
         :options="[
-          { key: 'founder', text: '本人親自參與經營(必選題)' },
+          { key: 'founder', text: '本人親自參與經營' },
           { key: 'family', text: '邀約親友加入，關係：', placeholder: '' },
           { key: 'recruit', text: '另行招募，管道：', placeholder: '' },
           { key: 'other', text: '其他：', placeholder: '' },
@@ -127,7 +127,7 @@
       />
     </div>
 
-    <button type="submit" class="apply-btn write w-100 mt-4">下一步</button>
+    <button type="button" class="apply-btn write w-100 mt-4" @click="submitStep">下一步</button>
   </form>
 </template>
 

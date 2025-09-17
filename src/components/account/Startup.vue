@@ -144,6 +144,7 @@
       v-model="formData[docStep]"
       :errors="formErrors[docStep]"
       @next="goNext"
+      @submit="createPlan"
     />
   </section>
 </template>
@@ -154,6 +155,8 @@ import { ref, reactive, computed, onMounted, watch } from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import { statusLabel, statusClass } from "@/utils/status";
+const { isLoggedIn, currentUser } = useAuth();
+
 
 import Step1 from "./startup-components/Step1.vue";
 import Step2 from "./startup-components/Step2.vue";
@@ -163,6 +166,8 @@ import Step5 from "./startup-components/Step5.vue";
 import Step6 from "./startup-components/Step6.vue";
 import Step7 from "./startup-components/Step7.vue";
 import Step8 from "./startup-components/Step8.vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {planApi} from "@/api/modules/plan.js";
 
 const STEPS = {
   step1: Step1,
@@ -189,7 +194,7 @@ const formData = reactive({
     selfFund: "",
     totalFunding: "",
     minAmount: "",
-    maxAmount: "",
+    amountRange: "",
     partnerLimit: "",
     expireDate: "",
   },
@@ -199,10 +204,10 @@ const formData = reactive({
     expDesc: "",
     hasDispute: "",
     disputeDesc: "",
-    willingDocs: "",
     selfAdv: "",
     resources: "",
     otherResources: "",
+    willingDocs: "",
   },
   step4: {
     q1: "",
@@ -266,6 +271,9 @@ const formData = reactive({
         desc: "(淨利，不含稅)",
       },
     ],
+    rewardAmount: "",
+    rewardPercent: "",
+
     fundNote: "",
     reportOptions: [
       { value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限" },
@@ -297,7 +305,7 @@ const formErrors = reactive({
     selfFund: "",
     totalFunding: "",
     minAmount: "",
-    maxAmount: "",
+    amountRange: "",
     partnerLimit: "",
     expireDate: "",
   },
@@ -331,6 +339,18 @@ const formErrors = reactive({
 });
 
 function goNext(nextStep) {
+  console.log("當前步驟:", docStep.value);
+  console.log("下一步驟:", nextStep);
+  console.log("完整 formData:", formData);
+
+  console.log("Step1 資料:", formData.step1);
+  console.log("Step3 資料:", formData.step3);
+  console.log("Step4 資料:", formData.step4);
+  console.log("Step5 資料:", formData.step5);
+  console.log("Step6 資料:", formData.step6);
+  console.log("Step8 資料:", formData.step8);
+
+
   if (Object.keys(STEPS).includes(nextStep)) {
     docStep.value = nextStep;
     router.replace({ query: { ...route.query, step: nextStep } });
@@ -430,6 +450,354 @@ const displayedRecords = computed(() => {
   }
   return list;
 });
+function convertFormData(formData, userId) {
+  // 字串轉布林值
+  function stringToBool(value) {
+    return value === "yes" || value === "agree" || value === true;
+  }
+
+  function dateToTimestamp(dateString) {
+    if (!dateString) return 0;
+
+    // 創建日期物件並設定為當天的最後時間
+    const date = new Date(dateString);
+    date.setHours(23, 59, 59, 999); // 設定為 23:59:59.999
+
+    return Math.floor(date.getTime() / 1000); // 轉換為秒級時間戳
+  }
+
+  // 從 prepBudget 陣列中提取特定項目的金額
+  function getBudgetAmount(prepBudget, itemName) {
+    const item = prepBudget.find(budget => budget.item === itemName);
+    return item ? parseInt(item.amount) || 0 : 0;
+  }
+
+  // 從 costStruct 陣列中提取百分比
+  function getCostPercent(costStruct, itemName) {
+    const item = costStruct.find(cost => cost.item === itemName);
+    return item ? parseFloat(item.percent) || 0 : 0;
+  }
+  function getCostAmount(costStruct, itemName) {
+    const item = costStruct.find(cost => cost.item === itemName);
+    return item ? parseFloat(item.amount) || 0 : 0;
+  }
+
+  function getCostRemark(costStruct, itemName) {
+    const item = costStruct.find(cost => cost.item === itemName);
+    return item ? (item.note) || "" : "";
+  }
+
+  function getReportText(step5) {
+    if (!step5.reportSelected) return "";
+
+    // 如果選擇的是 "other"，返回自訂輸入的內容
+    if (step5.reportSelected === "other") {
+      return `其他: ${step5.otherReport?.other || ""}`;
+    }
+
+    // 從 reportOptions 中找到對應的 text
+    const selectedOption = step5.reportOptions.find(option => option.value === step5.reportSelected);
+    return selectedOption ? selectedOption.text : step5.reportSelected;
+  }
+
+  // Q2: 處理 briefingSession - 返回 "是/否 (值)"
+  function getBriefingSessionText(q2) {
+    if (!q2) return "";
+
+    if (q2.yes?.checked) {
+      return `是 (${q2.yes.value || ""})`;
+    } else if (q2.plan?.checked) {
+      return `否 (${q2.plan.value || ""})`;
+    }
+    return "";
+  }
+
+  // Q4: 處理 recruitmentMethods - 返回 "key: value" 格式
+  function getRecruitmentMethodsText(q4) {
+    if (!q4) return "";
+
+    // 對應的文字描述
+    const recruitmentMapping = {
+      'founder': '本人親自參與經營',
+      'family': '邀約親友加入',
+      'recruit': '另行招募',
+      'other': '其他'
+    };
+
+    const result = [];
+    for (const [key, value] of Object.entries(q4)) {
+      if (value.checked) {
+        const text = recruitmentMapping[key] || key;
+        if (value.value) {
+          result.push(`${text}: ${value.value}`);
+        } else {
+          result.push(text);
+        }
+      }
+    }
+    return result.join(", ");
+  }
+
+  // Q5.channels: 轉換為對應的 text
+  function getChannelsText(channels) {
+    if (!channels) return "";
+
+    const channelMapping = {
+      'jobBank': '人力銀行',
+      'social': '社群平台',
+      'referral': '親友介紹',
+      'poster': '門店張貼',
+      'other': '其他'
+    };
+
+    const result = [];
+    for (const [key, value] of Object.entries(channels)) {
+      if (value.checked) {
+        const text = channelMapping[key] || key;
+        if (key === 'other' && value.value) {
+          result.push(`${text}: ${value.value}`);
+        } else {
+          result.push(text);
+        }
+      }
+    }
+    return result.join(", ");
+  }
+
+  // Q6: 處理時間 - 返回 "text from-to" 格式
+  function getTimeText(q6) {
+    if (!q6) return "";
+
+    const timeMapping = {
+      'fulltime': '全職投入並同步參與經營',
+      'parttime': '全職投入但隨機參與經營',
+      'other': '其他'
+    };
+
+    for (const [key, value] of Object.entries(q6)) {
+      if (value.checked) {
+        const text = timeMapping[key] || key;
+        if (key === 'other' && value.value) {
+          return `${text}: ${value.value}`;
+        } else if (value.from && value.to) {
+          return `${text} ${value.from}-${value.to}`;
+        }
+        return text;
+      }
+    }
+    return "";
+  }
+
+  // Q7: 轉換客戶來源為 text
+  function getCustomerSourceText(q7) {
+    if (!q7) return "";
+
+    const sourceMapping = {
+      'social': '親友推薦',
+      'passenger': '過路散客',
+      'business': '商圈經營',
+      'web': '網路口碑',
+      'other': '其他'
+    };
+
+    const result = [];
+    for (const [key, value] of Object.entries(q7)) {
+      if (value.checked) {
+        const text = sourceMapping[key] || key;
+        if (key === 'other' && value.value) {
+          result.push(`${text}: ${value.value}`);
+        } else {
+          result.push(text);
+        }
+      }
+    }
+    return result.join(", ");
+  }
+
+  // Q8: 轉換門市地點為 text
+  function getLocationTypeText(location, locationNote) {
+    const locationMapping = {
+      'core': '核心商圈',
+      'residential': '住家型商圈',
+      'office': '辦公型商圈',
+      'school': '學校周邊',
+      'mall': '百貨商場',
+      'other': '其他'
+    };
+
+    const text = locationMapping[location] || location || "";
+
+    // 如果是 "其他" 且有額外說明
+    if (location === 'other' && locationNote?.other) {
+      return `${text}: ${locationNote.other}`;
+    }
+
+    return text;
+  }
+
+  // Q9: 轉換共創者附加價值為 text
+  function getCoFounderValueText(value, valueNote) {
+    const valueMapping = {
+      'operation': '協助經營',
+      'network': '推廣親友及資源',
+      'sales': '協助行銷',
+      'finance': '能協助籌資',
+      'independent': '獨立經營',
+      'other': '其他'
+    };
+
+    const text = valueMapping[value] || value || "";
+
+    // 如果是 "其他" 且有額外說明
+    if (value === 'other' && valueNote?.other) {
+      return `${text}: ${valueNote.other}`;
+    }
+
+    return text;
+  }
+
+  // 處理分潤週期 - 返回對應的 text
+  function getProfitCycleText(value) {
+    const cycleMapping = {
+      'monthly': '每月結算並分潤一次(每一個月)',
+      'quarterly': '每季結算並分潤一次(每三個月)',
+      'halfyear': '每半年結算並分潤一次(每六個月)',
+      'yearly': '每年結算並分潤一次(每十二個月)'
+    };
+
+    return cycleMapping[value] || value || "";
+  }
+
+  // 處理分潤計算方式 - 返回對應的 text，特別處理 "其他"
+  function getProfitCalcText(value, otherData) {
+    if (value === "other") {
+      // 處理多種可能的資料結構
+      const otherText = otherData?.withInputText || otherData?.other || "";
+      return `其他: ${otherText}`;
+    }
+
+    if (value === "agree") {
+      return "同意依照【共同創業者】出資占比計算淨利分潤(例如:出資 20 萬/總投資 100 萬 = 分潤 20%)";
+    }
+
+    return value || "";
+  }
+
+  // 處理分潤支付方式 - 返回對應的 text，特別處理 "其他"
+  function getProfitPayText(value, otherData) {
+    if (value === "other") {
+      // 處理多種可能的資料結構
+      const otherText = otherData?.withInputText || otherData?.other || "";
+      return `其他: ${otherText}`;
+    }
+
+    if (value === "bank") {
+      return "銀行匯款至指定帳戶(需提供匯款憑證備查)";
+    }
+
+    return value || "";
+  }
+
+
+  const step1 = formData.step1;
+  const step3 = formData.step3;
+  const step4 = formData.step4;
+  const step5 = formData.step5;
+  const step6 = formData.step6;
+
+  return {
+    userId: userId,
+    views: 0, // 初始值
+
+    // 基本資料 (Step1)
+    startupBudget: parseInt(step1.budget) || 0,
+    selfPreparedFunds: parseInt(step1.selfFund) || 0,
+    totalAmount: parseInt(step1.totalFunding) || 0,
+    minimumAmount: parseInt(step1.minAmount) || 0,
+    amountRange: parseInt(step1.amountRange) || 0,
+    limitPartner: parseInt(step1.partnerLimit) || 0,
+    brand: parseInt(step1.brand) || 0,
+    endTime: dateToTimestamp(step1.expireDate),
+
+    // 創業經驗 (Step3)
+    hasExperience: stringToBool(step3.hasStartupExp),
+    experienceDetails: step3.expDesc || "",
+    financialConstraints: stringToBool(step3.hasDispute),
+    constraintsExplanation: step3.disputeDesc || "",
+    advantageExplanation: step3.selfAdv || "",
+    availableResources: step3.resources || "",
+    otherResources: step3.otherResources || "",
+    supportDocumentation: stringToBool(step3.willingDocs),
+
+    // 創業計畫 (Step4)
+    innovationDescription: step4.q1,
+    // radio + 字串
+    briefingSession: getBriefingSessionText(step4.q2) || "",
+    nextStagePlan: step4.q3 || "",
+    // 複選 + 字串
+    recruitmentMethods: getRecruitmentMethodsText(step4.q4) || "",
+    // 招聘人數
+    expectedNumberPeople: parseInt(step4.q5.total?.value) || 0,
+    // 渠道
+    recruitmentPipeline: getChannelsText(step4.q5.channels),
+    // text + q6
+    investTime: getTimeText(step4.q6) || "",
+    // 客源
+    customerSource: getCustomerSourceText(step4.q7) || "",
+    // 門市屬性
+    storeLocationType: getLocationTypeText(step4.q8Location, step4.q8LocationNote) || "",
+    // 共創者附加價值
+    coFounderAddedValue: getCoFounderValueText(step4.q9Location, step4.q9LocationNote) || "",
+
+    // 財務規劃 (Step5) - 預算項目
+    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的前期費用"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店鋪的裝潢設工程"),
+    equipmentCosts: getBudgetAmount(step5.prepBudget, "營運前購置設備費用"),
+    firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前採購備貨費用"),
+    paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業初期營運週轉資金"),
+    otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "輔導培訓課程費用"),
+    marketingExpenses: getBudgetAmount(step5.prepBudget, "雜項費用"),
+    otherCosts: getBudgetAmount(step5.prepBudget, "其他（請說明）"),
+
+    // 財務規劃 (Step5) - 營業目標和成本結構
+    turnoverTarget: parseInt(step5.targetRevenue) || 0,
+    firstMaterialCostsPercent: getCostPercent(step5.costStruct, "物料成本"),
+    firstMaterialCostsAmount: getCostAmount(step5.costStruct, "物料成本"),
+    firstMaterialCostsRemark: getCostRemark(step5.costStruct, "物料成本"),
+    personnelCostsPercent: getCostPercent(step5.costStruct, "人事成本"),
+    personnelCostsAmount: getCostAmount(step5.costStruct, "人事成本"),
+    personnelCostsRemark: getCostRemark(step5.costStruct, "人事成本"),
+    rentalCostsPercent: getCostPercent(step5.costStruct, "租金成本"),
+    rentalCostsAmount: getCostAmount(step5.costStruct, "租金成本"),
+    rentalCostsRemark: getCostRemark(step5.costStruct, "租金成本"),
+    peratingCostsPercent: getCostPercent(step5.costStruct, "經營管理成本"),
+    peratingCostsAmount: getCostAmount(step5.costStruct, "經營管理成本"),
+    peratingCostsRemark: getCostRemark(step5.costStruct, "經營管理成本"),
+    otherCostsPercent: getCostPercent(step5.costStruct, "其他"),
+    otherCostsAmount: getCostAmount(step5.costStruct, "其他"),
+    otherCostsRemark: getCostRemark(step5.costStruct, "其他"),
+
+    rewardThreshold: parseInt(step5.rewardAmount) || 0,
+    rewardPercent: parseFloat(step5.rewardPercent) || 0,
+    otherStatement: getReportText(step5),
+
+    // 合作條件 (Step6)
+    profitDistributionCycle: getProfitCycleText(step6.sharePeriod),
+    profitCalculationMethod: getProfitCalcText(step6.shareCalc, step6.shareCalcOther),
+    profitPaymentMethod: getProfitPayText(step6.sharePay, step6.sharePayOther)  };
+}
+
+async function createPlan() {
+  const data = convertFormData(formData, currentUser.value)
+  const response = await planApi.createPlan(data)
+  if (response.code === 0) {
+    alert("創業計劃書提交成功！")
+  } else {
+    alert("創業計劃書提交失敗，請稍後再試。")
+    return;
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>

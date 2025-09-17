@@ -55,7 +55,7 @@
       </div>
     </div>
 
-    <button type="submit" class="apply-btn write w-100 mt-4">下一頁</button>
+    <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一頁</button>
   </form>
 </template>
 

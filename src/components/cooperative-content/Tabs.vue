@@ -236,6 +236,7 @@ function goToStartup() {
     query: {
       source: "business",
       step: "step1",
+      brand: props.projectData?.id || ""
     },
   });
 }

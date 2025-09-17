@@ -9,8 +9,8 @@
         label="是否有創業經驗？*"
         name="hasStartupExp"
         :options="[
-          { text: '是', value: 'yes' },
-          { text: '否', value: 'no' },
+          { text: '是', value: true },
+          { text: '否', value: false },
         ]"
         :error="errors.hasStartupExp"
       />
@@ -29,8 +29,8 @@
         label="是否曾涉入財務糾紛、重大爭議或負面新聞？*"
         name="hasDispute"
         :options="[
-          { text: '是', value: 'yes' },
-          { text: '否', value: 'no' },
+          { text: '是', value: true },
+          { text: '否', value: false },
         ]"
         :error="errors.hasDispute"
       />
@@ -41,18 +41,6 @@
         v-model="local.disputeDesc"
         :rows="4"
         placeholder="placeholder"
-      />
-
-      <!-- 願意提供佐證文件 -->
-      <SharedRadio
-        v-model="local.willingDocs"
-        label="是否願意提供額外佐證文件？*"
-        name="willingDocs"
-        :options="[
-          { text: '是', value: 'yes' },
-          { text: '否', value: 'no' },
-        ]"
-        :error="errors.willingDocs"
       />
 
       <SharedTextarea
@@ -81,19 +69,20 @@
         placeholder="placeholder"
       />
 
-      <!-- 願意提供佐證文件 (第二次) -->
+      <!-- 願意提供佐證文件 -->
       <SharedRadio
-        v-model="local.willingDocs2"
-        label="是否願意再提供其他佐證文件？"
-        name="willingDocs2"
-        :options="[
-          { text: '是', value: 'yes' },
-          { text: '否', value: 'no' },
+          v-model="local.willingDocs"
+          label="是否願意提供額外佐證文件？*"
+          name="willingDocs"
+          :options="[
+          { text: '是', value: true },
+          { text: '否', value: false },
         ]"
+          :error="errors.willingDocs"
       />
     </div>
 
-    <button type="submit" class="apply-btn write w-100 mt-4">下一步</button>
+    <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一步</button>
   </form>
 </template>
 
@@ -113,17 +102,27 @@ const local = reactive({ ...props.modelValue });
 watch(local, (val) => emit("update:modelValue", val), { deep: true });
 
 function submitStep() {
-  props.errors.hasStartupExp = local.hasStartupExp
-    ? ""
-    : "請選擇是否有創業經驗";
-  props.errors.hasDispute = local.hasDispute ? "" : "請選擇是否曾涉入";
-  props.errors.willingDocs = local.willingDocs ? "" : "請選擇是否願意提供";
+  // 清空錯誤訊息
+  Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
-  if (
-    !props.errors.hasStartupExp &&
-    !props.errors.hasDispute &&
-    !props.errors.willingDocs
-  ) {
+  // 檢查必填的 boolean 欄位
+  // 注意：boolean 值可能是 true, false, 或 undefined/null
+  if (local.hasStartupExp === undefined || local.hasStartupExp === null) {
+    props.errors.hasStartupExp = "請選擇是否有創業經驗";
+  }
+
+  if (local.hasDispute === undefined || local.hasDispute === null) {
+    props.errors.hasDispute = "請選擇是否曾涉入財務糾紛";
+  }
+
+  if (local.willingDocs === undefined || local.willingDocs === null) {
+    props.errors.willingDocs = "請選擇是否願意提供佐證文件";
+  }
+
+  // 檢查是否有錯誤
+  const hasError = Object.values(props.errors).some((e) => e);
+
+  if (!hasError) {
     emit("next", "step4");
   }
 }
