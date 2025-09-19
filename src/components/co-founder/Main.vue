@@ -153,7 +153,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-login">註冊會員</button>
+        <button type="submit" class="btn-confirm">註冊會員</button>
         <div class="links">
           <p>已有帳號？<RouterLink to="/login">登入</RouterLink></p>
         </div>

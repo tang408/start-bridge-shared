@@ -26,11 +26,13 @@
           />
         </div>
 
-        <button type="submit" class="btn-login">登入</button>
+        <button type="submit" class="btn-confirm">登入</button>
 
         <div class="links">
           <p>
-            登入有問題？<a href="#">忘記密碼</a> 或 <a href="#">變更帳號</a>
+            登入有問題？<RouterLink to="/forgot-password">忘記密碼</RouterLink>
+            或
+            <a href="#">變更帳號</a>
           </p>
           <p>還沒有帳號？<RouterLink to="/entSignUp">註冊</RouterLink></p>
         </div>

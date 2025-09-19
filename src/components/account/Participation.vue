@@ -242,11 +242,11 @@
         <table class="records-table">
           <thead>
             <tr>
-              <th>時間</th>
-              <th>專案名稱</th>
-              <th>動作</th>
-              <th>狀態</th>
-              <th class="ta-right">金額</th>
+              <th width="12%">時間</th>
+              <th width="50%">專案名稱</th>
+              <th width="13%">動作</th>
+              <th width="13%">狀態</th>
+              <th width="12%" class="ta-right">金額</th>
             </tr>
           </thead>
           <tbody>
