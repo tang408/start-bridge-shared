@@ -184,8 +184,9 @@ function goToParticipation() {
     query: {
       source: "brand",
       tab: "progress",
-      brandId: 101,
+      brandId: 2,
       brandName: "顏太煮奶茶",
+      planId: 1,
     },
   });
 }

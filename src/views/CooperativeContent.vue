@@ -13,7 +13,6 @@ import {useRoute, useRouter} from "vue-router";
 
 // 必須先聲明 route 和 router
 const route = useRoute();
-const router = useRouter();
 
 const props = defineProps({
   id: { type: [String, Number], required: true },

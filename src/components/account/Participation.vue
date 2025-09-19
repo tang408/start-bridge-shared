@@ -363,6 +363,10 @@ import {
   txStatusLabel,
   txRowClass,
 } from "@/utils/status";
+import {useAuth} from "@/composables/useAuth.js";
+import {planApi} from "@/api/modules/plan.js";
+const { isLoggedIn, currentUser } = useAuth();
+
 
 const router = useRouter();
 const route = useRoute();
@@ -629,7 +633,7 @@ const records = reactive([
 
 const projectsData = reactive([
   {
-    id: "x-1",
+    id: 1,
     status: "running",
     lastUpdate: "剩餘2天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
@@ -731,7 +735,25 @@ watch(
   }
 );
 
-function participate(p) {}
+async function participate(p) {
+  console.log(route.query.brandId)
+  console.log(route.query.planId)
+  console.log(currentUser.value)
+
+  const formData = {
+    userId: currentUser.value,
+    planId: Number(route.query.planId),
+    amount: p.increaseAmount,
+  }
+
+  const response = await planApi.participantPlan(formData)
+  if (response.code === 0) {
+    alert('參與成功')
+    await router.push({name: 'Account', query: {tab: 'records'}})
+  } else {
+    alert(response.message ||'參與失敗，請稍後再試')
+  }
+}
 </script>
 
 <style lang="scss" scoped>

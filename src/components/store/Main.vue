@@ -5,9 +5,7 @@
     :filters="filtersB"
     @update:city="changeCity"
     @update:industryType="changeIndustryType"
-    @card-click="
-      (item) => $router.push({ name: 'ProjectDetail', params: { id: item.id } })
-    "
+    @card-click="handleCardClick"
   />
 </template>
 
@@ -189,6 +187,12 @@ function getIndustryTypeId(industryTypeName) {
   if (!industryTypeName) return 0; // 如果沒有選擇，返回0表示全部
   const industryType = industryTypesData.value.find(item => item.name === industryTypeName);
   return industryType ? industryType.id : 0;
+}
+
+function handleCardClick(card) {
+  const address = encodeURIComponent(card.address);
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
+  window.open(googleMapsUrl, '_blank');
 }
 
 // 組件掛載時獲取數據

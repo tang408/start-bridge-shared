@@ -22,9 +22,9 @@
     mode="progress"
     :items="items"
     :filters="filtersA"
-    @update:order="(v) => console.log('order =', v)"
-    @update:category="(v) => console.log('category =', v)"
-    @update:feature="(v) => console.log('feature =', v)"
+    @update:order=handleOrderUpdate
+    @update:category=handleCategoryUpdate
+    @update:feature=handleFeatureUpdate
     @card-click="handleCardClick"
   />
   <div class="qa-content">
@@ -40,122 +40,229 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {computed, onMounted, ref} from "vue";
 import { useRouter } from "vue-router";
 import SharedFilter from "@/components/shared/Shared-Filter.vue";
+import {planApi as PlanApi} from "@/api/modules/plan.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 const router = useRouter();
-const items = ref([
-  {
-    id: 1,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 76,
-    to: { name: "ProjectDetail", params: { id: 1 } },
-  },
-  {
-    id: 2,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 54,
-    to: { name: "ProjectDetail", params: { id: 2 } },
-  },
-  {
-    id: 3,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 32,
-    to: { name: "ProjectDetail", params: { id: 3 } },
-  },
-  {
-    id: 4,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 88,
-    to: { name: "ProjectDetail", params: { id: 4 } },
-  },
-  {
-    id: 5,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 45,
-    to: { name: "ProjectDetail", params: { id: 5 } },
-  },
-  {
-    id: 6,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 20,
-    to: { name: "ProjectDetail", params: { id: 6 } },
-  },
-  {
-    id: 7,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 65,
-    to: { name: "ProjectDetail", params: { id: 7 } },
-  },
-  {
-    id: 8,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 100,
-    to: { name: "ProjectDetail", params: { id: 8 } },
-  },
-  {
-    id: 9,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    progress: 12,
-    to: { name: "ProjectDetail", params: { id: 9 } },
-  },
-]);
+const items = ref([]);
+// const items = ref([
+//   {
+//     id: 1,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 76,
+//     to: { name: "ProjectDetail", params: { id: 1 } },
+//   },
+//   {
+//     id: 2,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 54,
+//     to: { name: "ProjectDetail", params: { id: 2 } },
+//   },
+//   {
+//     id: 3,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 32,
+//     to: { name: "ProjectDetail", params: { id: 3 } },
+//   },
+//   {
+//     id: 4,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 88,
+//     to: { name: "ProjectDetail", params: { id: 4 } },
+//   },
+//   {
+//     id: 5,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 45,
+//     to: { name: "ProjectDetail", params: { id: 5 } },
+//   },
+//   {
+//     id: 6,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 20,
+//     to: { name: "ProjectDetail", params: { id: 6 } },
+//   },
+//   {
+//     id: 7,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 65,
+//     to: { name: "ProjectDetail", params: { id: 7 } },
+//   },
+//   {
+//     id: 8,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 100,
+//     to: { name: "ProjectDetail", params: { id: 8 } },
+//   },
+//   {
+//     id: 9,
+//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+//     price: "99天",
+//     supporters: "9999 人瀏覽",
+//     progress: 12,
+//     to: { name: "ProjectDetail", params: { id: 9 } },
+//   },
+// ]);
 
-const filtersA = [
+// 載入狀態
+const loading = ref(false);
+
+
+// 處理卡片點擊
+function handleCardClick(card) {
+  if (card.to) {
+    console.log('導航到:', card.to)
+    router.push(card.to);
+  }
+}
+
+// 處理篩選器變更 - 每次變更都重新發送 API 請求
+async function handleOrderUpdate(orderValue) {
+  currentFilters.value.order = orderValue;
+
+  // 重新獲取資料，然後排序
+  await getAllPlan();
+}
+
+async function handleCategoryUpdate(categoryValue) {
+  const industryType = typeof categoryValue === 'object' ? categoryValue.value : categoryValue;
+  currentFilters.value.industryType = industryType || 0;
+
+  // 立即發送 API 請求
+  await getAllPlan();
+}
+
+async function handleFeatureUpdate(featureValue) {
+  const feature = typeof featureValue === 'object' ? featureValue.value : featureValue;
+  currentFilters.value.feature = feature || 0;
+
+  // 立即發送 API 請求
+  await getAllPlan();
+}
+
+
+// 將 API 資料轉換為組件需要的格式
+function transformApiDataToItems(apiData) {
+  return apiData.map(item => ({
+    id: item.id,
+    img: item.imageUrl || new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: item.title,
+    price: `${item.daysLeft}天`, // 剩餘天數
+    supporters: `${item.views} 人瀏覽`, // 瀏覽數
+    progress: Math.round(item.progress || 0), // 進度百分比，四捨五入
+    to: { name: "ProjectDetail", params: { id: item.id } }, // 路由
+  }));
+}
+
+// 獲取所有計畫
+async function getAllPlan() {
+  try {
+    // 顯示載入狀態
+    loading.value = true;
+
+    const formData = {
+      daysLeftOrder: currentFilters.value.order || 0,
+      industryType: currentFilters.value.industryType || 0,
+      feature: currentFilters.value.feature || 0,
+    };
+
+    const res = await PlanApi.getAllPlan(formData);
+    if (res && res.data) {
+      // 轉換 API 資料格式
+      const transformedData = transformApiDataToItems(res.data);
+      items.value = transformedData;
+    } else {
+      items.value = [];
+    }
+  } catch (error) {
+    console.error('獲取計畫資料失敗:', error);
+    // 錯誤處理：設為空陣列
+    items.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+const industryTypesData = ref([]);
+async function getIndustryTypes() {
+  const res = await industryTypeApi.getIndustryTypes();
+  if (res && res.data) {
+    industryTypesData.value = res.data;
+  }
+}
+
+// 篩選器配置
+const filtersA = computed(() => [
   {
     key: "order",
     placeholder: "依剩餘時間排列",
     showAny: false,
     options: [
-      { value: "time_asc", label: "剩餘時間（由少到多）" },
-      { value: "time_desc", label: "剩餘時間（由多到少）" },
+      { value: 1, label: "剩餘時間（由少到多）" },
+      { value: 2, label: "剩餘時間（由多到少）" },
     ],
   },
   {
     key: "category",
-    placeholder: "餐飲-咖啡",
+    placeholder: "選擇類別",
     anyLabel: "全部",
-    options: ["餐飲-咖啡", "餐飲-早午餐", "餐飲-甜點", "零售-服飾"],
+    options: industryTypesData.value.map(type => ({
+      value: type.id,
+      label: type.name
+    })),
   },
   {
     key: "feature",
     placeholder: "缺創業夥伴",
     anyLabel: "不限",
-    options: ["缺創業夥伴", "有募資進度", "已結束", "最新上架"],
+    options: [
+      { value: 1, label: "缺創業夥伴" },
+      { value: 2, label: "有募資進度" },
+      { value: 3, label: "已結束" },
+      { value: 4, label: "最新上架" },
+    ],
   },
-];
-function handleCardClick(card) {
-  if (card.to) {
-    router.push(card.to);
-  }
-}
+]);
+
+// 當前篩選條件
+const currentFilters = ref({
+  industryType: 0,
+  feature: 0,
+  order: 0
+});
+
+// 組件掛載時獲取初始資料
+onMounted(async () => {
+  await getIndustryTypes();
+  await getAllPlan();
+});
 </script>
 
 <style lang="scss" scoped>

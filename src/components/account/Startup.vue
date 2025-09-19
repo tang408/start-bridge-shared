@@ -456,15 +456,6 @@ function convertFormData(formData, userId) {
     return value === "yes" || value === "agree" || value === true;
   }
 
-  function dateToTimestamp(dateString) {
-    if (!dateString) return 0;
-
-    // 創建日期物件並設定為當天的最後時間
-    const date = new Date(dateString);
-    date.setHours(23, 59, 59, 999); // 設定為 23:59:59.999
-
-    return Math.floor(date.getTime() / 1000); // 轉換為秒級時間戳
-  }
 
   // 從 prepBudget 陣列中提取特定項目的金額
   function getBudgetAmount(prepBudget, itemName) {
@@ -717,7 +708,7 @@ function convertFormData(formData, userId) {
     amountRange: parseInt(step1.amountRange) || 0,
     limitPartner: parseInt(step1.partnerLimit) || 0,
     brand: parseInt(step1.brand) || 0,
-    endTime: dateToTimestamp(step1.expireDate),
+    endTime: step1.expireDate,
 
     // 創業經驗 (Step3)
     hasExperience: stringToBool(step3.hasStartupExp),

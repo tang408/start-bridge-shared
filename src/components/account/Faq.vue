@@ -6,13 +6,13 @@
       class="mt-05 flow-col-mobile"
       v-model="activeTab"
       :tabs="[
-        { label: '創業者常見問題(前台)', value: 'ent' },
-        { label: '共創者常見問題(前台)', value: 'creator' },
+        { label: '創業者常見問題(前台)', value: 1 },
+        { label: '共創者常見問題(前台)', value: 2 },
       ]"
     />
 
-    <div v-if="activeTab === 'ent'" class="faq-form">
-      <form @submit.prevent="handleForm('ent')" class="form">
+    <div v-if="activeTab === 1" class="faq-form">
+      <form @submit.prevent="handleForm(1)" class="form">
         <div class="ent-content">詢問表單</div>
 
         <SharedInput
@@ -48,8 +48,8 @@
       </form>
     </div>
 
-    <div v-if="activeTab === 'creator'" class="faq-form">
-      <form @submit.prevent="handleForm('creator')" class="form">
+    <div v-if="activeTab === 2" class="faq-form">
+      <form @submit.prevent="handleForm(2)" class="form">
         <div class="ent-content">詢問表單</div>
 
         <SharedInput
@@ -88,14 +88,19 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import {ref, reactive, onMounted} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedSelect from "@/components/shared/Shared-Select.vue";
 import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {inquiryTypeApi} from "@/api/modules/inquiryType.js";
+import {helpCenterFaqApi} from "@/api/modules/helpCenterFaq.js";
 
-const activeTab = ref("ent");
+const { isLoggedIn, currentUser } = useAuth();
+
+const activeTab = ref(1);
 
 const topics = [
   { value: "1", text: "產品問題" },
@@ -104,10 +109,10 @@ const topics = [
 ];
 
 const timeOptions = [
-  { text: "9:00–12:00", value: "morning" },
-  { text: "14:00–18:00", value: "afternoon" },
-  { text: "18:00–22:00", value: "evening" },
-  { text: "任何時間", value: "any" },
+  { text: "9:00–12:00", value: "9:00-12:00" },
+  { text: "14:00–18:00", value: "14:00–18:00" },
+  { text: "18:00–22:00", value: "18:00–22:00" },
+  { text: "任何時間", value: "任何時間" },
 ];
 
 const formEnt = reactive({
@@ -134,19 +139,55 @@ const errorsCreator = reactive({
   contactTime: "",
 });
 
-function handleForm(type) {
-  const form = type === "ent" ? formEnt : formCreator;
-  const errors = type === "ent" ? errorsEnt : errorsCreator;
+const inquiryTypes = ref([]);
+async function getInquiryTypes() {
+  const formData = {
+    userId: currentUser.value
+  }
+  const response = await inquiryTypeApi.getInquiryTypes(formData);
+  inquiryTypes.value = response.data;
+  topics.splice(0, topics.length, ...inquiryTypes.value.map(item => ({ value: item.id.toString(), text: item.name })));
+}
+
+
+
+async function handleForm(type) {
+  const form = type === 1 ? formEnt : formCreator;
+  const errors = type === 2 ? errorsEnt : errorsCreator;
 
   Object.keys(errors).forEach((k) => (errors[k] = ""));
   if (!form.brand) errors.brand = "請輸入品牌或專案名稱";
   if (!form.topic) errors.topic = "請選擇詢問內容";
   if (!form.contactTime) errors.contactTime = "請選擇聯繫時間";
-
   if (Object.values(errors).some(Boolean)) return;
 
-  alert(`${type === "ent" ? "創業者" : "共創者"}表單送出成功！`);
+  const formData = {
+    userId: currentUser.value,
+    formType: type,
+    name: form.brand,
+    inquiryType: Number(form.topic),
+    otherRequests: form.other,
+    contactTime: form.contactTime,
+  };
+
+  const response = await helpCenterFaqApi.createHelpCenterFaq(formData)
+  if (response.code !== 0) {
+    alert(response.message || "表單送出失敗，請稍後再試");
+    return;
+  }
+  form.brand = "";
+  form.topic = "";
+  form.other = "";
+  form.contactTime = "";
+
+  alert(`${type === 1 ? "創業者" : "共創者"}表單送出成功！`);
 }
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    getInquiryTypes();
+  }
+});
 </script>
 
 <style lang="scss" scoped>

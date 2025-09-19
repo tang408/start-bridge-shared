@@ -4,7 +4,7 @@
     class="progress-section-card"
     @click="$emit('card-click', card)"
   >
-    <img :src="card.photo" class="progress-section-card-image w-100" />
+    <img :src="card.photo ? card.photo : card.img" class="progress-section-card-image w-100" />
 
     <div class="progress-section-card-content">
       <slot name="tags">
