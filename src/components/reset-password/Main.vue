@@ -31,17 +31,36 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
+import {useRoute, useRouter} from "vue-router";
+import {userApi} from "@/api/modules/user.js";
 
+
+const route = useRoute();
+const router = useRouter();
+
+const token = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
+const isLoading = ref(false);
 const errors = ref({
   newPassword: "",
   confirmPassword: "",
 });
 
-function resetPassword() {
+// 頁面載入時獲取 token
+onMounted(() => {
+  token.value = route.query.token || "";
+  console.log(token.value)
+  // 如果沒有 token，跳轉到錯誤頁面或登入頁面
+  if (!token.value) {
+    alert("無效的重設密碼連結");
+    router.push("/login");
+  }
+});
+
+async function resetPassword() {
   errors.value = { newPassword: "", confirmPassword: "" };
 
   if (!newPassword.value) {
@@ -55,6 +74,18 @@ function resetPassword() {
 
   if (errors.value.newPassword || errors.value.confirmPassword) return;
 
-  alert("密碼已成功重設，請重新登入！");
+  const formData = {
+    token : token.value,
+    newPassword: newPassword.value,
+  }
+
+  const res = await userApi.resetPassword(formData);
+  if (res.code === 0) {
+    alert("密碼已成功重設，請重新登入！");
+    await router.push("/login");
+  } else {
+    alert(res.message || "密碼重設失敗，請稍後再試");
+    return;
+  }
 }
 </script>

@@ -25,6 +25,20 @@
             maxlength="10"
           />
 
+          <SharedInput
+              id="phoneOtpCode"
+              type="text"
+              label="手機驗證碼*"
+              placeholder="請輸入6位數驗證碼"
+              autocomplete="one-time-code"
+              v-model="form.verifyCode"
+              :error="errors.verifyCode"
+              required
+              inputmode="numeric"
+              maxlength="6"
+              pattern="[0-9]{6}"
+          />
+
           <!-- 密碼 / 再次輸入密碼 -->
           <SharedPassword
             id="password"
@@ -74,14 +88,14 @@
             :max="new Date().toISOString().slice(0, 10)"
           />
 
-          <!-- Line -->
-          <SharedInput
-            id="line-display"
-            label="Line*"
-            v-model="form.line"
-            :error="errors.line"
-            required
-          />
+<!--           Line -->
+<!--          <SharedInput-->
+<!--            id="line-display"-->
+<!--            label="Line*"-->
+<!--            v-model="form.line"-->
+<!--            :error="errors.line"-->
+<!--            required-->
+<!--          />-->
 
           <!-- 電子郵件 + 驗證碼 -->
           <SharedInput
@@ -92,12 +106,6 @@
             v-model="form.email"
             :error="errors.email"
             required
-            buttonText="寄送驗證碼"
-            @button-click="sendEmailOTP"
-            :sent="emailOtp.sent"
-            :countdown="emailOtp.seconds"
-            @resend="resendEmailOTP"
-            :enable-if="emailEnableIf"
           />
 
           <!-- 創業題項 -->
@@ -109,89 +117,12 @@
             required
           />
 
-          <!-- 工作狀況 -->
-          <SharedInput id="job" label="工作狀況*" v-model="form.job" required />
-
-          <!-- 最低 & 最高可投入資產 -->
-          <SharedInput
-            id="asset"
-            label="最低可投入資產*"
-            v-model="form.minBudget"
-            :error="errors.minBudget"
-            required
-          />
-
-          <SharedInput
-              id="asset"
-              label="最高可投入資產*"
-              v-model="form.maxBudget"
-              :error="errors.maxBudget"
-              required
-          />
-
-          <!-- 預計參與產業 -->
-          <SharedSelect
-            id="industry"
-            label="預計參與產業*"
-            placeholder="請選擇"
-            v-model="form.industryType"
-            :options="[
-              ...industryTypesData.map(item => ({ value: item.id, text: item.name }))
-            ]"
-            :error="errors.industryType"
-            required
-          />
-          <div>
-            <SharedUpload
-                id="idDoc"
-                label="身份證明上傳*"
-                accept=".jpg,.jpeg,.png,application/pdf"
-                :account="form.phone"
-                :name="'idDoc'"
-                v-model="form.idDoc"
-                :error="errors.idDoc"
-                :maxSizeMb="10"
-                @invalid="(msg) => (errors.idDoc = msg)"
-                @upload-success="(result) => handleUploadSuccess('idDoc', result)"
-                :required="true"
-            />
-
-            <SharedUpload
-                id="assetDoc"
-                label="資產證明上傳*"
-                accept=".jpg,.jpeg,.png,application/pdf"
-                :account="form.phone"
-                :name="'assetDoc'"
-                v-model="form.assetDoc"
-                :error="errors.assetDoc"
-                :maxSizeMb="10"
-                @invalid="(msg) => (errors.assetDoc = msg)"
-                @upload-success="(result) => handleUploadSuccess('assetDoc', result)"
-                :required="true"
-            />
-
-            <SharedUpload
-                id="addressDoc"
-                label="良民證上傳*"
-                accept=".jpg,.jpeg,.png,application/pdf"
-                :account="form.phone"
-                :name="'pcrcDoc'"
-                v-model="form.pcrcDoc"
-                :error="errors.pcrcDoc"
-                :maxSizeMb="10"
-                @invalid="(msg) => (errors.pcrcDoc = msg)"
-                @upload-success="(result) => handleUploadSuccess('pcrcDoc', result)"
-                :required="true"
-            />
-          </div>
-
           <!-- 推薦碼 -->
           <SharedInput
             id="code"
             label="推薦碼"
             v-model="form.referralCode"
             :error="errors.referralCode"
-            required
           />
 
           <!-- 同意條款 -->
@@ -238,6 +169,7 @@ import {userApi} from "@/api/modules/user.js";
 
 const form = reactive({
   phone: "",
+  verifyCode: "",
   password: "",
   confirmPassword: "",
   name: "",
@@ -261,6 +193,7 @@ const form = reactive({
 });
 const errors = reactive({
   phone: "",
+  verifyCode: "",
   password: "",
   confirmPassword: "",
   name: "",
@@ -346,6 +279,7 @@ async function handleRegister() {
     // 準備 API 參數
     const params = {
       account: form.phone, // 使用手機號碼作為帳號
+      verifyCode: form.verifyCode,
       password: form.password,
       name: form.name,
       sex: convertGender(form.gender),
@@ -353,13 +287,6 @@ async function handleRegister() {
       lineId: form.line,
       email: form.email,
       budget: parseInt(form.budget) || 0,
-      workStatus: form.job, // 根據你的 API 需求，可能需要轉換為數字
-      minBudget: parseInt(form.minBudget) || 0,
-      maxBudget: parseInt(form.maxBudget) || 0,
-      expectIndustryType: parseInt(form.industryType) || 0,
-      identityCertification: getFileId(form.idDoc),
-      assetsCertification: getFileId(form.assetDoc),
-      pcrCertification: getFileId(form.pcrcDoc),
       referralCode: form.referralCode || ""
     };
 
@@ -371,6 +298,7 @@ async function handleRegister() {
     if (response.code === 0) {
       // 註冊成功
       alert('註冊申請提交成功！請等待審核。');
+      router.push('/login');
 
     } else {
       // 處理錯誤
@@ -388,6 +316,15 @@ async function handleRegister() {
 
 async function sendPhoneOTP() {
   startTimer(phoneOtp, 100);
+  try {
+    const response = await userApi.sendVerificationCode({ phone: form.phone });
+    if (response.code !== 0) {
+      alert(response.message || '發送手機驗證碼失敗，請稍後再試');
+    }
+  } catch (error) {
+    console.error('發送手機驗證碼過程發生錯誤:', error);
+    alert('發送手機驗證碼過程發生錯誤，請稍後再試');
+  }
 }
 
 async function resendPhoneOTP() {
@@ -414,31 +351,6 @@ async function getIndustryTypes() {
       throw new Error('API 響應格式錯誤');
     }
 }
-
-
-// 檔案上傳成功處理函數
-function handleUploadSuccess(fileType, result) {
-  console.log(`${fileType} 上傳成功:`, result);
-
-  // 將檔案 ID 存儲到對應的表單欄位
-  const fileId = result.data?.id;
-  if (fileId) {
-    switch (fileType) {
-      case 'idDoc':
-        form.idDoc = { ...form.idDoc, id: fileId };
-        break;
-      case 'assetDoc':
-        form.assetDoc = { ...form.assetDoc, id: fileId };
-        break;
-      case 'pcrcDoc':
-        form.pcrcDoc = { ...form.pcrcDoc, id: fileId };
-        break;
-    }
-  }
-}
-
-
-
 
 // 組件掛載時獲取數據
 onMounted(async () => {

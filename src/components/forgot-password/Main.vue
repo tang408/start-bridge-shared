@@ -26,6 +26,7 @@
 <script setup>
 import { ref } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
+import {userApi} from "@/api/modules/user.js";
 
 const step = ref(1);
 const account = ref("");
@@ -33,7 +34,7 @@ const errors = ref({ account: "" });
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^09\d{8}$/;
 
-function sendResetLink() {
+async function sendResetLink() {
   errors.value.account = "";
 
   if (!account.value) {
@@ -43,6 +44,18 @@ function sendResetLink() {
 
   if (!emailRegex.test(account.value) && !phoneRegex.test(account.value)) {
     errors.value.account = "請輸入有效的 Email 或手機號碼";
+    return;
+  }
+
+  const params = {
+    account: account.value,
+  };
+
+  const res = await userApi.sendResetPasswordUrl(params)
+  if (res.code === 0) {
+    alert("重設連結已發送，請至信箱或手機獲取連結");
+  } else {
+    errors.value.account = res.message || "發送失敗，請稍後再試";
     return;
   }
 

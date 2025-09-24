@@ -12,22 +12,25 @@ export const userApi = {
      * @param {string} params.line - 使用者Line ID
      * @param {string} params.email - 使用者電子郵件
      * @param {number} params.budget - 使用者預算
-     * @param {string} params.workStatus - 使用者工作狀態
-     * @param {number} params.minBudget - 使用者最低預算
-     * @param {number} params.maxBudget - 使用者最高預算
-     * @param {number} params.industryType - 產業類型
-     * @param {number} params.idNumberFileId - 身分證檔案 ID
-     * @param {number} params.assetFileId - 財力證明檔案 ID
-     * @param {number} params.pcrcFileId - 良民證檔案 ID
      * @param {number} params.referralCode - 推薦碼
      */
 
     async founderRegister(params = {}) {
         const finalParams = { ...params };
-        return api.post('/f/public/user/founder-register', finalParams);
+        return api.post('/f/public/user/register', finalParams);
     },
 
-     /**
+    /**
+     * 寄送驗證碼
+     * @param {{}} params - 參數物件
+     * @param {string} params.phone - 使用者電話
+     */
+    async sendVerificationCode(params = {}) {
+        const finalParams = { ...params };
+        return api.post('/f/public/user/send-register-sms', finalParams);
+    },
+
+    /**
      * 使用者登入
      * @param {{}} params - 參數物件
      * @param {string} params.account - 使用者帳號
@@ -135,5 +138,23 @@ export const userApi = {
     async getUserNameAndAvatar(params = {}) {
         const finalParams = {...params};
         return api.post('/f/private/user/get-user-name-and-avatar', finalParams);
+    },
+
+    /**
+     * 發送重設密碼連結
+     */
+
+    async sendResetPasswordUrl(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/public/user/send-reset-password', finalParams);
+    },
+
+    /**
+     * 重設密碼
+     */
+
+    async resetPassword(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/public/user/reset-password', finalParams);
     }
 }
