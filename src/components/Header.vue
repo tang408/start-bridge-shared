@@ -113,16 +113,6 @@
                 </li>
               </ul>
             </li>
-            <!-- <li class="nav-item bc-1 br-1 logIn">
-              <router-link
-                class="nav-link"
-                to="/login"
-                @click="handleLinkClick"
-              >
-                <img src="@/assets/icon/menu-icon.svg" />
-                登入
-              </router-link>
-            </li> -->
             <li class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
               <router-link
                 class="nav-link"

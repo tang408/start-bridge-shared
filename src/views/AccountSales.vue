@@ -40,7 +40,7 @@
 
 <script setup>
 import { useRouter, useRoute } from "vue-router";
-import Sidebar from "@/components/Sidebar.vue";
+import Sidebar from "@/components/SalesSidebar.vue";
 import {
   mobileAccountSidebarOpen,
   toggleMobileAccountSidebar,

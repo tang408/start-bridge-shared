@@ -52,6 +52,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 76,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 1 } },
   },
   {
@@ -61,6 +62,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 54,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 2 } },
   },
   {
@@ -70,6 +72,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 32,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 3 } },
   },
   {
@@ -79,6 +82,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 88,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 4 } },
   },
   {
@@ -88,6 +92,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 45,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 5 } },
   },
   {
@@ -97,6 +102,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 20,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 6 } },
   },
   {
@@ -106,6 +112,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 65,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 7 } },
   },
   {
@@ -115,6 +122,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 100,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 8 } },
   },
   {
@@ -124,6 +132,7 @@ const items = ref([
     price: "99天",
     supporters: "9999 人瀏覽",
     progress: 12,
+    favorite: false,
     to: { name: "ProjectDetail", params: { id: 9 } },
   },
 ]);

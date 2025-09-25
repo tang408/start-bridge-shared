@@ -1,14 +1,28 @@
 <template>
-  <div class="fab-actions" :class="size">
+  <div
+    class="fab-actions"
+    :class="size"
+    :style="{
+      top: top !== null ? top + 'px' : 'auto',
+      bottom: bottom !== null ? bottom + 'px' : 'auto',
+      left: left !== null ? left + 'px' : 'auto',
+      right: right !== null ? right + 'px' : 'auto',
+    }"
+  >
     <!-- 收藏 -->
     <button
       class="circle-btn favorite"
       :aria-pressed="favorite ? 'true' : 'false'"
       :title="favorite ? favoriteTitleOn : favoriteTitleOff"
-      @click="$emit('favorite-toggle', !favorite)"
+      @click.stop="$emit('favorite-toggle', !favorite)"
+      :style="{ width: circleSize + 'px', height: circleSize + 'px' }"
     >
       <span
         class="icon"
+        :style="{
+          inlineSize: iconSize + 'px',
+          blockSize: iconSize + 'px',
+        }"
         :class="iconType === 'star' ? 'icon-star' : 'icon-heart'"
       />
     </button>
@@ -36,6 +50,12 @@ const props = defineProps({
   size: { type: String, default: "md" },
   iconType: { type: String, default: "star" },
   showTrash: { type: Boolean, default: true },
+  top: { type: Number, default: null },
+  right: { type: Number, default: 16 },
+  bottom: { type: Number, default: null },
+  left: { type: Number, default: null },
+  iconSize: { type: Number, default: 30 },
+  circleSize: { type: Number, default: 56 },
 });
 const emit = defineEmits(["favorite-toggle", "remove"]);
 
@@ -47,8 +67,6 @@ function onRemove() {
 <style scoped lang="scss">
 .fab-actions {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
   display: flex;
   gap: 12px;
 }

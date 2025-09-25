@@ -48,6 +48,8 @@
             size="md"
             @favorite-toggle="(val) => setFavorite(m.id, val)"
             @remove="removeMsg(m.id)"
+            :right="16"
+            :bottom="16"
           />
         </div>
       </transition>

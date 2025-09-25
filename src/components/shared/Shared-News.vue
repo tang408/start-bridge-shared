@@ -29,6 +29,20 @@
         <img class="cover" :src="item.cover" />
         <div class="shade"></div>
         <h5 class="title">{{ item.title }}</h5>
+
+        <SharedFabActions
+          :favorite="item.favorite"
+          :showTrash="false"
+          iconType="heart"
+          size="sm"
+          :right="10"
+          :top="10"
+          :circleSize="35"
+          :iconSize="20"
+          @favorite-toggle="
+            $emit('favorite-change', { id: item.id, value: $event })
+          "
+        />
       </article>
     </div>
 
@@ -83,6 +97,8 @@
 </template>
 
 <script setup>
+import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
+
 import { ref, computed, watch } from "vue";
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -99,7 +115,7 @@ const props = defineProps({
   initialCategory: { type: String, default: "" },
 });
 
-const emit = defineEmits(["card-click", "update:category"]);
+const emit = defineEmits(["card-click", "update:category", "favorite-change"]);
 
 const page = ref(1);
 
@@ -161,6 +177,10 @@ watch(
   () => props.items,
   () => (page.value = 1)
 );
+
+function toggleFavorite(item, newValue) {
+  item.favorite = newValue;
+}
 </script>
 
 <style lang="scss" scoped>

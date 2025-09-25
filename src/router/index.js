@@ -26,6 +26,15 @@ import Contracts from "../components/account/Contracts.vue";
 import Faq from "../components/account/Faq.vue";
 import Courses from "../components/account/Courses.vue";
 import Favorites from "../components/account/Favorites.vue";
+import AccountSales from "../views/AccountSales.vue";
+import Member from "../components/account-sales/Member.vue";
+import Management from "../components/account-sales/Management.vue";
+import Sales from "../components/account-sales/Sales.vue";
+import Notifications from "../components/account-sales/Notifications.vue";
+import Bonus from "../components/account-sales/Bonus.vue";
+import Records from "../components/account-sales/Records.vue";
+import Assessment from "../components/account-sales/Assessment.vue";
+import Chart from "../components/account-sales/Chart.vue";
 
 const routes = [
   {
@@ -172,6 +181,26 @@ const routes = [
           },
         ],
       },
+      {
+        path: "account-sales",
+        component: AccountSales,
+        children: [
+          { path: "", redirect: { name: "member" } },
+          { path: "member", name: "member", component: Member },
+          { path: "sales", name: "sales", component: Sales },
+          { path: "management", name: "management", component: Management },
+          {
+            path: "notifications",
+            name: "notifications",
+            component: Notifications,
+          },
+          { path: "bonus", name: "bonus", component: Bonus },
+          { path: "records", name: "records", component: Records },
+          { path: "assessment", name: "assessment", component: Assessment },
+          { path: "chart", name: "chart", component: Chart },
+        ],
+      },
+
       {
         path: "/terms",
         children: [

@@ -62,6 +62,7 @@
           :store-address="mode === 'store' ? item.address : undefined"
           :store-phone="mode === 'store' ? item.phone : undefined"
           @card-click="emit('card-click', $event)"
+          @favorite-toggle="item.favorite = $event"
         />
       </div>
 

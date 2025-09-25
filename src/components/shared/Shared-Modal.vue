@@ -1,7 +1,9 @@
 <template>
   <div v-if="modelValue" class="modal-backdrop-content" @click.self="close">
     <div class="modal-content">
-      <h3 v-if="title" class="modal-title">{{ title }}</h3>
+      <h3 v-if="title" class="modal-title" :class="`align-${titleAlign}`">
+        {{ title }}
+      </h3>
 
       <div class="modal-body">
         <slot />
@@ -15,8 +17,18 @@
         </template>
 
         <template v-else-if="mode === 'apply'">
-          <button class="btn-apply w-45" @click="apply">報名</button>
-          <button class="btn-cancel w-45" @click="close">關閉</button>
+          <button class="btn-orange w-45" @click="apply">報名</button>
+          <button class="btn-gray w-45" @click="close">關閉</button>
+        </template>
+
+        <template v-else-if="mode === 'project'">
+          <button class="btn-orange w-45" @click="manage">管理專案</button>
+          <button class="btn-yellow w-45" @click="close">離開</button>
+        </template>
+
+        <template v-else-if="mode === 'member'">
+          <button class="btn-orange w-45" @click="save">儲存</button>
+          <button class="btn-yellow w-45" @click="close">關閉</button>
         </template>
       </div>
     </div>
@@ -29,9 +41,16 @@ const props = defineProps({
   title: { type: String, default: "" },
   confirmText: { type: String, default: "送出" },
   mode: { type: String, default: "confirm" },
+  titleAlign: { type: String, default: "left" },
 });
 
-const emit = defineEmits(["update:modelValue", "confirm", "apply"]);
+const emit = defineEmits([
+  "update:modelValue",
+  "confirm",
+  "apply",
+  "manage",
+  "save",
+]);
 
 function close() {
   emit("update:modelValue", false);
@@ -44,6 +63,14 @@ function confirm() {
 function apply() {
   emit("apply");
 }
+
+function manage() {
+  emit("manage");
+}
+
+function save() {
+  emit("save");
+}
 </script>
 
 <style scoped lang="scss">
@@ -52,6 +79,13 @@ function apply() {
   top: 50%;
   transform: translateY(-50%);
   padding: 25px;
+  min-width: 500px;
+  @media (max-width: 576px) {
+    min-width: auto;
+    position: absolute;
+    padding: 0;
+    overflow-y: auto;
+  }
 }
 
 .modal-content {
@@ -67,6 +101,12 @@ function apply() {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 12px;
+  &.align-left {
+    text-align: left;
+  }
+  &.align-center {
+    text-align: center;
+  }
 }
 
 .modal-body {
@@ -76,7 +116,6 @@ function apply() {
   color: #333;
 }
 
-/* footer 分兩部分 */
 .modal-footer {
   display: flex;
   justify-content: center;
@@ -88,22 +127,31 @@ function apply() {
     gap: 12px;
   }
 
-  .btn-apply {
-    background: #ff6634;
-    border: none;
-    color: #fff;
+  button {
     padding: 10px 28px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    border: none;
+    @media (max-width: 576px) {
+      padding: 10px;
+    }
   }
 
-  .btn-cancel {
-    background: #eee;
-    border: none;
-    color: #333;
-    padding: 10px 28px;
-    border-radius: 6px;
-    cursor: pointer;
+  .btn {
+    &-orange {
+      background: $btn-orange;
+      color: $white;
+    }
+
+    &-gray {
+      background: $brand-gray;
+      color: $text-dark;
+    }
+
+    &-yellow {
+      background: #ffcc66;
+      color: #373a36;
+    }
   }
 }
 </style>
