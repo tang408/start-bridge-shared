@@ -112,6 +112,8 @@
               :showTrash="false"
               @favorite-toggle="(v) => (p.fav = v)"
               @remove="removeProject(p.id)"
+              :right="16"
+              :bottom="16"
             />
           </div>
         </transition>

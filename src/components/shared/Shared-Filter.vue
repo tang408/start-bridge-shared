@@ -62,6 +62,7 @@
           :store-address="mode === 'store' ? item.address : undefined"
           :store-phone="mode === 'store' ? item.contactNumber : undefined"
           @card-click="handleCardClick"
+          @favorite-toggle="item.favorite = $event"
         />
       </div>
 

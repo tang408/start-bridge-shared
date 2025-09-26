@@ -6,6 +6,7 @@
     :categories="industryTypeNames"
     :with-all-tab="true"
     @card-click="openDetail"
+    @favorite-change="onFavoriteChange"
   />
   <div class="qa-content">
     <div class="qa-content-text">
@@ -21,7 +22,7 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-
+import { ref } from "vue";
 import Swiper from "./Swiper.vue";
 import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
@@ -37,12 +38,15 @@ const router = useRouter();
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
 
-const items = Array.from({ length: 80 }).map((_, i) => ({
-  id: i + 1,
-  title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
-  cover: sampleImages[i % 4],
-  category: cat[i % cat.length],
-}));
+const items = ref(
+  Array.from({ length: 80 }).map((_, i) => ({
+    id: i + 1,
+    title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
+    cover: sampleImages[i % 4],
+    category: cat[i % cat.length],
+    favorite: false,
+  }))
+);
 
 function openDetail(card) {
   if (card.mode === 'url' && card.redirectUrl) {
@@ -53,6 +57,10 @@ function openDetail(card) {
   }
 }
 
+function onFavoriteChange({ id, value }) {
+  const target = items.value.find((i) => i.id === id);
+  if (target) target.favorite = value;
+}
 const loading = ref(false);
 
 const officialPartnersData = ref([]);

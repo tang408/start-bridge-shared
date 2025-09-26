@@ -31,8 +31,6 @@
             <template v-else>{{ row[col.key] }}</template>
           </td>
         </tr>
-
-        <!-- 空狀態 -->
         <tr v-if="!rows || !rows.length">
           <td :colspan="columns.length" class="empty">
             {{ emptyText }}

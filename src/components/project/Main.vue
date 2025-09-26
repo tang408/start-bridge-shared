@@ -46,118 +46,98 @@ import SharedFilter from "@/components/shared/Shared-Filter.vue";
 import {planApi as PlanApi} from "@/api/modules/plan.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 const router = useRouter();
-const items = ref([]);
-// const items = ref([
-//   {
-//     id: 1,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 76,
-//     to: { name: "ProjectDetail", params: { id: 1 } },
-//   },
-//   {
-//     id: 2,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 54,
-//     to: { name: "ProjectDetail", params: { id: 2 } },
-//   },
-//   {
-//     id: 3,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 32,
-//     to: { name: "ProjectDetail", params: { id: 3 } },
-//   },
-//   {
-//     id: 4,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 88,
-//     to: { name: "ProjectDetail", params: { id: 4 } },
-//   },
-//   {
-//     id: 5,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 45,
-//     to: { name: "ProjectDetail", params: { id: 5 } },
-//   },
-//   {
-//     id: 6,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 20,
-//     to: { name: "ProjectDetail", params: { id: 6 } },
-//   },
-//   {
-//     id: 7,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 65,
-//     to: { name: "ProjectDetail", params: { id: 7 } },
-//   },
-//   {
-//     id: 8,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 100,
-//     to: { name: "ProjectDetail", params: { id: 8 } },
-//   },
-//   {
-//     id: 9,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 12,
-//     to: { name: "ProjectDetail", params: { id: 9 } },
-//   },
-// ]);
-
-// 載入狀態
-const loading = ref(false);
-
-
-// 處理卡片點擊
-function handleCardClick(card) {
-  if (card.to) {
-    console.log('導航到:', card.to)
-    router.push(card.to);
-  }
-}
-
-// 處理篩選器變更 - 每次變更都重新發送 API 請求
-async function handleOrderUpdate(orderValue) {
-  currentFilters.value.order = orderValue;
-
-  // 重新獲取資料，然後排序
-  await getAllPlan();
-}
-
-async function handleCategoryUpdate(categoryValue) {
-  const industryType = typeof categoryValue === 'object' ? categoryValue.value : categoryValue;
-  currentFilters.value.industryType = industryType || 0;
-
-  // 立即發送 API 請求
-  await getAllPlan();
-}
+const items = ref([
+  {
+    id: 1,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 76,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 1 } },
+  },
+  {
+    id: 2,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 54,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 2 } },
+  },
+  {
+    id: 3,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 32,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 3 } },
+  },
+  {
+    id: 4,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 88,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 4 } },
+  },
+  {
+    id: 5,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 45,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 5 } },
+  },
+  {
+    id: 6,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 20,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 6 } },
+  },
+  {
+    id: 7,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 65,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 7 } },
+  },
+  {
+    id: 8,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 100,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 8 } },
+  },
+  {
+    id: 9,
+    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
+    price: "99天",
+    supporters: "9999 人瀏覽",
+    progress: 12,
+    favorite: false,
+    to: { name: "ProjectDetail", params: { id: 9 } },
+  },
+]);
 
 async function handleFeatureUpdate(featureValue) {
   const feature = typeof featureValue === 'object' ? featureValue.value : featureValue;

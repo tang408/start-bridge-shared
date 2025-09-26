@@ -1,5 +1,6 @@
 <template>
   <div class="dropdown" :class="{ open: isOpen }" @click.stop>
+    <label v-if="label" class="dropdown-label">{{ label }}</label>
     <button
       class="dropdown-btn"
       type="button"
@@ -36,6 +37,7 @@ const props = defineProps({
   options: { type: Array, default: () => [] },
   placeholder: { type: String, default: "請選擇" },
   emptyAsUnselected: { type: Boolean, default: true },
+  label: { type: String, default: "" },
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -94,6 +96,14 @@ const currentLabel = computed(() => {
 <style scoped lang="scss">
 .dropdown {
   position: relative;
+  display: grid;
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+}
+
+.dropdown-label {
+  font-weight: 400 !important;
 }
 
 .dropdown-btn {
@@ -108,6 +118,7 @@ const currentLabel = computed(() => {
   font-weight: 400;
   font-size: 14px;
   line-height: 17px;
+  color: #555555;
   @media (max-width: 576px) {
     min-width: 120px;
   }
@@ -138,6 +149,7 @@ const currentLabel = computed(() => {
   border: 1px solid #eee;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
   min-width: 160px;
   padding: 6px;
   list-style: none;

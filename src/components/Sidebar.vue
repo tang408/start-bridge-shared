@@ -4,11 +4,7 @@
       <div class="profile">
         <div class="avatar-img">
           <img class="avatar" :src="avatar" alt="avatar" />
-          <img
-            class="avatar-edit"
-            src="@/assets/icon/avatar-edit.png"
-            alt="avatar"
-          />
+          <img class="avatar-edit" src="@/assets/icon/avatar-edit.png" alt="avatar" />
         </div>
         <div>
           <div class="roles">
@@ -35,11 +31,9 @@
             ></span>
             <span class="label"
               >{{ item.label }}
-              <span
-                v-if="item.key === 'email' && item.count > 0"
-                class="notice"
-                >{{ item.count }}</span
-              >
+              <span v-if="item.key === 'email' && item.count > 0" class="notice">{{
+                item.count
+              }}</span>
             </span>
           </div>
         </button>
@@ -53,35 +47,35 @@
 </template>
 
 <script setup>
-import { useRoute } from "vue-router";
-import side1 from "@/assets/icon/side-1.png";
-import side2 from "@/assets/icon/side-2.png";
-import side3 from "@/assets/icon/side-3.png";
-import side4 from "@/assets/icon/side-4.png";
-import side5 from "@/assets/icon/side-5.png";
-import side6 from "@/assets/icon/side-6.png";
-import side7 from "@/assets/icon/side-7.png";
-import side8 from "@/assets/icon/side-8.png";
-import side9 from "@/assets/icon/side-9.png";
-import avatarImg from "@/assets/images/avatar.png";
+import { useRoute } from 'vue-router'
+import side1 from '@/assets/icon/side-1.png'
+import side2 from '@/assets/icon/side-2.png'
+import side3 from '@/assets/icon/side-3.png'
+import side4 from '@/assets/icon/side-4.png'
+import side5 from '@/assets/icon/side-5.png'
+import side6 from '@/assets/icon/side-6.png'
+import side7 from '@/assets/icon/side-7.png'
+import side8 from '@/assets/icon/side-8.png'
+import side9 from '@/assets/icon/side-9.png'
+import avatarImg from '@/assets/images/avatar.png'
 
 defineProps({
-  displayName: { type: String, default: "帳號名稱帳號名稱" },
+  displayName: { type: String, default: '帳號名稱帳號名稱' },
   avatar: { type: String, default: avatarImg },
-});
-defineEmits(["select", "logout"]);
-useRoute();
+})
+defineEmits(['select', 'logout'])
+useRoute()
 
 const items = [
-  { key: "profile", label: "基本資料", icon: side1 },
-  { key: "email", label: "我的信箱", icon: side2, count: 1 },
-  { key: "favorites", label: "我的收藏", icon: side3 },
-  { key: "participation", label: "參與專案管理", icon: side4 },
-  { key: "startup", label: "創業計劃管理", icon: side5 },
-  { key: "contracts", label: "公版合約", icon: side6 },
-  { key: "courses", label: "課程/講座報名", icon: side8 },
-  { key: "faq", label: "幫助中心(FAQ)", icon: side9 },
-];
+  { key: 'profile', label: '基本資料', icon: side1 },
+  { key: 'email', label: '我的信箱', icon: side2, count: 1 },
+  { key: 'favorites', label: '我的收藏', icon: side3 },
+  { key: 'participation', label: '參與專案管理', icon: side4 },
+  { key: 'startup', label: '創業計劃管理', icon: side5 },
+  { key: 'contracts', label: '公版合約', icon: side6 },
+  { key: 'courses', label: '課程/講座報名', icon: side8 },
+  { key: 'faq', label: '幫助中心(FAQ)', icon: side9 },
+]
 </script>
 
 <style lang="scss" scoped>
@@ -159,113 +153,6 @@ const items = [
     overflow: hidden;
     text-overflow: ellipsis;
     margin-top: 0.5rem;
-  }
-}
-
-.menu {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: $gap-4;
-  overflow-y: auto;
-  &-item {
-    position: relative;
-    width: 100%;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: $text-dark;
-    font-size: 14px;
-    text-align: left;
-    transition: background 0.2s ease, color 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    span {
-      font-weight: 400;
-      font-size: 18px;
-      line-height: 22px;
-    }
-
-    &.active,
-    &:hover {
-      background: $sidebar-gradient;
-      border-right: 5px solid #ff6634;
-      .icon {
-        color: $btn-orange;
-      }
-
-      &::before {
-        content: "";
-        position: absolute;
-        left: -16px;
-        top: 0;
-        bottom: 0;
-        width: 4px;
-        background: linear-gradient(180deg, #ff8a3d 0%, #ff6634 100%);
-        border-top-right-radius: 4px;
-        border-bottom-right-radius: 4px;
-      }
-      .icon-mask {
-        color: $btn-orange;
-      }
-
-      .menu-item-content .label {
-        color: $btn-orange;
-      }
-    }
-
-    &-content {
-      width: 82%;
-      gap: $gap-8;
-      display: flex;
-      align-items: center;
-      padding: 16px;
-
-      .label {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-
-        .notice {
-          display: inline-block;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: $btn-orange;
-          color: $white;
-          font-size: 14px;
-          font-weight: 400;
-          line-height: 17px;
-          text-align: center;
-          margin-bottom: -3px;
-        }
-      }
-    }
-
-    .icon {
-      width: 18px;
-      height: 18px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: $text-dark;
-      &-mask {
-        width: 20px;
-        height: 20px;
-        flex: 0 0 20px;
-        background-color: currentColor;
-        -webkit-mask-image: var(--icon-url);
-        mask-image: var(--icon-url);
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        -webkit-mask-position: center;
-        mask-position: center;
-        -webkit-mask-size: contain;
-        mask-size: contain;
-      }
-    }
   }
 }
 

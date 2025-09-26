@@ -2,9 +2,23 @@
   <div
     v-if="mode === 'progress'"
     class="progress-section-card"
-    @click="$emit('card-click', card)"
+    @click="onCardClick"
   >
     <img :src="card.photo ? card.photo : card.img" class="progress-section-card-image w-100" />
+    <SharedFabActions
+      v-if="showFavorite"
+      :favorite="card.favorite"
+      :showTrash="false"
+      iconType="heart"
+      size="sm"
+      :right="10"
+      :top="10"
+      :circleSize="35"
+      :iconSize="20"
+      @click.stop
+      @favorite-toggle="toggleFavorite"
+    />
+
 
     <div class="progress-section-card-content">
       <slot name="tags">
@@ -58,19 +72,40 @@
 </template>
 
 <script setup>
-defineProps({
+import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
+const props = defineProps({
   card: { type: Object, required: true },
   mode: { type: String, default: "progress" },
   showProgress: { type: Boolean, default: true },
   showInfo: { type: Boolean, default: true },
   storeAddress: { type: String, default: "—" },
   storePhone: { type: String, default: "—" },
+  showFavorite: { type: Boolean, default: true },
 });
 
-defineEmits(["card-click"]);
+const emit = defineEmits(["card-click", "favorite-toggle"]);
+
+function onCardClick() {
+  emit("card-click", props.card);
+}
+
+function toggleFavorite(newVal) {
+  emit("favorite-toggle", newVal);
+}
 </script>
 
 <style lang="scss" scoped>
+.progress-section-card {
+  position: relative;
+}
+
+.favorite-btn-wrap {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+
 .progress-section {
   &-card {
     cursor: pointer;
