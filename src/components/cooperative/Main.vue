@@ -22,7 +22,6 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
 import Swiper from "./Swiper.vue";
 import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";

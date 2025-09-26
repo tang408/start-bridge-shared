@@ -70,8 +70,8 @@
     <div class="modal-section">
       <div class="title">基本資料</div>
       <div>姓名：{{ selectedMember.name }}</div>
-      <div>會員身分：{{ selectedMember.identity }}</div>
-      <div>已參與專案數量：{{ selectedMember.projectCount }}</div>
+      <div>會員身分：{{ selectedMember.type }}</div>
+      <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創: {{selectedMemberDetail.coreFounderPlanCount }}</div>
     </div>
 
     <div class="modal-section mt-3">
@@ -129,25 +129,33 @@ import { reactive, computed, ref } from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {salesApi} from "@/api/modules/sales.js";
+import {stepApi} from "@/api/modules/step.js";
+const { isLoggedIn, currentSales } = useAuth();
 
 const showModal = ref(false);
 const selectedMember = ref({});
 
 const columns = [
-  { key: "identity", label: "身分" },
-  { key: "date", label: "時間" },
+  { key: "type", label: "身分" },
+  { key: "planDate", label: "時間" },
   { key: "name", label: "會員名字" },
-  { key: "projectName", label: "專案名稱" },
-  { key: "status", label: "專案狀態" },
+  { key: "planName", label: "專案名稱" },
+  { key: "planStatus", label: "專案狀態"},
   { key: "actions", label: "查看" },
 ];
 
 const members = reactive([
   {
     id: 1,
-    identity: "創業者",
+    type: "創業者",
     date: "2024-12-03",
     name: "張小白",
+    planName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    planStatus: "管理專案",
+
+    identity: "創業者",
     projectName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     status: "管理專案",
     projectCount: "創辦1、大創4",
@@ -196,8 +204,57 @@ const displayedMembers = computed(() => {
   return list;
 });
 
-function viewMember(row) {
+
+const planSteps = ref([]);
+async function getAllPlanStep() {
+  const response = await stepApi.getAllPlanStep();
+  planSteps.value = response.data;
+  console.log(planSteps.value);
+}
+
+async function getAllUserBySales() {
+  const formData = {
+    salesId: currentSales.value
+  }
+
+  const response = await salesApi.getAllUserBySales(formData);
+
+  // 直接修改每個成員的 planStatus 為對應的文字
+  const processedMembers = response.data.map(member => {
+    const step = planSteps.value.find(step => step.id === member.planStatus);
+    return {
+      ...member,
+      planStatus: step ? step.step : `未知狀態 (${member.planStatus})`
+    };
+  });
+
+  members.splice(0, members.length, ...processedMembers);
+}
+
+if (isLoggedIn.value) {
+  getAllPlanStep()
+  getAllUserBySales();
+}
+
+const selectedMemberDetail = ref(null);
+
+async function viewMember(row) {
   selectedMember.value = { ...row };
+
+  const formData = {
+    salesId: currentSales.value,
+    userId: row.id
+  }
+
+  try {
+    const response = await salesApi.getUserInfoBySales(formData);
+    if (response.code === 0) {
+      selectedMemberDetail.value = response.data;
+    }
+  } catch (error) {
+    console.error('獲取用戶詳情失敗:', error);
+  }
+
   showModal.value = true;
 }
 

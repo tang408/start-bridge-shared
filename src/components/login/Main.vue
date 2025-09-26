@@ -74,20 +74,45 @@ async function handleLogin() {
   try {
     const response = await userApi.login(params);
     if (response.code === 0) {
-      await login({
-        token: response.data.token,  // 根據你的 API 回傳結構調整
-        user: response.data.userId,  // 根據你的 API 回傳結構調整
-      });
+      // 判斷回傳的是 salesId 還是 userId
+      const isSalesLogin = response.data.hasOwnProperty('salesId');
+      const isUserLogin = response.data.hasOwnProperty('userId');
+      
+      let loginPayload = {
+        token: response.data.token,
+        user: null,
+        sales: null
+      };
+      
+      if (isSalesLogin) {
+        loginPayload.sales = response.data.salesId;
+      } else if (isUserLogin) {
+        loginPayload.user = response.data.userId;
+      }
+      
+      await login(loginPayload);
 
-      // 跳轉到目標頁面
+      // 根據登入類型跳轉到不同頁面
       try {
         setTimeout(() => {
-          if (router.currentRoute.value.path !== '/account/profile') {
-            window.location.href = '/account/profile';
+          if (isSalesLogin) {
+            // 銷售人員跳轉到銷售頁面
+            if (router.currentRoute.value.path !== '/account-sales') {
+              window.location.href = '/account-sales';
+            }
+          } else {
+            // 一般用戶跳轉到個人資料頁面
+            if (router.currentRoute.value.path !== '/account/profile') {
+              window.location.href = '/account/profile';
+            }
           }
         }, 100);
       } catch (routerError) {
-        window.location.href = '/account/profile';
+        if (isSalesLogin) {
+          window.location.href = '/account-sales';
+        } else {
+          window.location.href = '/account/profile';
+        }
       }
     } else {
       alert(response.message);

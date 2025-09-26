@@ -13,19 +13,19 @@
         <div>
           <div class="roles">
             <div>
-              <span class="orange">{{ fakeData.role }}</span>
-              {{ fakeData.name }}
+              <span class="orange">{{ rank }}</span>
+              {{ name }}
             </div>
             <div class="mt-2 mb-2 d-flex gap-2">
-              系統訊息<span class="notice">{{ fakeData.systemMsg }}</span>
+              系統訊息<span class="notice">{{ notifyCount }}</span>
             </div>
-            <div>當月業績：{{ fakeData.monthlySales }} 萬</div>
+            <div>當月業績：{{ salesPerformance }} 萬</div>
             <div>
-              <span>創業者：{{ fakeData.entCount }}人</span> |
-              <span>共創者：{{ fakeData.creatorCount }}人</span>
+              <span>創業者：{{ founderCount }}人</span> |
+              <span>共創者：{{ coreFounderCount }}人</span>
             </div>
-            <div>我的團隊：{{ fakeData.teamCount }}人</div>
-            <div>推薦碼：{{ fakeData.refCode }}</div>
+            <div>我的團隊：{{ teamMemberCount }}人</div>
+            <div>推薦碼：{{ referralCode }}</div>
           </div>
         </div>
       </div>
@@ -53,7 +53,7 @@
         <div class="justify-content-center d-flex">
           <hr class="w-70" />
         </div>
-        <button class="menu-item" @click="$emit('')">
+        <button class="menu-item" @click="$emit('reset_password')">
           <div class="menu-item-content">
             <span class="label">修改密碼 </span>
           </div>
@@ -74,22 +74,20 @@ import { useRoute } from "vue-router";
 import avatarImg from "@/assets/images/avatar.png";
 
 defineProps({
-  displayName: { type: String, default: "帳號名稱帳號名稱" },
   avatar: { type: String, default: avatarImg },
+  coreFounderCount: { type: Number, default: 0 },
+  founderCount: { type: Number, default: 0 },
+  name: { type: String, default: "業務名稱業務名稱" },
+  notifyCount: { type: Number, default: 0 },
+  rank: { type: String, default: "業務" },
+  referralCode: { type: String, default: "ABCD1234" },
+  salesPerformance: { type: Number, default: 0 },
+  teamMemberCount: { type: Number, default: 0 },
 });
-defineEmits(["select", "logout"]);
+
+defineEmits(["select", "logout", "reset_password"]);
 useRoute();
 
-const fakeData = {
-  role: "副理",
-  name: "王曉明",
-  systemMsg: 3,
-  monthlySales: 420,
-  entCount: 5,
-  creatorCount: 8,
-  teamCount: 13,
-  refCode: "ABCD1234",
-};
 
 const items = [
   { key: "member", label: "轄下會員列表" },

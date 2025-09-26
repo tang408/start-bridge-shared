@@ -11,9 +11,8 @@
 
       <div class="modal-footer">
         <template v-if="mode === 'confirm'">
-          <button class="btn-confirm" @click="confirm">
-            {{ confirmText }}
-          </button>
+          <button class="btn-orange w-45" @click="confirm">修改</button>
+          <button class="btn-gray w-45" @click="close">關閉</button>
         </template>
 
         <template v-else-if="mode === 'apply'">
