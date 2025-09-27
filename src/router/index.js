@@ -35,6 +35,8 @@ import Bonus from "../components/account-sales/Bonus.vue";
 import Records from "../components/account-sales/Records.vue";
 import Assessment from "../components/account-sales/Assessment.vue";
 import Chart from "../components/account-sales/Chart.vue";
+import SuccessContent from "../views/SuccessCaseContent.vue";
+import StarContent from "../views/MediaStarContent.vue";
 
 const routes = [
   {
@@ -73,9 +75,21 @@ const routes = [
         component: Star,
       },
       {
+        path: "star/:id",
+        name: "starDetail",
+        component: StarContent,
+        props: true,
+      },
+      {
         path: "success",
         name: "Success",
         component: Success,
+      },
+      {
+        path: "success/:id",
+        name: "SuccessDetail",
+        component: SuccessContent,
+        props: true,
       },
       {
         path: "store",
