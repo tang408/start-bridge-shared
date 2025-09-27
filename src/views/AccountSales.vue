@@ -109,6 +109,7 @@ import {
 import {useAuth} from "@/composables/useAuth.js";
 import {onMounted, ref} from "vue";
 import {salesApi} from "@/api/modules/sales.js";
+import {salesLevelApi} from "@/api/modules/salesLevel.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -139,6 +140,14 @@ const resetPasswordErrors = ref({
   confirmPassword: ""
 });
 
+const SalesLevels = ref([]);
+async function getSalesLevel() {
+  const response = await salesLevelApi.getSalesLevel();
+  SalesLevels.value = response.data;
+  console.log(SalesLevels.value);
+}
+
+
 async function getSalesInfo() {
   const formData = {
     salesId: currentSales.value,
@@ -147,9 +156,11 @@ async function getSalesInfo() {
   try {
     const response = await salesApi.getSalesInfo(formData)
     if (response.code === 0) {
+      const salesLevel = SalesLevels.value.find(level => level.id === response.data.rank);
       user.value = {
         ...user.value,
-        ...response.data
+        ...response.data,
+        rank: salesLevel ? salesLevel.name : `未知等級 (${response.data.rank})`
       }
     }
     console.log('Sales info:', response.data)
@@ -159,8 +170,10 @@ async function getSalesInfo() {
 }
 
 
+
 onMounted(() => {
   if (isLoggedIn.value) {
+    getSalesLevel();
     getSalesInfo();
   } else {
     router.push({ name: "Login" });

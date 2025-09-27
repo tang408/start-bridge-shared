@@ -8,8 +8,7 @@
         placeholder="職級"
         :options="[
           { label: '全部', value: '' },
-          { label: '職級A', value: 'A' },
-          { label: '職級B', value: 'B' },
+          ...salesLevels.map(level => ({ label: level.name, value: level.name }))
         ]"
       />
 
@@ -23,18 +22,16 @@
       />
 
       <SharedDropdown
-        v-model="filter.region"
-        placeholder="依所在區域排序"
-        :options="[
-          { label: '全部', value: '' },
-          { label: '台北市', value: '台北市' },
-          { label: '新北市', value: '新北市' },
-          { label: '台中市', value: '台中市' },
-        ]"
+          v-model="filter.city"
+          placeholder="依所在地區排序"
+          :options="[
+            { label: '全部', value: '' },
+            ...cities.map(city => ({ label: city.name, value: city.name }))
+          ]"
       />
 
       <SharedDropdown
-        v-model="filter.staffCount"
+        v-model="filter.salesMemberCount"
         placeholder="依轄下業務人數"
         :options="[
           { label: '少到多', value: 'asc' },
@@ -52,18 +49,23 @@
 </template>
 
 <script setup>
-import { reactive, computed } from "vue";
+import {reactive, computed, ref} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {salesApi} from "@/api/modules/sales.js";
+import {cityApi} from "@/api/modules/city.js";
+import {salesLevelApi} from "@/api/modules/salesLevel.js";
+const { isLoggedIn, currentSales } = useAuth();
 
 const columns = [
   { key: "rank", label: "職級" },
-  { key: "date", label: "入職日期" },
-  { key: "region", label: "業務區域" },
+  { key: "startDate", label: "入職日期" },
+  { key: "city", label: "業務區域" },
   { key: "name", label: "業務名字" },
   { key: "phone", label: "電話" },
-  { key: "performance", label: "本月業績" },
-  { key: "staffCount", label: "轄下業務數" },
+  { key: "salesPerformance", label: "本月業績" },
+  { key: "salesMemberCount", label: "轄下業務數" },
 ];
 
 const members = reactive([
@@ -92,38 +94,75 @@ const members = reactive([
 const filter = reactive({
   rank: "",
   dateOrder: "",
-  region: "",
-  staffCount: "",
+  city: "",
+  salesMemberCount: "",
 });
 
 const displayedMembers = computed(() => {
   let list = [...members];
 
   if (filter.rank) list = list.filter((m) => m.rank.includes(filter.rank));
-  if (filter.region) list = list.filter((m) => m.region === filter.region);
+  if (filter.city) list = list.filter((m) => m.city === filter.city);
 
   if (filter.dateOrder) {
     list.sort((a, b) =>
       filter.dateOrder === "asc"
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date)
+        ? new Date(a.startDate) - new Date(b.startDate)
+        : new Date(b.startDate) - new Date(a.startDate)
     );
   }
 
-  if (filter.staffCount) {
+  if (filter.salesMemberCount) {
     list.sort((a, b) =>
-      filter.staffCount === "asc"
-        ? a.staffCount - b.staffCount
-        : b.staffCount - a.staffCount
+      filter.salesMemberCount === "asc"
+        ? a.salesMemberCount - b.salesMemberCount
+        : b.salesMemberCount - a.salesMemberCount
     );
   }
 
   return list.map((m) => ({
     ...m,
-    performance: m.performance.toLocaleString(),
-    staffCount: `${m.staffCount}人`,
+    performance: m.performance,
+    salesMemberCount: `${m.salesMemberCount}人`,
   }));
 });
+
+const cities = ref([]);
+const salesLevels = ref([]);
+async function getCities() {
+  const response = await cityApi.getCities()
+  cities.value = response.data
+}
+
+async function getSalesLevel() {
+  const response = await salesLevelApi.getSalesLevel()
+  salesLevels.value = response.data
+}
+
+async function getAllSalesBySales() {
+  const formData = {
+    salesId: currentSales.value
+  }
+
+  const response = await salesApi.getAllSalesBySales(formData)
+  const processedSales = response.data.map(sales => {
+    const city = cities.value.find(city => city.id === sales.city);
+    const level = salesLevels.value.find(level => level.id === sales.rank);
+    return {
+      ...sales,
+      city: city ? city.name : '未知',
+      rank: level ? level.name : '未知',
+    }
+  })
+  console.log(processedSales.value)
+  members.splice(0, members.length, ...processedSales)
+}
+
+if (isLoggedIn.value) {
+  getCities()
+  getSalesLevel()
+  getAllSalesBySales()
+}
 </script>
 
 <style scoped lang="scss">

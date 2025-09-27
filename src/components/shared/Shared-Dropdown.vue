@@ -38,6 +38,7 @@ const props = defineProps({
   placeholder: { type: String, default: "請選擇" },
   emptyAsUnselected: { type: Boolean, default: true },
   label: { type: String, default: "" },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue"]);
 
@@ -46,6 +47,7 @@ const isOpen = ref(false);
 const uid = getCurrentInstance()?.uid ?? Math.random().toString(36).slice(2);
 
 function open() {
+  if (props.readonly) return;
   if (isOpen.value) return;
   isOpen.value = true;
   window.dispatchEvent(
