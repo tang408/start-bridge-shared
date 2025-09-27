@@ -28,6 +28,14 @@
 import SharedProjectContent from "@/components/shared/Shared-project-content.vue";
 import Swiper from "./Project-Swiper.vue";
 import Tabs from "./Tabs.vue";
+import {onMounted, ref} from "vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {useRoute, useRouter} from "vue-router";
+import {planApi as PlanApi} from "@/api/modules/plan.js";
+
+// 必須先聲明 route 和 router
+const route = useRoute();
+const {isLoggedIn, currentUser} = useAuth();
 
 const cards = [
   {
@@ -43,6 +51,23 @@ const cards = [
     title: "盛情款待的手搖時光｜台中奶茶霸主🧋「顏太煮奶茶」",
   },
 ];
+
+const planData = ref();
+async function getPlan() {
+  const formData = {
+    userId: isLoggedIn.value ? currentUser.value : "",
+    planId: Number(route.params.id)
+  }
+  const response = await PlanApi.getPlan(formData);
+  if (response.code === 0) {
+    planData.value = response.data;
+  }
+}
+
+onMounted(() => {
+  getPlan();
+});
+
 </script>
 
 <style lang="scss" scoped>

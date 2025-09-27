@@ -73,6 +73,9 @@
 
 <script setup>
 import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
+import {useAuth} from "@/composables/useAuth.js";
+import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
+import { onMounted } from "vue";
 const props = defineProps({
   card: { type: Object, required: true },
   mode: { type: String, default: "progress" },
@@ -89,8 +92,71 @@ function onCardClick() {
   emit("card-click", props.card);
 }
 
-function toggleFavorite(newVal) {
-  emit("favorite-toggle", newVal);
+const {isLoggedIn, currentUser} = useAuth();
+async function getUserFavoritePlan() {
+  if (!isLoggedIn.value) {
+    return;
+  }
+  const formData = {
+    userId: currentUser.value,
+  }
+  const response = await userFavoritePlanApi.getUserFavoritePlans(formData)
+  if (response.code === 0) {
+    // 檢查 planFavoritePlans 陣列中是否包含當前卡片的 planId
+    const isFavorite = response.data.planFavoritePlans.some(
+        plan => plan.planId === props.card.id
+    );
+
+    // 設置卡片的收藏狀態
+    props.card.favorite = isFavorite;
+  }
+}
+
+onMounted(() => {
+  if (props.mode === 'progress' && props.showFavorite) {
+    getUserFavoritePlan();
+  }
+});
+
+async function toggleFavorite(newVal) {
+  if (currentUser.value === null) {
+    alert("請先登入會員");
+    return;
+  }
+  console.log(props.mode)
+  if (props.mode !== 'progress') {
+    return;
+  }
+  console.log(props.card.favorite)
+  if (props.card.favorite) {
+    // 取消收藏
+    const formData = {
+      userId: currentUser.value,
+      planId: props.card.id,
+      planType: 1
+    }
+
+    const response = await userFavoritePlanApi.deleteUserFavoritePlan(formData)
+    if (response.code !== 0) {
+      alert("取消收藏失敗，請稍後再試");
+      return;
+    }
+
+    emit("favorite-toggle", newVal);
+  } else {
+    const formData = {
+      userId: currentUser.value,
+      planId: props.card.id,
+      planType: 1
+    }
+
+    const response = await userFavoritePlanApi.createUserFavoritePlan(formData)
+    emit("favorite-toggle", newVal);
+    if (response.code !== 0) {
+      alert("加入收藏失敗，請稍後再試");
+      return;
+    }
+  }
 }
 </script>
 

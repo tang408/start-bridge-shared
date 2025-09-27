@@ -38,115 +38,43 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import {computed, onMounted, ref} from "vue";
 import { useRouter } from "vue-router";
 import SharedFilter from "@/components/shared/Shared-Filter.vue";
 import {planApi as PlanApi} from "@/api/modules/plan.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {useAuth} from "@/composables/useAuth.js";
+import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
+
 const router = useRouter();
-// const items = ref([
-//   {
-//     id: 1,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 76,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 1 } },
-//   },
-//   {
-//     id: 2,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 54,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 2 } },
-//   },
-//   {
-//     id: 3,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 32,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 3 } },
-//   },
-//   {
-//     id: 4,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 88,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 4 } },
-//   },
-//   {
-//     id: 5,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 45,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 5 } },
-//   },
-//   {
-//     id: 6,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 20,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 6 } },
-//   },
-//   {
-//     id: 7,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 65,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 7 } },
-//   },
-//   {
-//     id: 8,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 100,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 8 } },
-//   },
-//   {
-//     id: 9,
-//     img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-//     title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-//     price: "99天",
-//     supporters: "9999 人瀏覽",
-//     progress: 12,
-//     favorite: false,
-//     to: { name: "ProjectDetail", params: { id: 9 } },
-//   },
-// ]);
+const {isLoggedIn, currentUser} = useAuth();
 
-async function handleFeatureUpdate(featureValue) {
-  const feature = typeof featureValue === 'object' ? featureValue.value : featureValue;
-  currentFilters.value.feature = feature || 0;
+const items = ref([]);
+const loading = ref(false);
+const userFavorites = ref([]);
 
-  // 立即發送 API 請求
-  await getAllPlan();
+// 獲取用戶收藏狀態
+async function getUserFavoritePlans() {
+  if (!isLoggedIn.value) {
+    userFavorites.value = [];
+    return;
+  }
+
+  try {
+    const formData = {
+      userId: currentUser.value
+    }
+    const response = await userFavoritePlanApi.getUserFavoritePlans(formData);
+    if (response.code === 0) {
+      // 提取計劃收藏的 ID 列表
+      userFavorites.value = response.data.planFavoritePlans.map(plan => plan.planId);
+    }
+  } catch (error) {
+    console.error('獲取收藏狀態失敗:', error);
+    userFavorites.value = [];
+  }
 }
-
 
 // 將 API 資料轉換為組件需要的格式
 function transformApiDataToItems(apiData) {
@@ -154,17 +82,17 @@ function transformApiDataToItems(apiData) {
     id: item.id,
     img: item.imageUrl || new URL("@/assets/images/card-box.png", import.meta.url).href,
     title: item.title,
-    price: `${item.daysLeft}天`, // 剩餘天數
-    supporters: `${item.views} 人瀏覽`, // 瀏覽數
-    progress: Math.round(item.progress || 0), // 進度百分比，四捨五入
-    to: { name: "ProjectDetail", params: { id: item.id } }, // 路由
+    price: `${item.daysLeft}天`,
+    supporters: `${item.views} 人瀏覽`,
+    progress: Math.round(item.progress || 0),
+    favorite: userFavorites.value.includes(item.id), // 檢查是否在收藏列表中
+    to: { name: "ProjectDetail", params: { id: item.id } },
   }));
 }
 
 // 獲取所有計畫
-async function getAllPlan() {
+async function getAllPlan(refreshFavorites = false) {
   try {
-    // 顯示載入狀態
     loading.value = true;
 
     const formData = {
@@ -173,17 +101,23 @@ async function getAllPlan() {
       feature: currentFilters.value.feature || 0,
     };
 
-    const res = await PlanApi.getAllPlan(formData);
-    if (res && res.data) {
-      // 轉換 API 資料格式
-      const transformedData = transformApiDataToItems(res.data);
+    const promises = [PlanApi.getAllPlan(formData)];
+
+    // 只在需要時重新獲取收藏狀態
+    if (refreshFavorites) {
+      promises.push(getUserFavoritePlans());
+    }
+
+    const [planRes] = await Promise.all(promises);
+
+    if (planRes && planRes.data) {
+      const transformedData = transformApiDataToItems(planRes.data);
       items.value = transformedData;
     } else {
       items.value = [];
     }
   } catch (error) {
     console.error('獲取計畫資料失敗:', error);
-    // 錯誤處理：設為空陣列
     items.value = [];
   } finally {
     loading.value = false;
@@ -238,10 +172,40 @@ const currentFilters = ref({
   order: 0
 });
 
+// 統一的篩選更新函數
+async function updateFilter(filterKey, value) {
+  const filterValue = typeof value === 'object' ? value.value : value;
+  currentFilters.value[filterKey] = filterValue || 0;
+
+  // 篩選時不重新獲取收藏狀態
+  await getAllPlan(false);
+}
+
+// 各個篩選器的處理函數
+async function handleOrderUpdate(orderValue) {
+  await updateFilter('order', orderValue);
+}
+
+async function handleCategoryUpdate(categoryValue) {
+  await updateFilter('industryType', categoryValue);
+}
+
+async function handleFeatureUpdate(featureValue) {
+  await updateFilter('feature', featureValue);
+}
+
+function handleCardClick(card) {
+  if (card?.to) {
+    router.push(card.to)
+    return;
+  }
+}
+
 // 組件掛載時獲取初始資料
 onMounted(async () => {
   await getIndustryTypes();
-  await getAllPlan();
+  await getUserFavoritePlans(); // 先獲取收藏狀態
+  await getAllPlan(false); // 第一次載入時不需要重複獲取收藏狀態
 });
 </script>
 

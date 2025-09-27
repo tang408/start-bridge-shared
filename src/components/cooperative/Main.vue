@@ -31,8 +31,11 @@ import img4 from "@/assets/images/news-4.png";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {computed, onMounted, ref} from "vue";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {useAuth} from "@/composables/useAuth.js";
+import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 
 const router = useRouter();
+const {isLoggedIn, currentUser} = useAuth();
 
 const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
 const sampleImages = [img1, img2, img3, img4];
@@ -55,11 +58,70 @@ function openDetail(card) {
     router.push({ name: "CooperativeBrandDetail", params: { id: card.id } });
   }
 }
+async function getUserFavoritePlan() {
+  if (!isLoggedIn.value) {
+    return;
+  }
 
-function onFavoriteChange({ id, value }) {
-  const target = items.value.find((i) => i.id === id);
-  if (target) target.favorite = value;
+  const formData = {
+    userId: currentUser.value,
+  }
+
+  try {
+    const response = await userFavoritePlanApi.getUserFavoritePlans(formData)
+    if (response.code === 0) {
+      // 提取收藏的官方合作夥伴 ID 列表
+      const favoritePartnerIds = response.data.founderFavoritePlans.map(
+          partner => partner.officialPartnerId
+      );
+
+      // 更新每個合作夥伴的收藏狀態
+      officialPartnersData.value.forEach(partner => {
+        partner.favorite = favoritePartnerIds.includes(partner.id);
+      });
+    }
+  } catch (error) {
+    console.error('獲取收藏狀態失敗:', error);
+  }
 }
+
+async function onFavoriteChange({ id, value }) {
+  // 找到對應的項目並更新收藏狀態
+  const target = officialPartnersData.value.find((partner) => partner.id === id);
+  if (target) {
+    target.favorite = value;
+  }
+
+  // 如果用戶已登入，同步到後端
+  if (isLoggedIn.value) {
+    try {
+      const formData = {
+        userId: currentUser.value,
+        planId: id,
+        planType: 2 // 2 表示合作夥伴
+      }
+
+      if (value) {
+        // 添加收藏
+        await userFavoritePlanApi.createUserFavoritePlan(formData);
+      } else {
+        // 取消收藏
+        await userFavoritePlanApi.deleteUserFavoritePlan({
+          userId: currentUser.value,
+          planId: id,
+          planType: 2
+        });
+      }
+    } catch (error) {
+      console.error('更新收藏狀態失敗:', error);
+      // 如果後端操作失敗，回復前端狀態
+      if (target) {
+        target.favorite = !value;
+      }
+    }
+  }
+}
+
 const loading = ref(false);
 
 const officialPartnersData = ref([]);
@@ -114,7 +176,7 @@ async function getOfficialPartners(industryType = 0) {
   loading.value = true;
   try {
     const formData = {
-      industryType: industryType // 傳入選中的分類 ID
+      industryType: industryType
     }
     const response = await officialPartnerApi.getOfficialPartners(formData);
     if (response.code === 0) {
@@ -142,6 +204,7 @@ const transformedItems = computed(() => {
     description: partner.description,
     mode: partner.mode, // 保留模式資訊
     redirectUrl: partner.redirectUrl, // 保留跳轉 URL
+    favorite: partner.favorite || false,
     rawData: partner // 保留完整的原始資料
   }));
 });
@@ -151,7 +214,9 @@ const transformedItems = computed(() => {
 onMounted(async () => {
   await Promise.all([
     getIndustryTypes(),
-    getOfficialPartners(0)
+    getOfficialPartners(0),
+    getUserFavoritePlan(),
+
   ]);
 });
 
