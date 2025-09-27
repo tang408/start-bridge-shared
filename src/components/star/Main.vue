@@ -5,6 +5,7 @@
     :page-size="16"
     :show-filter="false"
     @card-click="openDetail"
+    @favorite-change="onFavoriteChange"
   />
   <div class="qa-content">
     <div class="qa-content-text">
@@ -19,21 +20,33 @@
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+import { ref } from "vue";
 import Swiper from "./Swiper.vue";
 import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
+
+const router = useRouter();
 const sampleImages = [img1, img2, img3, img4];
+const items = ref(
+  Array.from({ length: 80 }).map((_, i) => ({
+    id: i + 1,
+    title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
+    cover: sampleImages[i % 4],
+  }))
+);
 
-const items = Array.from({ length: 80 }).map((_, i) => ({
-  id: i + 1,
-  title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
-  cover: sampleImages[i % 4],
-}));
+function openDetail(card) {
+  router.push({ name: "starDetail", params: { id: card.id } });
+}
 
-function openDetail(card) {}
+function onFavoriteChange({ id, value }) {
+  const target = items.value.find((i) => i.id === id);
+  if (target) target.favorite = value;
+}
 </script>
 
 <style lang="scss" scoped>
