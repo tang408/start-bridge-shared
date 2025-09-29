@@ -48,6 +48,9 @@ import {
 import {onMounted, ref} from "vue";
 import {userApi} from "@/api/modules/user.js";
 import {useAuth} from "@/composables/useAuth.js";
+import { useNotifications } from '@/composables/useNotifications.js';
+
+const { initUnreadCounts } = useNotifications('user');
 
 const router = useRouter();
 const route = useRoute();
@@ -71,6 +74,7 @@ async function getUserNameAndAvatar() {
 onMounted(() => {
   if (isLoggedIn.value) {
     getUserNameAndAvatar();
+    initUnreadCounts(currentUser.value);
   } else {
     router.push({ name: "Login" });
   }

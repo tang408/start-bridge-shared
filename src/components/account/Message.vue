@@ -58,9 +58,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from "vue";
+import {ref, reactive, computed, onMounted} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
+import {notifyApi} from "@/api/modules/notify.js";
+import {useAuth} from "@/composables/useAuth.js";
+import { useNotifications } from '@/composables/useNotifications.ts';
+
+const { updateUnreadCounts, decreaseUnreadCount } = useNotifications('user');
+
+const {isLoggedIn, currentUser} = useAuth();
 
 const activeTab = ref("founder");
 
@@ -133,21 +140,163 @@ const tabState = reactive({
 
 const current = computed(() => tabState[activeTab.value]);
 
-function toggleCard(id) {
+async function toggleCard(id) {
   current.value.expandedId = current.value.expandedId === id ? null : id;
+
+  // 如果是收起卡片，直接返回
+  if (current.value.expandedId === null) {
+    return;
+  }
+
+  const m = current.value.messages.find((x) => x.id === id);
+  if (!m || m.read) {
+    return;
+  }
+
+  try {
+    const formData = {
+      userId: currentUser.value,
+      notifyId: id,
+      status: 2
+    }
+
+    const response = await notifyApi.updateUserNotify(formData);
+
+    if (response.code === 0) {
+      m.read = true;
+      const notifyType = activeTab.value === 'founder' ? 1 : 2;
+      decreaseUnreadCount(notifyType);
+
+    } else {
+      console.error('更新通知狀態失敗:', response.message);
+    }
+  } catch (error) {
+    console.error('更新通知狀態失敗:', error);
+  }
 }
 
-function setFavorite(id, val) {
+async function setFavorite(id, val) {
+  console.log(id, val)
+
   const m = current.value.messages.find((x) => x.id === id);
   if (m) m.favorite = val;
+
+  try {
+    const formData = {
+      userId: currentUser.value,
+      notifyId: id,
+      favorite: val
+    }
+
+    const response = await notifyApi.updateUserNotify(formData);
+
+    if (response.code !== 0) {
+      // API 失敗時，還原本地狀態
+      if (m) m.favorite = !val;
+      console.error('更新收藏失敗:', response.message);
+    }
+  } catch (error) {
+    // 發生錯誤時，還原本地狀態
+    if (m) m.favorite = !val;
+    console.error('更新收藏失敗:', error);
+  }
 }
 
-function removeMsg(id) {
+async function removeMsg(id) {
+  // 先更新本地 UI
   const list = current.value.messages;
   const idx = list.findIndex((x) => x.id === id);
-  if (idx > -1) list.splice(idx, 1);
-  if (current.value.expandedId === id) current.value.expandedId = null;
+
+  if (idx === -1) return; // 找不到訊息，直接返回
+
+  // 暫存要刪除的訊息（以便失敗時還原）
+  const removedMsg = list[idx];
+
+  // 立即從 UI 移除
+  list.splice(idx, 1);
+  if (current.value.expandedId === id) {
+    current.value.expandedId = null;
+  }
+
+  // 呼叫 API 刪除
+  try {
+    const formData = {
+      userId: currentUser.value,
+      notifyId: id
+    }
+    const response = await notifyApi.deleteUserNotify(formData);
+
+    if (response.code === 0) {
+      console.log('訊息刪除成功');
+    } else {
+      // API 失敗，還原訊息
+      list.splice(idx, 0, removedMsg);
+      console.error('刪除失敗:', response.message);
+    }
+  } catch (error) {
+    // 發生錯誤，還原訊息
+    list.splice(idx, 0, removedMsg);
+    console.error('刪除失敗:', error);
+  }
 }
+
+const userNotifies = ref([]);
+
+async function getUserNotifies() {
+  const formData = {
+    userId: currentUser.value
+  }
+  const response = await notifyApi.getUserNotifies(formData);
+  userNotifies.value = response.data;
+
+  // 將 API 資料寫入 tabState
+  if (response.code === 0 && response.data?.userNotifyDatas) {
+    const notifies = response.data.userNotifyDatas;
+
+    // 清空現有資料
+    tabState.founder.messages = [];
+    tabState.cofounder.messages = [];
+
+    let founderUnread = 0;
+    let cofounderUnread = 0;
+
+    // 根據 type 分類資料
+    notifies.forEach(notify => {
+      const message = {
+        id: notify.notifyId,
+        title: notify.title,
+        content: notify.content,
+        read: notify.status === 2, // 假設 status=1 是未讀，status=2 是已讀
+        tagged: false, // API 資料中沒有這個欄位，可以根據需求調整
+        favorite: notify.favorite
+      };
+
+      if (notify.type === 1) {
+        tabState.founder.messages.push(message);
+      } else if (notify.type === 2) {
+        tabState.cofounder.messages.push(message);
+      }
+      if (notify.status === 1) {
+        if (notify.type === 1) founderUnread++;
+        else cofounderUnread++;
+      }
+    });
+
+    updateUnreadCounts(founderUnread, cofounderUnread);
+
+
+    // 重置展開狀態
+    tabState.founder.expandedId = null;
+    tabState.cofounder.expandedId = null;
+  }
+}
+onMounted(() => {
+  if (isLoggedIn.value) {
+    getUserNotifies();
+  }
+})
+
+
 </script>
 
 <style lang="scss" scoped>

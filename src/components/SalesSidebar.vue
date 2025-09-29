@@ -17,7 +17,7 @@
               {{ name }}
             </div>
             <div class="mt-2 mb-2 d-flex gap-2">
-              系統訊息<span class="notice">{{ notifyCount }}</span>
+              系統訊息<span class="notice">{{ totalUnreadCount }}</span>
             </div>
             <div>當月業績：{{ salesPerformance }} 萬</div>
             <div>
@@ -41,11 +41,8 @@
           <div class="menu-item-content">
             <span class="label"
               >{{ item.label }}
-              <span
-                v-if="item.key === 'notifications' && item.count > 0"
-                class="notice"
-              >
-                {{ item.count }}
+              <span v-if="item.key === 'notifications' && totalUnreadCount > 0" class="notice">
+                {{ totalUnreadCount }}
               </span>
             </span>
           </div>
@@ -72,7 +69,10 @@
 <script setup>
 import { useRoute } from "vue-router";
 import avatarImg from "@/assets/images/avatar.png";
+import { useNotifications } from '@/composables/useNotifications.js'
 
+// 注意這裡是 'sales'
+const { totalUnreadCount } = useNotifications('sales')
 defineProps({
   avatar: { type: String, default: avatarImg },
   coreFounderCount: { type: Number, default: 0 },
@@ -93,7 +93,7 @@ const items = [
   { key: "member", label: "轄下會員列表" },
   { key: "sales", label: "轄下業務列表" },
   { key: "management", label: "專案管理系統" },
-  { key: "notifications", label: "系統訊息通知", count: 1 },
+  { key: "notifications", label: "系統訊息通知" },
   { key: "bonus", label: "獎金明細" },
   { key: "records", label: "業績紀錄" },
   { key: "assessment", label: "考核" },

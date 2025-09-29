@@ -110,10 +110,12 @@ import {useAuth} from "@/composables/useAuth.js";
 import {onMounted, ref} from "vue";
 import {salesApi} from "@/api/modules/sales.js";
 import {salesLevelApi} from "@/api/modules/salesLevel.js";
+import { useNotifications } from '@/composables/useNotifications.js';
 
 const router = useRouter();
 const route = useRoute();
 const { isLoggedIn, currentSales } = useAuth();
+const { initUnreadCounts } = useNotifications('sales');
 
 const user = ref({
   avatar: new URL("@/assets/images/avatar.png", import.meta.url).href,
@@ -175,6 +177,7 @@ onMounted(() => {
   if (isLoggedIn.value) {
     getSalesLevel();
     getSalesInfo();
+    initUnreadCounts(currentSales.value);
   } else {
     router.push({ name: "Login" });
   }

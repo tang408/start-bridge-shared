@@ -31,9 +31,9 @@
             ></span>
             <span class="label"
               >{{ item.label }}
-              <span v-if="item.key === 'email' && item.count > 0" class="notice">{{
-                item.count
-              }}</span>
+              <span v-if="item.key === 'email' && totalUnreadCount > 0" class="notice">
+                {{ totalUnreadCount }}
+              </span>
             </span>
           </div>
         </button>
@@ -58,6 +58,9 @@ import side7 from '@/assets/icon/side-7.png'
 import side8 from '@/assets/icon/side-8.png'
 import side9 from '@/assets/icon/side-9.png'
 import avatarImg from '@/assets/images/avatar.png'
+import { useNotifications } from '@/composables/useNotifications.js';
+
+const { totalUnreadCount } = useNotifications('user');
 
 defineProps({
   displayName: { type: String, default: '帳號名稱帳號名稱' },
@@ -66,9 +69,10 @@ defineProps({
 defineEmits(['select', 'logout'])
 useRoute()
 
+console.log(totalUnreadCount.value)
 const items = [
   { key: 'profile', label: '基本資料', icon: side1 },
-  { key: 'email', label: '我的信箱', icon: side2, count: 1 },
+  { key: 'email', label: '我的信箱', icon: side2, count: totalUnreadCount.value },
   { key: 'favorites', label: '我的收藏', icon: side3 },
   { key: 'participation', label: '參與專案管理', icon: side4 },
   { key: 'startup', label: '創業計劃管理', icon: side5 },
