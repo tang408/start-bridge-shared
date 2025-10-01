@@ -32,7 +32,7 @@
           <p>
             登入有問題？<RouterLink to="/forgot-password">忘記密碼</RouterLink>
             或
-            <a href="#">變更帳號</a>
+            <a href="#">查詢帳號</a>
           </p>
           <p>還沒有帳號？<RouterLink to="/entSignUp">註冊</RouterLink></p>
         </div>

@@ -75,17 +75,6 @@
                     {{ item.label }}
                   </div>
                 </button>
-                <!-- <router-link
-                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
-                  :to="item.link"
-                  @click="handleLinkClick"
-                >
-                  <div class="d-flex align-items-center gap-1">
-                    <img src="@/assets/icon/menu-icon.svg" />
-                    {{ item.label }}
-                  </div>
-                </router-link> -->
-
                 <button
                   class="ms-2 nav-arrow"
                   type="button"
@@ -112,6 +101,16 @@
                   </router-link>
                 </li>
               </ul>
+            </li>
+            <!-- 會員 icon -->
+            <li class="member-icon">
+              <router-link class="nav-link d-flex align-items-center" to="">
+                <img
+                  src="@/assets/icon/user.png"
+                  alt="會員"
+                  class="member-icon-img"
+                />
+              </router-link>
             </li>
             <li class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
               <router-link
@@ -451,5 +450,11 @@ const handleLogout = async () => {
   background: transparent;
   color: #fff;
   padding-right: 1rem;
+}
+
+.member-icon-img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
 }
 </style>
