@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="mode === 'progress'"
+    v-if="mode === 'progress' || mode === 'userFavorites'"
     class="progress-section-card"
     @click="onCardClick"
   >
@@ -123,16 +123,22 @@ async function toggleFavorite(newVal) {
     alert("請先登入會員");
     return;
   }
-  console.log(props.mode)
-  if (props.mode !== 'progress') {
+
+  // 如果是在收藏頁面，直接 emit 給父組件處理
+  if (props.mode === 'userFavorites') {
+    emit("favorite-toggle", {
+      favorite: props.card.favorite,
+      cardId: props.card.id,
+      planType: props.showProgress ? 1 : 2  // 1: 專案, 2: 品牌
+    });
     return;
   }
-  console.log(props.card.favorite)
+
   if (props.card.favorite) {
     // 取消收藏
     const formData = {
       userId: currentUser.value,
-      planId: props.card.id,
+      cardId: props.card.id,
       planType: 1
     }
 

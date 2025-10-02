@@ -4,8 +4,8 @@
     <SharedTabs
         v-model="activeTab"
         :tabs="[
-        { label: '共創者', value: 1 },
-        { label: '創業者', value: 2  },
+        { label: '專案', value: 1 },
+        { label: '品牌', value: 2  },
       ]"
     />
 
@@ -14,10 +14,11 @@
           v-for="c in creatorCards"
           :key="c.id"
           :card="c"
-          mode="progress"
+          mode="userFavorites"
           :showProgress="true"
           :showInfo="true"
           @favorite-toggle="handleFavoriteToggle"
+          @card-click="handlePlanClick"
       />
     </div>
 
@@ -26,10 +27,11 @@
           v-for="c in entCards"
           :key="c.id"
           :card="c"
-          mode="progress"
+          mode="userFavorites"
           :showProgress="false"
           :showInfo="false"
           @favorite-toggle="handleFavoriteToggle"
+          @card-click="handleBrandClick"
       />
     </div>
   </div>
@@ -73,10 +75,28 @@ const entCards = computed(() => {
 
 // 處理收藏狀態切換
 async function handleFavoriteToggle(newValue) {
-  if (!newValue) {
-    // 重新載入收藏列表
-    await getUserFavoritePlans();
+  console.log(newValue)
+  const formData = {
+    userId: currentUser.value,
+    planId: newValue.cardId, // 收藏時傳入 planId，取消收藏時傳 null
+    planType: newValue.planType // 1: 專案, 2: 品牌
+  };
+  console.log(formData)
+  const response = await userFavoritePlanApi.deleteUserFavoritePlan(formData)
+  if (response.code !== 0) {
+    alert("取消收藏失敗，請稍後再試");
+    return;
   }
+  // 重新獲取收藏列表
+  await getUserFavoritePlans();
+}
+
+function handlePlanClick(card) {
+  window.open(`/project/${card.id}`, '_blank');
+}
+
+function handleBrandClick(card) {
+  window.open(`/cooperative-brand/${card.id}`, '_blank');
 }
 
 async function getUserFavoritePlans() {
