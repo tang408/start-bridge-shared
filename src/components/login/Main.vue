@@ -31,8 +31,6 @@
         <div class="links">
           <p>
             登入有問題？<RouterLink to="/forgot-password">忘記密碼</RouterLink>
-            或
-            <a href="#">變更帳號</a>
           </p>
           <p>還沒有帳號？<RouterLink to="/entSignUp">註冊</RouterLink></p>
         </div>
@@ -77,19 +75,19 @@ async function handleLogin() {
       // 判斷回傳的是 salesId 還是 userId
       const isSalesLogin = response.data.hasOwnProperty('salesId');
       const isUserLogin = response.data.hasOwnProperty('userId');
-      
+
       let loginPayload = {
         token: response.data.token,
         user: null,
         sales: null
       };
-      
+
       if (isSalesLogin) {
         loginPayload.sales = response.data.salesId;
       } else if (isUserLogin) {
         loginPayload.user = response.data.userId;
       }
-      
+
       await login(loginPayload);
 
       // 根據登入類型跳轉到不同頁面
@@ -115,7 +113,7 @@ async function handleLogin() {
         }
       }
     } else {
-      alert(response.message);
+      alert(response.message || '登入失敗，請稍後再試');
     }
   } catch (error) {
     console.error('Login error:', error);

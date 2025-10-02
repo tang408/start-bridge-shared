@@ -8,11 +8,11 @@
       :error="props.errors.brand"
       readonly
     />
-    <!-- 創業預算 -->
+    <!-- 預計總費用 -->
     <SharedInput
       id="budget"
       v-model="local.budget"
-      label="創業預算"
+      label="預計總費用(萬元)"
       type="number"
       :error="props.errors.budget"
     />
@@ -21,7 +21,7 @@
     <SharedInput
       id="selfFund"
       v-model="local.selfFund"
-      label="創業者自備款"
+      label="創業者自備款(萬元)"
       type="number"
       :error="props.errors.selfFund"
     />
@@ -30,15 +30,16 @@
     <SharedInput
       id="totalFunding"
       v-model="local.totalFunding"
-      label="募資總額"
+      label="募資總額(萬元)"
       type="number"
       :error="props.errors.totalFunding"
+      readonly="true"
     />
 
     <!-- 單筆最低金額度 -->
     <SharedInput
       id="minAmount"
-      label="單筆最低額度"
+      label="單筆最低額度(萬元)"
       type="number"
       v-model="local.minAmount"
       :error="props.errors.minAmount"
@@ -47,10 +48,11 @@
     <!-- 單筆最高金額度 -->
     <SharedInput
       id="amountRange"
-      label="額度級距(一單位多少)"
+      label="額度級距(萬元) (一單位多少)"
       type="number"
       v-model="local.amountRange"
       :error="props.errors.amountRange"
+      readonly="true"
     />
 
     <!-- 夥伴人數上限 -->
@@ -62,17 +64,6 @@
       :error="props.errors.partnerLimit"
     />
 
-    <!-- 專案到期日 -->
-<!--    <SharedSelect-->
-<!--      id="expireDate"-->
-<!--      label="專案到期日"-->
-<!--      v-model="local.expireDate"-->
-<!--      :options="[-->
-<!--        { value: '2025-09-05', text: '2025-09-05' },-->
-<!--        { value: '2025-09-06', text: '2025-09-06' },-->
-<!--      ]"-->
-<!--      :error="props.errors.expireDate"-->
-<!--    />-->
     <SharedDatePicker
         id="expireDate"
         label="專案到期日"
@@ -110,26 +101,6 @@ watch(
     const budgetNum = Number(newBudget) || 0;
     const selfFundNum = Number(newSelfFund) || 0;
     local.totalFunding = budgetNum - selfFundNum;
-  }
-);
-
-// totalFunding 有值 partnerLimit 有值，計算 單筆最低額度
-watch(
-  () => [local.totalFunding, local.partnerLimit],
-  ([newTotalFunding, newPartnerLimit]) => {
-    const totalFundingNum = Number(newTotalFunding) || 0;
-    const partnerLimitNum = Number(newPartnerLimit) || 1; // 避免除以零
-    const minAmount = Math.floor(totalFundingNum / partnerLimitNum);
-    local.minAmount = minAmount > 0 ? minAmount : 0;
-  }
-);
-
-// minAmount 有值，暫定 amountRange = minAmount
-watch(
-  () => local.minAmount,
-  (newMinAmount) => {
-    const minAmountNum = Number(newMinAmount) || 0;
-    local.amountRange = minAmountNum > 0 ? minAmountNum : 0;
   }
 );
 

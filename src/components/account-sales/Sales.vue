@@ -69,26 +69,6 @@ const columns = [
 ];
 
 const members = reactive([
-  {
-    id: 1,
-    rank: "職級A",
-    date: "2024-12-03",
-    region: "台北市",
-    name: "張曉婷",
-    phone: "0987-654-321",
-    performance: 30000000,
-    staffCount: 10,
-  },
-  {
-    id: 2,
-    rank: "職級B",
-    date: "2024-12-03",
-    region: "台中市",
-    name: "王一天",
-    phone: "0987-654-321",
-    performance: 10000000,
-    staffCount: 2,
-  },
 ]);
 
 const filter = reactive({
@@ -145,17 +125,22 @@ async function getAllSalesBySales() {
   }
 
   const response = await salesApi.getAllSalesBySales(formData)
-  const processedSales = response.data.map(sales => {
-    const city = cities.value.find(city => city.id === sales.city);
-    const level = salesLevels.value.find(level => level.id === sales.rank);
-    return {
-      ...sales,
-      city: city ? city.name : '未知',
-      rank: level ? level.name : '未知',
-    }
-  })
-  console.log(processedSales.value)
-  members.splice(0, members.length, ...processedSales)
+  if (response.data !== null) {
+    const processedSales = response.data.map(sales => {
+      const city = cities.value.find(city => city.id === sales.city);
+      const level = salesLevels.value.find(level => level.id === sales.rank);
+      return {
+        ...sales,
+        city: city ? city.name : '未知',
+        rank: level ? level.name : '未知',
+      }
+    })
+
+    console.log(processedSales.value)
+    members.splice(0, members.length, ...processedSales)
+  }
+
+
 }
 
 if (isLoggedIn.value) {

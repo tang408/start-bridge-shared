@@ -29,6 +29,7 @@
         />
       </div>
     </div>
+    <p class="error-msg" v-if="error">{{ error }}</p>
   </div>
 </template>
 
@@ -42,6 +43,7 @@ const model = defineModel({ type: Object, default: () => ({}) });
 const props = defineProps({
   label: { type: String, default: "" },
   options: { type: Array, default: () => [] },
+  error: { type: String, default: "" },
 });
 
 const uid = computed(() => `rc-${Math.random().toString(36).slice(2, 9)}`);

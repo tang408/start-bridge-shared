@@ -73,7 +73,6 @@ const entCards = computed(() => {
 
 // 處理收藏狀態切換
 async function handleFavoriteToggle(newValue) {
-  // 如果取消收藏，需要從列表中移除並同步到後端
   if (!newValue) {
     // 重新載入收藏列表
     await getUserFavoritePlans();

@@ -1,51 +1,57 @@
 <template>
   <div class="form-group">
     <label v-if="label" :for="id">{{ label }}</label>
+
     <div class="row-inline" v-if="buttonText">
       <input
-        :id="id"
-        :type="type"
-        v-model="model"
-        :autocomplete="autocomplete"
-        :required="required"
-        :readonly="readonly"
-        :class="{ 'is-invalid': error }"
-        v-bind="$attrs"
+          :id="id"
+          :type="type"
+          v-model="model"
+          :autocomplete="autocomplete"
+          :required="required"
+          :readonly="readonly"
+          :class="{ 'is-invalid': error }"
+          v-bind="$attrs"
       />
       <button
-        type="button"
-        class="btn-secondary"
-        :disabled="!canClick"
-        :aria-disabled="!canClick"
-        @click="onButtonClick"
+          type="button"
+          class="btn-secondary"
+          :disabled="!canClick"
+          :aria-disabled="!canClick"
+          @click="onButtonClick"
       >
         {{ buttonText }}
       </button>
     </div>
+
     <template v-else>
       <input
-        :id="id"
-        :type="type"
-        v-model="model"
-        :autocomplete="autocomplete"
-        :required="required"
-        :readonly="readonly"
-        :class="{ 'is-invalid': error }"
-        v-bind="$attrs"
+          :id="id"
+          :type="type"
+          v-model="model"
+          :autocomplete="autocomplete"
+          :required="required"
+          :readonly="readonly"
+          :class="{ 'is-invalid': error }"
+          v-bind="$attrs"
       />
     </template>
+
+    <!-- OTP 提示 -->
     <p v-if="sent" class="otp-hint">
       已寄出驗證碼，沒有收到？
       <button
-        type="button"
-        class="link-like"
-        :disabled="countdown > 0"
-        @click="$emit('resend')"
+          type="button"
+          class="link-like"
+          :disabled="countdown > 0"
+          @click="$emit('resend')"
       >
         {{ resendText }}
       </button>
       <span v-if="countdown > 0">{{ countdown }}s</span>
     </p>
+
+    <!-- 統一的 error 顯示位置 -->
     <p v-if="error" class="error-msg">{{ error }}</p>
   </div>
 </template>

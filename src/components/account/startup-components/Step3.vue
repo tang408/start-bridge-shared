@@ -5,6 +5,7 @@
 
       <!-- 是否有創業經驗 -->
       <SharedRadio
+        id="hasStartupExp"
         v-model="local.hasStartupExp"
         label="是否有創業經驗？*"
         name="hasStartupExp"
@@ -12,7 +13,7 @@
           { text: '是', value: true },
           { text: '否', value: false },
         ]"
-        :error="errors.hasStartupExp"
+        :error="props.errors.hasStartupExp"
       />
 
       <SharedTextarea
@@ -25,6 +26,7 @@
 
       <!-- 是否有財務糾紛 -->
       <SharedRadio
+        id="hasDispute"
         v-model="local.hasDispute"
         label="是否曾涉入財務糾紛、重大爭議或負面新聞？*"
         name="hasDispute"
@@ -32,7 +34,7 @@
           { text: '是', value: true },
           { text: '否', value: false },
         ]"
-        :error="errors.hasDispute"
+        :error="props.errors.hasDispute"
       />
 
       <SharedTextarea
@@ -78,7 +80,7 @@
           { text: '是', value: true },
           { text: '否', value: false },
         ]"
-          :error="errors.willingDocs"
+          :error="props.errors.willingDocs"
       />
     </div>
 
@@ -101,22 +103,56 @@ const local = reactive({ ...props.modelValue });
 
 watch(local, (val) => emit("update:modelValue", val), { deep: true });
 
+function scrollToError(fieldId) {
+  const element = document.getElementById(fieldId);
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+
+    // 可選：增加視覺提示
+    element.classList.add('highlight-error');
+    setTimeout(() => {
+      element.classList.remove('highlight-error');
+    }, 2000);
+  }
+}
+
 function submitStep() {
   // 清空錯誤訊息
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
-  // 檢查必填的 boolean 欄位
-  // 注意：boolean 值可能是 true, false, 或 undefined/null
-  if (local.hasStartupExp === undefined || local.hasStartupExp === null) {
+  let firstErrorField = null;
+
+  if (local.hasStartupExp === undefined || local.hasStartupExp === null || local.hasStartupExp === '') {
+    if (!firstErrorField) firstErrorField = 'hasStartupExp'
     props.errors.hasStartupExp = "請選擇是否有創業經驗";
+  } else if (local.hasStartupExp === true && (!local.expDesc || local.expDesc.trim() === '')) {
+    if (!firstErrorField) firstErrorField = 'hasStartupExp'
+    props.errors.hasStartupExp = "請簡述創業經驗";
+  } else {
+    props.errors.hasStartupExp = "";
   }
 
-  if (local.hasDispute === undefined || local.hasDispute === null) {
+  if (local.hasDispute === undefined || local.hasDispute === null || local.hasDispute === '') {
+    if (!firstErrorField) firstErrorField = 'hasDispute'
     props.errors.hasDispute = "請選擇是否曾涉入財務糾紛";
+  } else if (local.hasDispute === true && (!local.disputeDesc || local.disputeDesc.trim() === '')) {
+    if (!firstErrorField) firstErrorField = 'hasDispute'
+    props.errors.hasDispute = "請說明財務糾紛";
+  } else {
+    props.errors.hasDispute = "";
   }
 
-  if (local.willingDocs === undefined || local.willingDocs === null) {
+  if (local.willingDocs === undefined || local.willingDocs === null || local.willingDocs === '') {
+    if (!firstErrorField) firstErrorField = 'willingDocs'
     props.errors.willingDocs = "請選擇是否願意提供佐證文件";
+  }
+
+  // 滾動到第一個錯誤
+  if (firstErrorField) {
+    scrollToError(firstErrorField);
   }
 
   // 檢查是否有錯誤

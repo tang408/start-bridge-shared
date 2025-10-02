@@ -5,152 +5,111 @@
 
       <form @submit.prevent="handleRegister" class="form">
         <div class="form-display">
-          <!-- 手機電話 + 驗證碼 -->
           <SharedInput
-            id="phone"
-            type="tel"
-            label="聯絡電話*(作為登入帳號使用)"
-            autocomplete="tel"
-            v-model="form.phone"
-            :error="errors.phone"
-            required
-            buttonText="寄送驗證碼"
-            @button-click="sendPhoneOTP"
-            :sent="phoneOtp.sent"
-            :countdown="phoneOtp.seconds"
-            resendText="重新寄送"
-            @resend="resendPhoneOTP"
-            :enable-if="phoneEnableIf"
-            inputmode="numeric"
-            maxlength="10"
+              ref="phoneRef"
+              id="phone"
+              type="tel"
+              label="聯絡電話*(作為登入帳號使用)"
+              v-model="form.phone"
+              :error="errors.phone"
+              buttonText="寄送驗證碼"
+              @button-click="sendPhoneOTP"
+              :sent="phoneOtp.sent"
+              :countdown="phoneOtp.seconds"
+              @resend="resendPhoneOTP"
+              :enable-if="phoneEnableIf"
+              inputmode="numeric"
+              maxlength="10"
           />
 
           <SharedInput
+              ref="verifyCodeRef"
               id="phoneOtpCode"
               type="text"
               label="手機驗證碼*"
               placeholder="請輸入6位數驗證碼"
-              autocomplete="one-time-code"
               v-model="form.verifyCode"
               :error="errors.verifyCode"
-              required
               inputmode="numeric"
               maxlength="6"
-              pattern="[0-9]{6}"
           />
 
-          <!-- 密碼 / 再次輸入密碼 -->
           <SharedPassword
-            id="password"
-            label="密碼*"
-            v-model="form.password"
-            :error="errors.password"
-            @valid-change="(ok) => (state.passwordOk = ok)"
+              ref="passwordRef"
+              id="password"
+              label="密碼*"
+              v-model="form.password"
+              :error="errors.password"
+              @valid-change="(ok) => (state.passwordOk = ok)"
           />
 
           <SharedInput
-            id="confirmPassword"
-            type="password"
-            label="再次輸入密碼*"
-            autocomplete="new-password"
-            v-model="form.confirmPassword"
-            :error="errors.confirmPassword"
+              ref="confirmPasswordRef"
+              id="confirmPassword"
+              type="password"
+              label="再次輸入密碼*"
+              v-model="form.confirmPassword"
+              :error="errors.confirmPassword"
           />
 
-          <!-- 姓名 -->
           <SharedInput
-            id="name"
-            label="姓名*"
-            v-model="form.name"
-            :error="errors.name"
-            required
+              ref="nameRef"
+              id="name"
+              label="姓名*"
+              v-model="form.name"
+              :error="errors.name"
           />
 
-          <!-- 性別 -->
           <SharedRadio
-            label="性別*"
-            v-model="form.gender"
-            :options="[
+              ref="genderRef"
+              label="性別*"
+              v-model="form.gender"
+              :options="[
               { value: 'male', text: '男性' },
               { value: 'female', text: '女性' },
             ]"
-            :error="errors.gender"
-            required
+              :error="errors.gender"
           />
 
-          <!-- 出生年月日 -->
           <SharedBirthday
-            id="birthday"
-            label="出生年月日*"
-            v-model="form.birthday"
-            :error="errors.birthday"
-            :required="true"
-            :max="new Date().toISOString().slice(0, 10)"
+              ref="birthdayRef"
+              id="birthday"
+              label="出生年月日*"
+              v-model="form.birthday"
+              :error="errors.birthday"
+              :max="new Date().toISOString().slice(0, 10)"
           />
 
-<!--           Line -->
-<!--          <SharedInput-->
-<!--            id="line-display"-->
-<!--            label="Line*"-->
-<!--            v-model="form.line"-->
-<!--            :error="errors.line"-->
-<!--            required-->
-<!--          />-->
-
-          <!-- 電子郵件 + 驗證碼 -->
           <SharedInput
-            id="email"
-            type="email"
-            label="電子郵件*(作為登入帳號使用)"
-            autocomplete="email"
-            v-model="form.email"
-            :error="errors.email"
-            required
+              ref="emailRef"
+              id="email"
+              type="email"
+              label="電子郵件*(作為登入帳號使用)"
+              v-model="form.email"
+              :error="errors.email"
           />
 
-          <!-- 創業題項 -->
           <SharedInput
-            id="line"
-            label="創業預算*(自備款2成)"
-            v-model="form.budget"
-            :error="errors.budget"
-            required
+              id="code"
+              label="推薦碼"
+              v-model="form.referralCode"
+              :error="errors.referralCode"
           />
 
-          <!-- 推薦碼 -->
-          <SharedInput
-            id="code"
-            label="推薦碼"
-            v-model="form.referralCode"
-            :error="errors.referralCode"
-          />
-
-          <!-- 同意條款 -->
-          <div class="form-group mt-4">
+          <div ref="agreeRef" class="form-group mt-4">
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree" />
               <label for="agree">我已閱讀並同意</label>
-
-              <RouterLink to="/terms/platform" class="agree-link" @click.stop
-                >平台合約</RouterLink
-              >
-              <RouterLink to="/terms/service" class="agree-link" @click.stop
-                >服務條款</RouterLink
-              >
+              <RouterLink to="/terms/platform" class="agree-link">平台合約</RouterLink>
+              <RouterLink to="/terms/service" class="agree-link">服務條款</RouterLink>
               及
-              <RouterLink to="/privacy" class="agree-link" @click.stop
-                >隱私權政策</RouterLink
-              >
+              <RouterLink to="/privacy" class="agree-link">隱私權政策</RouterLink>
             </div>
-
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
         </div>
 
         <button type="submit" class="btn-confirm">註冊申請</button>
-        <div class="links">
-          <p>已有帳號？<RouterLink to="/login">登入</RouterLink></p>
-        </div>
       </form>
     </div>
   </div>
@@ -160,12 +119,10 @@
 import {reactive, onBeforeUnmount, watch, onMounted, ref} from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
-import SharedSelect from "@/components/shared/Shared-Select.vue";
-import SharedUpload from "@/components/shared/Shared-Upload.vue";
 import SharedPassword from "@/components/shared/Shared-Password.vue";
 import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
-import {industryTypeApi} from "@/api/modules/industryType.js";
 import {userApi} from "@/api/modules/user.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 
 const form = reactive({
   phone: "",
@@ -177,20 +134,10 @@ const form = reactive({
   birthday: "",
   line: "",
   email: "",
-  topics: [],
-  job: "",
-  minBudget: "",
-  maxBudget: "",
-  industryType: "",
-  budget: "",
   referralCode: "",
-  idDoc: null,
-  assetDoc: null,
-  pcrcDoc: null,
-  resumeDoc: null,
-  note: "",
   agree: false,
 });
+
 const errors = reactive({
   phone: "",
   verifyCode: "",
@@ -199,34 +146,32 @@ const errors = reactive({
   name: "",
   gender: "",
   birthday: "",
-  line: "",
   email: "",
-  industryType: "",
-  budget: "",
-  idDoc: "",
-  assetDoc: "",
-  addressDoc: "",
-  code: "",
-  asset: "",
-  agree: "",
-  minBudget: "",
-  maxBudget: "",
-  job: "",
   referralCode: "",
+  agree: "",
 });
+
+// 為每個欄位創建 ref
+const phoneRef = ref(null);
+const verifyCodeRef = ref(null);
+const passwordRef = ref(null);
+const confirmPasswordRef = ref(null);
+const nameRef = ref(null);
+const genderRef = ref(null);
+const birthdayRef = ref(null);
+const emailRef = ref(null);
+const agreeRef = ref(null);
 
 const phoneOtp = reactive({ sent: false, seconds: 0, timer: null });
-const emailOtp = reactive({ sent: false, seconds: 0, timer: null });
 const state = reactive({ passwordOk: false });
-const phoneEnableIf = (v) => /^09\d{8,}$/.test(v);
-const emailEnableIf = (v) => {
-  const [lhs, rhs] = String(v).split("@");
-  return !!lhs && (rhs?.length ?? 0) >= 1;
-};
+const loading = ref(false);
 
-watch([() => state.passwordOk, () => form.password], ([ok]) => {
-  errors.password = ok ? "" : "請輸入至少8碼，並包含大小寫、數字與符號。";
-});
+const phoneEnableIf = (v) => /^09\d{8}$/.test(v);
+
+// 移除自動驗證密碼的 watch
+// watch([() => state.passwordOk, () => form.password], ([ok]) => {
+//   errors.password = ok ? "" : "請輸入至少8碼，並包含大小寫、數字與符號。";
+// });
 
 function startTimer(state, total = 100) {
   if (state.timer) clearInterval(state.timer);
@@ -242,43 +187,146 @@ function startTimer(state, total = 100) {
   }, 1000);
 }
 
-const loading = ref(false);
-function getFileId(fileObj) {
-  if (!fileObj) return null;
-  if (typeof fileObj === 'object' && fileObj.id) {
-    return fileObj.id;
-  }
-  return null;
-}
-
 function convertGender(gender) {
   return gender === 'male' ? 1 : gender === 'female' ? 2 : 0;
 }
 
+// 滾動到第一個錯誤欄位
+function scrollToFirstError(errorRef) {
+  if (errorRef?.value?.$el) {
+    errorRef.value.$el.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
+  }
+}
+
+// 完整的驗證函數
+function validateForm() {
+  let firstErrorRef = null;
+  let isValid = true;
+
+  // 清空所有錯誤
+  Object.keys(errors).forEach(key => errors[key] = "");
+
+  // 1. 驗證手機號碼
+  if (!form.phone) {
+    errors.phone = "請輸入聯絡電話";
+    if (!firstErrorRef) firstErrorRef = phoneRef;
+    isValid = false;
+  } else if (!/^09\d{8}$/.test(form.phone)) {
+    errors.phone = "請輸入有效的手機號碼";
+    if (!firstErrorRef) firstErrorRef = phoneRef;
+    isValid = false;
+  }
+
+  // 2. 驗證驗證碼
+  if (!form.verifyCode) {
+    errors.verifyCode = "請輸入手機驗證碼";
+    if (!firstErrorRef) firstErrorRef = verifyCodeRef;
+    isValid = false;
+  } else if (!/^\d{6}$/.test(form.verifyCode)) {
+    errors.verifyCode = "請輸入6位數驗證碼";
+    if (!firstErrorRef) firstErrorRef = verifyCodeRef;
+    isValid = false;
+  }
+
+  // 3. 驗證密碼
+  if (!form.password) {
+    errors.password = "請輸入密碼";
+    if (!firstErrorRef) firstErrorRef = passwordRef;
+    isValid = false;
+  } else if (!state.passwordOk) {
+    errors.password = "請輸入至少8碼，並包含大小寫、數字與符號";
+    if (!firstErrorRef) firstErrorRef = passwordRef;
+    isValid = false;
+  }
+
+  // 4. 驗證確認密碼
+  if (!form.confirmPassword) {
+    errors.confirmPassword = "請再次輸入密碼";
+    if (!firstErrorRef) firstErrorRef = confirmPasswordRef;
+    isValid = false;
+  } else if (form.password !== form.confirmPassword) {
+    errors.confirmPassword = "兩次輸入的密碼不一致";
+    if (!firstErrorRef) firstErrorRef = confirmPasswordRef;
+    isValid = false;
+  }
+
+  // 5. 驗證姓名
+  if (!form.name || !form.name.trim()) {
+    errors.name = "請輸入姓名";
+    if (!firstErrorRef) firstErrorRef = nameRef;
+    isValid = false;
+  }
+
+  // 6. 驗證性別
+  if (!form.gender) {
+    errors.gender = "請選擇性別";
+    if (!firstErrorRef) firstErrorRef = genderRef;
+    isValid = false;
+  }
+
+  // 7. 驗證生日
+  if (!form.birthday) {
+    errors.birthday = "請選擇出生年月日";
+    if (!firstErrorRef) firstErrorRef = birthdayRef;
+    isValid = false;
+  } else {
+    // 驗證年齡
+    const today = new Date();
+    const birthDate = new Date(form.birthday);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      errors.birthday = '您必須年滿18歲才能註冊';
+      if (!firstErrorRef) firstErrorRef = birthdayRef;
+      isValid = false;
+    }
+  }
+
+  // 8. 驗證電子郵件
+  if (!form.email) {
+    errors.email = "請輸入電子郵件";
+    if (!firstErrorRef) firstErrorRef = emailRef;
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errors.email = "請輸入有效的電子郵件地址";
+    if (!firstErrorRef) firstErrorRef = emailRef;
+    isValid = false;
+  }
+
+  // 9. 驗證同意條款
+  if (!form.agree) {
+    errors.agree = "請閱讀並同意相關條款";
+    if (!firstErrorRef) firstErrorRef = agreeRef;
+    isValid = false;
+  }
+
+  // 滾動到第一個錯誤
+  if (firstErrorRef) {
+    scrollToFirstError(firstErrorRef);
+  }
+
+  return isValid;
+}
+
 async function handleRegister() {
   if (loading.value) return;
+
+  // 驗證表單
+  if (!validateForm()) {
+    return;
+  }
+
   loading.value = true;
 
-  // 未滿18歲 不得註冊
-  const today = new Date();
-  const birthDate = new Date(form.birthday);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  if (age < 18) {
-    errors.birthday = '您必須年滿18歲才能註冊';
-    loading.value = false;
-    return;
-  } else {
-    errors.birthday = '';
-  }
-
   try {
-    // 準備 API 參數
     const params = {
-      account: form.phone, // 使用手機號碼作為帳號
+      account: form.phone,
       verifyCode: form.verifyCode,
       password: form.password,
       name: form.name,
@@ -286,24 +334,19 @@ async function handleRegister() {
       birthday: form.birthday,
       lineId: form.line,
       email: form.email,
-      budget: parseInt(form.budget) || 0,
       referralCode: form.referralCode || ""
     };
 
     console.log('提交參數:', params);
 
-    // 調用 API
     const response = await userApi.founderRegister(params);
 
     if (response.code === 0) {
-      // 註冊成功
-      alert('註冊申請提交成功！請等待審核。');
+      alert('註冊完成，請使用您的帳號密碼登入');
       router.push('/login');
-
     } else {
-      // 處理錯誤
       console.error('註冊失敗:', response);
-      alert(response.message || '註冊失敗，請稍後再試');
+      alert('註冊失敗，請稍後再試');
     }
 
   } catch (error) {
@@ -315,7 +358,15 @@ async function handleRegister() {
 }
 
 async function sendPhoneOTP() {
+  // 驗證手機號碼格式
+  if (!phoneEnableIf(form.phone)) {
+    errors.phone = "請輸入有效的手機號碼";
+    return;
+  }
+
+  errors.phone = "";
   startTimer(phoneOtp, 100);
+
   try {
     const response = await userApi.sendVerificationCode({ phone: form.phone });
     if (response.code !== 0) {
@@ -329,40 +380,24 @@ async function sendPhoneOTP() {
 
 async function resendPhoneOTP() {
   if (phoneOtp.seconds > 0) return;
-  startTimer(phoneOtp, 100);
+  await sendPhoneOTP();
 }
-
-async function sendEmailOTP() {
-  startTimer(emailOtp, 100);
-}
-async function resendEmailOTP() {
-  if (emailOtp.seconds === 0) startTimer(emailOtp, 100);
-}
-
 
 const industryTypesData = ref([]);
 async function getIndustryTypes() {
-    const response = await industryTypeApi.getIndustryTypes();
-    if (response.code === 0) {
-      // 保存完整的資料（包含 id 和 name）
-      industryTypesData.value = response.data;
-      console.log('獲取的行業類型:', response.data);
-    } else {
-      throw new Error('API 響應格式錯誤');
-    }
+  const response = await industryTypeApi.getIndustryTypes();
+  if (response.code === 0) {
+    industryTypesData.value = response.data;
+    console.log('獲取的行業類型:', response.data);
+  }
 }
 
-// 組件掛載時獲取數據
 onMounted(async () => {
-  await Promise.all([
-    getIndustryTypes()
-  ]);
+  await getIndustryTypes();
 });
-
 
 onBeforeUnmount(() => {
   if (phoneOtp.timer) clearInterval(phoneOtp.timer);
-  if (emailOtp.timer) clearInterval(emailOtp.timer);
 });
 </script>
 
