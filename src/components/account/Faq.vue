@@ -2,84 +2,40 @@
   <div class="fs-24">幫助中心(FAQ)</div>
 
   <div>
-    <SharedTabs
-      class="mt-05 flow-col-mobile"
-      v-model="activeTab"
-      :tabs="[
-        { label: '創業者常見問題(前台)', value: 1 },
-        { label: '共創者常見問題(前台)', value: 2 },
-      ]"
-    />
-
-    <div v-if="activeTab === 1" class="faq-form">
-      <form @submit.prevent="handleForm(1)" class="form">
+    <div  class="faq-form">
+      <form @submit.prevent="handleForm()" class="form">
         <div class="ent-content">詢問表單</div>
 
         <SharedInput
-          id="brand-ent"
-          label="品牌/專案名稱*"
-          v-model="formEnt.brand"
-          :error="errorsEnt.brand"
-        />
-
-        <SharedSelect
-          id="topic-ent"
-          label="諮詢內容*"
-          :options="topics"
-          v-model="formEnt.topic"
-          :error="errorsEnt.topic"
+          id="question"
+          label="我的問題*"
+          v-model="formEnt.question"
+          :error="errorsEnt.question"
         />
 
         <SharedTextarea
-          id="other-ent"
-          label="其他需求"
-          v-model="formEnt.other"
+          id="content"
+          label="諮詢內容"
+          v-model="formEnt.content"
+          :error="errorsEnt.content"
         />
 
         <SharedRadio
-          id="time-ent"
+          id="contact-time"
           label="聯繫時間*"
           :options="timeOptions"
           v-model="formEnt.contactTime"
           :error="errorsEnt.contactTime"
         />
 
-        <button type="submit" class="btn-submit">送出</button>
-      </form>
-    </div>
-
-    <div v-if="activeTab === 2" class="faq-form">
-      <form @submit.prevent="handleForm(2)" class="form">
-        <div class="ent-content">詢問表單</div>
-
-        <SharedInput
-          id="brand-creator"
-          label="品牌/專案名稱*"
-          v-model="formCreator.brand"
-          :error="errorsCreator.brand"
-        />
-
-        <SharedSelect
-          id="topic-creator"
-          label="諮詢內容*"
-          :options="topics"
-          v-model="formCreator.topic"
-          :error="errorsCreator.topic"
-        />
-
-        <SharedTextarea
-          id="other-creator"
-          label="其他需求"
-          v-model="formCreator.other"
-        />
-
         <SharedRadio
-          id="time-creator"
-          label="聯繫時間*"
-          :options="timeOptions"
-          v-model="formCreator.contactTime"
-          :error="errorsCreator.contactTime"
+            id="contact-func"
+            label="聯繫方式*"
+            :options="contactOptions"
+            v-model="formEnt.contactFunc"
+            :error="errorsEnt.contactFunc"
         />
+
 
         <button type="submit" class="btn-submit">送出</button>
       </form>
@@ -88,25 +44,14 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted} from "vue";
-import SharedTabs from "@/components/shared/Shared-Tabs.vue";
+import { reactive } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
-import SharedSelect from "@/components/shared/Shared-Select.vue";
 import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 import {useAuth} from "@/composables/useAuth.js";
-import {inquiryTypeApi} from "@/api/modules/inquiryType.js";
 import {helpCenterFaqApi} from "@/api/modules/helpCenterFaq.js";
 
 const { isLoggedIn, currentUser } = useAuth();
-
-const activeTab = ref(1);
-
-const topics = [
-  { value: "1", text: "產品問題" },
-  { value: "2", text: "付款問題" },
-  { value: "3", text: "其他" },
-];
 
 const timeOptions = [
   { text: "9:00–12:00", value: "9:00-12:00" },
@@ -115,79 +60,96 @@ const timeOptions = [
   { text: "任何時間", value: "任何時間" },
 ];
 
+const contactOptions = [
+  { text: "來電", value: "來電" },
+  { text: "Email", value: "email" }
+];
+
 const formEnt = reactive({
-  brand: "",
-  topic: "",
-  other: "",
+  question: "",
+  content: "",
   contactTime: "",
+  contactFunc: "",
 });
+
 const errorsEnt = reactive({
-  brand: "",
-  topic: "",
+  question: "",
+  content: "",
   contactTime: "",
+  contactFunc: "",
 });
 
-const formCreator = reactive({
-  brand: "",
-  topic: "",
-  other: "",
-  contactTime: "",
-});
-const errorsCreator = reactive({
-  brand: "",
-  topic: "",
-  contactTime: "",
-});
+function scrollToError(fieldId) {
+  const element = document.getElementById(fieldId);
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center'
+    });
 
-const inquiryTypes = ref([]);
-async function getInquiryTypes() {
-  const formData = {
-    userId: currentUser.value
+    // 可選：增加視覺提示
+    element.classList.add('highlight-error');
+    setTimeout(() => {
+      element.classList.remove('highlight-error');
+    }, 2000);
   }
-  const response = await inquiryTypeApi.getInquiryTypes(formData);
-  inquiryTypes.value = response.data;
-  topics.splice(0, topics.length, ...inquiryTypes.value.map(item => ({ value: item.id.toString(), text: item.name })));
 }
 
+async function handleForm() {
+  let firstErrorField = null;
 
+  if (!formEnt.question) errorsEnt.question = "請填寫您的問題";
+  if (errorsEnt.question) firstErrorField = 'question';
 
-async function handleForm(type) {
-  const form = type === 1 ? formEnt : formCreator;
-  const errors = type === 2 ? errorsEnt : errorsCreator;
+  if (!formEnt.content) errorsEnt.content = "請填寫諮詢內容";
+  if (errorsEnt.content && !firstErrorField) firstErrorField = 'content';
 
-  Object.keys(errors).forEach((k) => (errors[k] = ""));
-  if (!form.brand) errors.brand = "請輸入品牌或專案名稱";
-  if (!form.topic) errors.topic = "請選擇詢問內容";
-  if (!form.contactTime) errors.contactTime = "請選擇聯繫時間";
-  if (Object.values(errors).some(Boolean)) return;
+  if (!formEnt.contactTime) errorsEnt.contactTime = "請選擇聯繫時間";
+  if (errorsEnt.contactTime && !firstErrorField) firstErrorField = 'contact-time';
 
-  const formData = {
-    userId: currentUser.value,
-    formType: type,
-    name: form.brand,
-    inquiryType: Number(form.topic),
-    otherRequests: form.other,
-    contactTime: form.contactTime,
-  };
+  if (!formEnt.contactFunc) errorsEnt.contactFunc = "請選擇聯繫方式";
+  if (errorsEnt.contactFunc && !firstErrorField) firstErrorField = 'contact-func';
 
-  const response = await helpCenterFaqApi.createHelpCenterFaq(formData)
-  if (response.code !== 0) {
-    alert(response.message || "表單送出失敗，請稍後再試");
+  if (firstErrorField) {
+    scrollToError(firstErrorField);
     return;
   }
-  form.brand = "";
-  form.topic = "";
-  form.other = "";
-  form.contactTime = "";
 
-  alert(`${type === 1 ? "創業者" : "共創者"}表單送出成功！`);
-}
 
-onMounted(() => {
-  if (isLoggedIn.value) {
-    getInquiryTypes();
+  try {
+    const payload = {
+      question: formEnt.question,
+      content: formEnt.content,
+      contactTime: formEnt.contactTime,
+      contactFunc: formEnt.contactFunc,
+      userId: currentUser.value,
+    };
+
+    const response = await helpCenterFaqApi.createHelpCenterFaq(payload);
+    if (response.code === 0) {
+      alert("您的詢問已送出，我們會盡快與您聯繫。");
+      // Reset form
+      formEnt.question = "";
+      formEnt.content = "";
+      formEnt.contactTime = "";
+      formEnt.contactFunc = "";
+    } else {
+      alert("送出失敗，請稍後再試。");
+    }
+  } catch (error) {
+    if (error.response && error.response.data && error.response.data.errors) {
+      const apiErrors = error.response.data.errors;
+      for (const key in apiErrors) {
+        if (errorsEnt.hasOwnProperty(key)) {
+          errorsEnt[key] = apiErrors[key][0];
+        }
+      }
+    } else {
+      alert("送出失敗，請稍後再試。");
+    }
+
   }
-});
+}
 </script>
 
 <style lang="scss" scoped>
