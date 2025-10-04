@@ -36,10 +36,7 @@
         placeholder="依專案狀態排序"
         :options="[
           { label: '全部', value: '' },
-          { label: '待審核', value: '待審核' },
-          { label: '審核中', value: '審核中' },
-          { label: '已通過', value: '已通過' },
-          { label: '未通過', value: '未通過' },
+          ...planSteps.map(step => ({ label: step.step, value: step.step }))
         ]"
       />
     </div>
@@ -56,89 +53,113 @@
       </template>
     </SharedTable>
   </div>
-
   <SharedModal
-    v-model="showModal"
-    title="會員詳細資訊"
-    mode="member"
-    @save="handleSave"
-    @update:modelValue="handleClose"
-    class="member-modal form"
-    titleAlign="center"
+      v-model="showModal"
+      :title="selectedMember.type === '共創者' ? '共創者詳細資訊' : '會員詳細資訊'"
+      :mode="selectedMember.type === '共創者' ? 'close' : 'member'"
+      @save="handleSave"
+      @update:modelValue="handleClose"
+      class="member-modal form"
+      titleAlign="center"
   >
-    <div class="modal-section">
-      <div class="title">基本資料</div>
-      <div>姓名：{{ selectedMember.name }}</div>
-      <div>會員身分：{{ selectedMemberDetail.type }}</div>
-      <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創: {{selectedMemberDetail.coreFounderPlanCount }}</div>
-    </div>
+    <!-- Type 1: 創業者 -->
+    <template v-if="selectedMember.type === '創業者'">
+      <div class="modal-section">
+        <div class="title">基本資料</div>
+        <div>姓名：{{ selectedMember.name }}</div>
+        <div>會員身分：{{ selectedMemberDetail.type }}</div>
+        <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創: {{ selectedMemberDetail.coreFounderPlanCount }}</div>
+      </div>
 
-    <div class="modal-section mt-3">
-      <div class="title">創業者資訊</div>
-      <div>姓名：{{ selectedMember.name }}</div>
-      <div>專案名稱：{{ selectedMemberDetail.founderPlan[0].name }}</div>
-      <div>
-        創業者上傳資訊：
-        <template v-for="(doc, i) in selectedMember.docs" :key="i">
+      <div class="modal-section mt-3">
+        <div class="title">創業者資訊</div>
+        <div>姓名：{{ selectedMember.name }}</div>
+        <div>專案名稱：{{ selectedMemberDetail.founderPlan?.[0]?.name }}</div>
+        <div>
+          創業者上傳資訊：
+          <template v-for="(doc, i) in selectedMember.docs" :key="i">
           <span class="doc-tag">
             {{ doc }}<span v-if="i < selectedMember.docs.length - 1">、</span>
           </span>
-        </template>
+          </template>
+        </div>
+
+        <SharedDropdown
+            v-model="reviewStatus"
+            label="創業計劃書"
+            :options="[
+          { label: '通過', value: true },
+          { label: '不通過', value: false },
+        ]"
+            placeholder="審核狀態"
+            class="form-group"
+        />
+
+        <SharedInput
+            id="reviewRemark"
+            v-if="reviewStatus === false"
+            v-model="reviewRemark"
+            label="不通過原因"
+            placeholder="請輸入不通過的原因"
+            type="textarea"
+            class="form-group mt-3"
+            :required="true"
+        />
+
+        <SharedDropdown
+            v-model="selectedMemberDetail.identityCertificationStatus"
+            label="身分驗證文件"
+            :options="[
+          { label: '通過', value: true },
+          { label: '不通過', value: false },
+        ]"
+            placeholder="身分檢核文件"
+            class="form-group"
+            readonly="true"
+        />
       </div>
 
-      <SharedDropdown
-        v-model="reviewStatus"
-        label="創業計劃書"
-        :options="[
-          { label: '通過', value: true },
-          { label: '不通過', value: false },
-        ]"
-        placeholder="審核狀態"
-        class="form-group"
-      />
-
-      <!-- 當選擇不通過時顯示備註輸入框 -->
-      <SharedInput
-          id="reviewRemark"
-          v-if="reviewStatus === false"
-          v-model="reviewRemark"
-          label="不通過原因"
-          placeholder="請輸入不通過的原因"
-          type="textarea"
-          class="form-group mt-3"
-          :required="true"
-       />
-
-      <SharedDropdown
-        v-model="selectedMemberDetail.identityCertificationStatus"
-        label="身分驗證文件"
-        :options="[
-          { label: '通過', value: true },
-          { label: '不通過', value: false },
-
-        ]"
-        placeholder="身分檢核文件"
-        class="form-group"
-        readonly="true"
-      />
-    </div>
-
-    <div class="modal-section mt-4">
-      <div class="title">共創者資訊</div>
-      <div>參與專案明細：</div>
-      <div class="co-list">
-        <div v-for="(c, i) in selectedMemberDetail.coreFounderPlan" :key="i" class="co-item">
-          <div class="co-title">{{ c.name }}</div>
-          <div class="co-status">{{ c.status }}</div>
-          <div class="co-amount">{{ c.amount }}</div>
+      <div class="modal-section mt-4" v-if="selectedMemberDetail.coreFounderPlan?.length > 0">
+        <div class="title">共創者資訊</div>
+        <div>參與專案明細：</div>
+        <div class="co-list">
+          <div v-for="(c, i) in selectedMemberDetail.coreFounderPlan" :key="i" class="co-item">
+            <div class="co-title">{{ c.name }}</div>
+            <div class="co-status">{{ c.status }}</div>
+            <div class="co-amount">{{ c.amount }}</div>
+          </div>
         </div>
       </div>
-    </div>
+    </template>
+
+    <!-- Type 2: 共創者 -->
+    <template v-else-if="selectedMember.type === '共創者'">
+      <div class="modal-section">
+        <div class="title">共創專案資訊</div>
+        <div>專案名稱：{{ selectedMemberDetail.planName }}</div>
+        <div>專案狀態：{{ selectedMemberDetail.currentStepName }}</div>
+        <div>創業者：{{ selectedMemberDetail.userName }}</div>
+        <div>總共創金額：NT$ {{ formatAmount(selectedMemberDetail.participantAmount) }}</div>
+      </div>
+
+      <div class="modal-section mt-3">
+        <div class="title">募資進度</div>
+        <div>當前募資：NT$ {{ formatAmount(selectedMemberDetail.currentAmount) }}</div>
+        <div>目標金額：NT$ {{ formatAmount(selectedMemberDetail.targetAmount) }}</div>
+        <div>募資進度：{{ selectedMemberDetail.fundingProgress?.toFixed(2) }}%</div>
+      </div>
+
+      <div class="modal-section mt-3">
+        <div class="title">參與資訊</div>
+        <div>參與金額：NT$ {{ formatAmount(selectedMemberDetail.myAmount) }}</div>
+        <div>參與狀態：{{ getParticipantStatus(selectedMemberDetail.myStatus) }}</div>
+      </div>
+    </template>
   </SharedModal>
 </template>
 
 <script setup>
-import { reactive, computed, ref } from "vue";
+import {reactive, computed, ref, onMounted,watch} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
@@ -150,6 +171,10 @@ import {salesCheckApi} from "@/api/modules/salesCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {cityApi} from "@/api/modules/city.js";
 const { isLoggedIn, currentSales } = useAuth();
+
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const showModal = ref(false);
 const selectedMember = ref({});
@@ -171,7 +196,7 @@ const members = reactive([
     name: "張小白",
     planName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     planStatus: "管理專案",
-
+    planId: 101,
     identity: "創業者",
     projectName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     status: "管理專案",
@@ -211,7 +236,10 @@ const displayedMembers = computed(() => {
   let list = [...members];
   if (filter.type)
     list = list.filter((m) => m.type === filter.type);
-  if (filter.status) list = list.filter((m) => m.status === filter.status);
+
+  if (filter.status)
+    list = list.filter((m) => m.planStatus === filter.status);
+
   if (filter.dateOrder) {
     list.sort((a, b) =>
       filter.dateOrder === "asc"
@@ -219,16 +247,19 @@ const displayedMembers = computed(() => {
         : new Date(b.date) - new Date(a.date)
     );
   }
+
   if (filter.city) {
     list = list.filter((m) => m.city === filter.city);
   }
   return list;
 });
+
 const cities = ref([]);
 async function getCities() {
   const response = await cityApi.getCities();
   cities.value = response.data;
 }
+
 const SalesLevels = ref([]);
 async function getSalesLevel() {
   const response = await salesLevelApi.getSalesLevel();
@@ -242,10 +273,10 @@ async function getAllPlanStep() {
   planSteps.value = response.data;
 }
 
-const corePlanSteps = ref([]);
+const corePlanStep = ref([]);
 async function getAllCorePlanStep() {
   const response = await stepApi.getAllCorePlanStep();
-  corePlanSteps.value = response.data;
+  corePlanStep.value = response.data;
 }
 
 async function getAllUserBySales() {
@@ -257,36 +288,154 @@ async function getAllUserBySales() {
 
   // 直接修改每個成員的 planStatus 為對應的文字
   const processedMembers = response.data.map(member => {
-    const step = planSteps.value.find(step => step.id === member.planStatus);
+    // 根據 type 決定使用哪個 step
+    let stepName;
+    if (member.type === 1) {
+      // 創業者：使用 planSteps
+      const step = planSteps.value.find(step => step.id === member.planStatus);
+      stepName = step ? step.step : `未知狀態 (${member.planStatus})`;
+    } else if (member.type === 2) {
+      // 共創者：使用 corePlanSteps
+      const coreStep = corePlanStep.value.find(step => step.id === member.planStatus);
+      stepName = coreStep ? coreStep.step : `未知狀態 (${member.planStatus})`;
+    } else {
+      stepName = `未知狀態 (${member.planStatus})`;
+    }
+
     const level = SalesLevels.value.find(level => level.id === member.rank);
     const type = member.type === 1 ? '創業者' : member.type === 2 ? '共創者' : `未知身分 (${member.type})`;
+
     return {
       ...member,
-      planStatus: step ? step.step : `未知狀態 (${member.planStatus})`
-      , rank: level ? level.name : `未知等級 (${member.rank})`
-      , type: type
+      planStatus: stepName,
+      rank: level ? level.name : `未知等級 (${member.rank})`,
+      type: type
     };
   });
 
   members.splice(0, members.length, ...processedMembers);
 }
-
-if (isLoggedIn.value) {
-  getCities();
-  getAllPlanStep();
-  getAllCorePlanStep();
-  getSalesLevel();
-  getAllUserBySales();
+function formatAmount(amount) {
+  if (!amount) return '0';
+  return amount.toLocaleString('zh-TW');
 }
 
+function getParticipantStatus(stepId) {
+  console.log(corePlanStep.value)
+  const step = corePlanStep.value.find(s => s.id === stepId);
+  return step ? step.step : '未知狀態';
+}
+
+
+onMounted(async () => {
+  if (isLoggedIn.value) {
+    await getCities();
+    await getAllPlanStep();
+    await getAllCorePlanStep()
+    await getAllCorePlanStep();
+    await getSalesLevel();
+    await getAllUserBySales();
+
+    // 檢查是否有 autoOpen 參數
+    if (route.query.autoOpen === 'true' && route.query.userId) {
+      await openMemberDetail(
+          route.query.userId,
+          route.query.type ? parseInt(route.query.type) : null,
+          route.query.planId ? parseInt(route.query.planId) : null
+      );
+    }
+  }
+});
 const selectedMemberDetail = ref(null);
+
+// 自動打開會員詳情的函數
+async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = null) {
+  // 優先從 query 參數獲取，否則從 members 中查找
+  const member = members.find(m => m.id === parseInt(userId));
+
+  const formData = {
+    salesId: currentSales.value,
+    userId: parseInt(userId),
+    type: typeFromQuery || (member ? getTypeId(member.type) : 1),
+    planId: planIdFromQuery || (member ? member.planId : 0)
+  }
+
+  try {
+    const response = await salesApi.getUserInfoBySales(formData);
+    if (response.code === 0) {
+      selectedMemberDetail.value = response.data;
+
+      // 設置 selectedMember
+      if (member) {
+        selectedMember.value = { ...member };
+      } else {
+        // 從 query 重建基本資訊
+        selectedMember.value = {
+          id: parseInt(userId),
+          name: response.data.userName || '未知用戶',
+          type: formData.type === 1 ? '創業者' : '共創者',
+          planId: formData.planId
+        };
+      }
+
+      // 只在 type === 1 (創業者) 時處理審核狀態
+      if (formData.type === 1 && selectedMemberDetail.value.founderPlan?.[0]) {
+        const currentStep = selectedMemberDetail.value.founderPlan[0].currentStep;
+        if (currentStep === 2) {
+          reviewStatus.value = false;
+        } else if (currentStep === 1) {
+          reviewStatus.value = "";
+        } else if (currentStep > 2) {
+          reviewStatus.value = true;
+        }
+      }
+
+      // 處理共創計劃狀態
+      if (selectedMemberDetail.value.coreFounderPlan) {
+        selectedMemberDetail.value.coreFounderPlan =
+            selectedMemberDetail.value.coreFounderPlan.map(plan => {
+              const step = corePlanStep.value.find(step => step.id === plan.status);
+              return {
+                ...plan,
+                status: step ? step.step : `未知狀態 (${plan.status})`
+              };
+            });
+      }
+
+      // 處理創業計劃狀態
+      if (selectedMemberDetail.value.founderPlan) {
+        selectedMemberDetail.value.founderPlan =
+            selectedMemberDetail.value.founderPlan.map(plan => {
+              const step = planSteps.value.find(step => step.id === plan.status);
+              return {
+                ...plan,
+                status: step ? step.userStep : `未知狀態 (${plan.status})`
+              };
+            });
+      }
+
+      showModal.value = true;
+    }
+  } catch (error) {
+    console.error('獲取用戶詳情失敗:', error);
+    alert('無法載入會員詳情');
+  }
+}
+
+function getTypeId(type) {
+  if (type === '創業者') return 1;
+  if (type === '共創者') return 2;
+  return null; // 或其他預設值
+}
 
 async function viewMember(row) {
   selectedMember.value = { ...row };
 
   const formData = {
     salesId: currentSales.value,
-    userId: row.id
+    userId: row.id,
+    type:getTypeId(row.type),
+    planId:row.planId
   }
 
   try {
@@ -305,10 +454,10 @@ async function viewMember(row) {
       if (selectedMemberDetail.value.coreFounderPlan) {
         selectedMemberDetail.value.coreFounderPlan =
             selectedMemberDetail.value.coreFounderPlan.map(plan => {
-              const step = corePlanSteps.value.find(step => step.id === plan.status);
+              const step = corePlanStep.value.find(step => step.id === plan.status);
               return {
                 ...plan,
-                status: step ? step.userStep : `未知狀態 (${plan.status})`
+                status: step ? step.step : `未知狀態 (${plan.status})`
               };
             });
       }
@@ -320,12 +469,11 @@ async function viewMember(row) {
               const step = planSteps.value.find(step => step.id === plan.status);
               return {
                 ...plan,
-                status: step ? step.userStep : `未知狀態 (${plan.status})`
+                status: step ? step.step : `未知狀態 (${plan.status})`
               };
             });
       }
     }
-    console.log(selectedMemberDetail.value.identityCertificationStatus)
   } catch (error) {
     console.error('獲取用戶詳情失敗:', error);
   }

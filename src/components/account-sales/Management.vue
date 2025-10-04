@@ -13,13 +13,11 @@
       />
 
       <SharedDropdown
-        v-model="projectFilter.region"
+        v-model="projectFilter.city"
         placeholder="依所在地區排序"
         :options="[
           { label: '全部', value: '' },
-          { label: '台北市', value: '台北市' },
-          { label: '新北市', value: '新北市' },
-          { label: '桃園市', value: '桃園市' },
+          ...cities.map((city) => ({ label: city.name, value: city.name }))
         ]"
       />
 
@@ -28,10 +26,7 @@
         placeholder="依專案進度排序"
         :options="[
           { label: '全部', value: '' },
-          { label: '待審核', value: '待審核' },
-          { label: '審核中', value: '審核中' },
-          { label: '已通過', value: '已通過' },
-          { label: '未通過', value: '未通過' },
+          ...planSteps.map((step) => ({ label: step.step, value: step.step }))
         ]"
       />
     </div>
@@ -58,105 +53,188 @@
   </div>
 
   <SharedModal
-    v-model="showModal"
-    title="專案詳情"
-    mode="project"
-    @apply="onManage"
-    @update:modelValue="handleClose"
-    class="project-modal"
-    titleAlign="center"
+      v-model="showModal"
+      title="專案詳情"
+      mode="project"
+      @manage="onManage"
+      @update:modelValue="handleClose"
+      class="project-modal"
+      titleAlign="center"
   >
-    <div>專案名稱：{{ selectedProject.name }}</div>
-    <div>專案狀態：{{ selectedProject.region }}</div>
-    <div>創業者：{{ selectedProject.creator }}</div>
-    <div>總共創金額：{{ selectedProject.amount }}</div>
+    <div>專案名稱：{{ planInfo.planName }}</div>
+    <div>專案狀態：{{ getStepName(planInfo.currentStep) }}</div>
+    <div>創業者：{{ planInfo.userName }}</div>
+    <div>總共創金額：{{ formatAmount(planInfo.participantAmount) }}</div>
     <hr />
-    <div>共創者(用加入時間排序?)</div>
-    <div>趙曉喬：{{ selectedProject.overdue }}</div>
-    <div>林大寶：{{ selectedProject.case1 }}</div>
-    <div>張大牛：{{ selectedProject.case2 }}</div>
+    <div>共創者 {{ planInfo.participantData?.length || 0 }} 人</div>
+    <div
+        v-for="participant in planInfo.participantData"
+        :key="participant.userId"
+    >
+      {{ participant.userName }}：{{ formatAmount(participant.amount) }}
+      （狀態：{{ getParticipantStatus(participant.status) }}）
+    </div>
   </SharedModal>
-</template>
 
+</template>
 <script setup>
-import { reactive, computed, ref } from "vue";
+import {reactive, computed, ref, onMounted} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
+import {cityApi} from "@/api/modules/city.js";
 
+import {stepApi} from "@/api/modules/step.js";
+import {salesApi} from "@/api/modules/sales.js";
+import {useAuth} from "@/composables/useAuth.js";
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 const showModal = ref(false);
 const selectedProject = ref({});
+const { isLoggedIn, currentSales } = useAuth();
 
 const columns = [
   { key: "date", label: "日期" },
-  { key: "region", label: "專案區域" },
+  { key: "city", label: "專案區域" },
   { key: "name", label: "專案名稱" },
-  { key: "creator", label: "創業者" },
-  { key: "status", label: "專案進度" },
+  { key: "userName", label: "創業者" },
+  { key: "currentStep", label: "專案進度" },
   { key: "actions", label: "查看" },
 ];
 
-const projects = reactive([
-  {
-    id: 1,
-    date: "2024-12-03",
-    region: "台北市",
-    name: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    creator: "王大明",
-    status: "待審核",
-    amount: "1,200,000",
-    overdue: "已用規劃方案的案例",
-    case1: "已用規劃方案的案例",
-    case2: "尚有增額額",
-  },
-  {
-    id: 2,
-    date: "2024-12-03",
-    region: "台北市",
-    name: "專案名稱2",
-    creator: "王大明",
-    status: "審核中",
-    amount: "800,000",
-    overdue: "未使用案例",
-    case1: "審核中案例",
-    case2: "尚無紀錄",
-  },
-]);
-
 const projectFilter = reactive({
   dateOrder: "",
-  region: "",
+  city: "",
   status: "",
 });
 
+const planSteps = ref([]);
+async function getPlanSteps() {
+  const response = await stepApi.getAllPlanStep();
+  planSteps.value = response.data;
+}
+
+const cities = ref([]);
+async function getCities() {
+  const response = await cityApi.getCities();
+  cities.value = response.data;
+}
+
+const plans = ref([]);
+async function getAllPlanBySales() {
+  const formData = {
+    salesId: currentSales.value
+  }
+  const response = await salesApi.getAllPlanBySales(formData);
+  plans.value = response.data;
+}
+
+// 獲取參與者狀態
+const corePlanStep = ref([])
+async function getCorePlanSteps() {
+  const response = await stepApi.getAllCorePlanStep();
+  corePlanStep.value = response.data;
+}
+
+onMounted(() => {
+  Promise.all([getCities(), getPlanSteps(), getAllPlanBySales(),getCorePlanSteps()]);
+});
+
+// 將 API 數據映射到 projects 格式
+const projects = computed(() => {
+  return plans.value.map(plan => {
+    // 找到對應的城市名稱
+    const cityObj = cities.value.find(c => c.id === plan.city);
+    const cityName = cityObj ? cityObj.name : '未知地區';
+
+    // 找到對應的步驟名稱
+    const stepObj = planSteps.value.find(s => s.id === plan.currentStep);
+    const statusName = stepObj ? stepObj.step : '未知狀態';
+
+    return {
+      id: plan.id,
+      date: plan.date,
+      city: cityName,
+      name: plan.planName,
+      userName: plan.userName,
+      creator: plan.userName,
+      currentStep: statusName,
+    };
+  });
+});
+
 const displayedProjects = computed(() => {
-  let list = [...projects];
-  if (projectFilter.region)
-    list = list.filter((p) => p.region === projectFilter.region);
-  if (projectFilter.status)
-    list = list.filter((p) => p.status === projectFilter.status);
+  let list = [...projects.value];
+
+  if (projectFilter.city) {
+    list = list.filter((p) => p.city === projectFilter.city);
+  }
+
+  if (projectFilter.status) {
+    // 直接比對 step 名稱
+    console.log(projectFilter.status)
+    list = list.filter((p) => p.currentStep === projectFilter.status);
+  }
 
   if (projectFilter.dateOrder) {
     list.sort((a, b) =>
-      projectFilter.dateOrder === "asc"
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date)
+        projectFilter.dateOrder === "asc"
+            ? new Date(a.date) - new Date(b.date)
+            : new Date(b.date) - new Date(a.date)
     );
   }
+
   return list;
 });
 
-function viewProject(row) {
+const planInfo = ref({});
+async function viewProject(row) {
   selectedProject.value = row;
+  const formData = {
+    salesId: currentSales.value,
+    planId: row.id
+  }
+  const response = await salesApi.getPlanInfoBySales(formData);
+  planInfo.value = response.data;
+
   showModal.value = true;
 }
+
+// 格式化金額
+function formatAmount(amount) {
+  if (!amount) return '0';
+  return amount.toLocaleString('zh-TW');
+}
+
+// 獲取步驟名稱
+function getStepName(stepId) {
+  const step = planSteps.value.find(s => s.id === stepId);
+  return step ? step.step : '未知狀態';
+}
+
+function getParticipantStatus(stepId) {
+  console.log(corePlanStep.value)
+  const step = corePlanStep.value.find(s => s.id === stepId);
+  return step ? step.step : '未知狀態';
+}
+
+
 
 function handleClose(val) {
   showModal.value = val;
 }
 
 function onManage() {
-  alert(`管理專案：${selectedProject.value.name}`);
+  router.push({
+    name: 'member',
+    query: {
+      userId: planInfo.value.userId || selectedProject.value.userId,
+      type: 1, // 傳遞 type
+      planId: selectedProject.value.id, // 傳遞 planId
+      autoOpen: 'true'
+    }
+  });
 }
 </script>
 

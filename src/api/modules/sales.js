@@ -13,8 +13,16 @@ export const salesApi = {
         return api.post("/f/private/sales/get-all-sales-by-sales", params);
     },
 
+    async getAllPlanBySales(params = {}) {
+        return api.post("/f/private/sales/get-all-plan-by-sales", params);
+    },
+
     async getUserInfoBySales(params = {}) {
         return api.post("/f/private/sales/get-user-info-by-sales", params);
+    },
+
+    async getPlanInfoBySales(params = {}) {
+        return api.post("/f/private/sales/get-plan-info-by-sales", params);
     },
 
     async resetPassword(params = {}) {
