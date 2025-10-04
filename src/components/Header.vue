@@ -109,6 +109,7 @@
                   src="@/assets/icon/user.png"
                   alt="會員"
                   class="member-icon-img"
+                  @click="handleProfileClick"
                 />
               </router-link>
             </li>
@@ -147,8 +148,9 @@ const route = useRoute();
 const router = useRouter();
 const isMenuOpen = ref(false);
 const openIndex = ref(null);
-const { isLoggedIn, logout } = useAuth();
+const { isLoggedIn, logout, currentUser } = useAuth();
 const isAccountPage = computed(() => route.path.startsWith("/account"));
+
 const isBelowLg = () => window.matchMedia("(max-width: 991.98px)").matches;
 
 const closeAllMenusOnMobile = () => {
@@ -165,6 +167,14 @@ const toggleSubMenu = (index) => {
   }
 };
 
+const handleProfileClick = () => {
+  console.log('click')
+  if (currentUser.value) {
+    router.push(`/account/profile`);
+  } else {
+    router.push("/account-sales/member");
+  }
+};
 const handleLinkClick = () => {
   if (isBelowLg()) {
     isMenuOpen.value = false;

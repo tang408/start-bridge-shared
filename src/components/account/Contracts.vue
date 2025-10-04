@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <SharedModal v-model="showModal" @confirm="onConfirm">
+  <SharedModal v-model="showModal" >
     「星橋創媒」平台不介入雙方協調與法律仲裁，但有義務維護其他用戶安全。
     若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
   </SharedModal>
@@ -92,6 +92,7 @@ import {ref, computed, onMounted, onUnmounted} from "vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {standardContractApi} from "@/api/modules/standardContract.js";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
 
 const {isLoggedIn, currentUser} = useAuth();
 
