@@ -17,5 +17,9 @@ export const planApi = {
         return api.post("/f/private/plan/participant-plan", params);
     },
 
+    async getAllPlanByUser(params = {}) {
+        return api.post("/f/private/plan/get-all-plan-by-user", params);
+    }
+
 
 };

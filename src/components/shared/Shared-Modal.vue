@@ -30,6 +30,11 @@
           <button class="btn-yellow w-45" @click="close">關閉</button>
         </template>
 
+        <template v-else-if="mode === 'submit'">
+          <button class="btn-orange w-45" @click="submit">送出</button>
+          <button class="btn-yellow w-45" @click="close">關閉</button>
+        </template>
+
         <template v-else-if="mode === 'close'">
           <button class="btn-yellow w-45" @click="close">關閉</button>
         </template>
@@ -53,6 +58,7 @@ const emit = defineEmits([
   "apply",
   "manage",
   "save",
+    "submit",
 ]);
 
 function close() {
@@ -73,6 +79,10 @@ function manage() {
 
 function save() {
   emit("save");
+}
+
+function submit() {
+  emit("submit");
 }
 </script>
 

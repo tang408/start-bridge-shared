@@ -5,16 +5,11 @@
       class="mt-05"
       v-model="activeTab"
       :tabs="[
-        { label: '申請創業', value: 'apply' },
         { label: '創業進度', value: 'progress' },
         { label: '創業明細', value: 'detail' },
       ]"
     />
 
-    <div v-if="activeTab === 'apply'" class="apply">
-      <div class="apply-content">暫無創業計畫</div>
-      <button class="apply-btn write mt-3">品牌探索</button>
-    </div>
     <div v-if="activeTab === 'progress'" class="w-100">
       <article
         v-for="p in progress"
@@ -51,9 +46,17 @@
               <span class="status">媒合狀態：{{ p.stateText }}</span>
             </div>
           </div>
+          <button
+              type="button"
+              class="btn-upload"
+              @click="handleButtonClick(p)"
+          >
+            上傳資料
+          </button>
         </button>
       </article>
     </div>
+
     <div v-if="activeTab === 'detail'" class="records">
       <div class="toolbar">
         <SharedDropdown
@@ -147,6 +150,56 @@
       @submit="createPlan"
     />
   </section>
+
+  <!-- 支付上傳 Dialog -->
+  <SharedModal
+      v-model="showPaymentDialog"
+      title="上傳支付資料"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handlePaymentSubmit"
+  >
+    <div class="payment-form">
+      <div class="form-group">
+        <label>支付金額</label>
+        <div class="readonly-field">{{ formatAmount(paymentForm.amount) }} 元</div>
+      </div>
+
+      <SharedInput
+          id="accountLast5"
+          label="帳號後五碼*"
+          type="text"
+          placeholder="請輸入帳號後五碼"
+          v-model="paymentForm.accountLast5"
+          :error="paymentErrors.accountLast5"
+          required
+       />
+
+      <SharedUpload
+          label="上傳合約*"
+          accept=".pdf,.doc,.docx"
+          :max-size="10"
+          name="userContractFile"
+          v-model="paymentForm.contractFileName"
+          :error="paymentErrors.contractFile"
+          @upload-success="(result) => handleUploadSuccess('userContractFile', result)"
+          required
+       :account="currentUser.value"  :id="currentUser.value"/>
+
+      <SharedUpload
+          label="上傳付款憑證*"
+          accept=".pdf,.jpg,.jpeg,.png"
+          :max-size="5"
+          name="userPaymentProofFile"
+          v-model="paymentForm.paymentProofName"
+          :error="paymentErrors.paymentProof"
+          @upload-success="(result) => handleUploadSuccess('userPaymentProofFile', result)"
+          required
+       account="currentUser.value" :id="currentUser.value" />
+    </div>
+  </SharedModal>
 </template>
 
 <script setup>
@@ -168,6 +221,12 @@ import Step7 from "./startup-components/Step7.vue";
 import Step8 from "./startup-components/Step8.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
+import {stepApi} from "@/api/modules/step.js";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
+import SharedUpload from "@/components/shared/Shared-Upload.vue";
+import {userCheckApi} from "@/api/modules/userCheck.js";
+import SharedInput from "@/components/shared/Shared-Input.vue";
+import {transactionApi} from "@/api/modules/transaction.js";
 
 const STEPS = {
   step1: Step1,
@@ -360,7 +419,7 @@ function goNext(nextStep) {
 
 const router = useRouter();
 const route = useRoute();
-const activeTab = ref("apply");
+const activeTab = ref("progress");
 const mode = ref("account");
 
 const docTitle = computed(() => {
@@ -410,6 +469,7 @@ const progress = ref([
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     progressStep: 3,
     stateText: "上傳合約",
+    intentionalDeposit: 5,
   },
 ]);
 const records = reactive([
@@ -790,6 +850,266 @@ async function createPlan() {
   }
 }
 
+const userPlanStepData = ref([])
+async function getAllPlanStep() {
+  const formData = {
+    userId: currentUser.value,
+  }
+  const response = await stepApi.getAllPlanStep(formData)
+  userPlanStepData.value = response.data
+}
+
+async function getAllPlanByUser() {
+  const formData = {
+    userId: currentUser.value,
+  }
+  const response = await planApi.getAllPlanByUser(formData)
+  console.log(response)
+
+if (response.code === 0) {
+    progress.value = response.data.map(plan => ({
+      id: plan.planId,
+      status: plan.currentStep,
+      title: plan.planName,
+      progressStep: changeProgressStep(plan.currentStep),
+      intentionalDeposit: plan.intentionalDeposit * 10000,
+      stateText: userPlanStepData.value.find(step => step.id === plan.currentStep)?.userStep || "無進度",
+    }))
+  } else {
+    alert("取得創業計劃書列表失敗，請稍後再試。")
+    return;
+  }
+}
+
+
+// Dialog 顯示狀態
+const showPaymentDialog = ref(false);
+
+// 表單資料
+const paymentForm = reactive({
+  planId: null,
+  userId: null,
+  accountLast5: '',
+  amount: 0,
+  contractFile: null,
+  paymentProof: null,
+  contractFileName: '',
+  paymentProofName: ''
+});
+
+// 錯誤訊息
+const paymentErrors = reactive({
+  contractFile: '',
+  paymentProof: '',
+  accountLast5: ''
+});
+
+// 格式化金額
+function formatAmount(amount) {
+  return amount?.toLocaleString('zh-TW') || '0';
+}
+
+// 處理按鈕點擊，打開 Dialog
+function handleButtonClick(plan) {
+  // 設置表單資料
+  paymentForm.planId = plan.id;
+  paymentForm.userId = currentUser.value;
+  paymentForm.amount = plan.intentionalDeposit;
+  paymentForm.contractFile = 0;
+  paymentForm.contractFileName = '';
+  paymentForm.paymentProof = 0;
+  paymentForm.paymentProofName = ''
+
+  // 清空錯誤訊息
+  paymentErrors.contractFile = '';
+  paymentErrors.paymentProof = '';
+  paymentErrors.accountLast5 = '';
+
+  // 顯示 Dialog
+  showPaymentDialog.value = true;
+}
+
+// 驗證表單
+function validatePaymentForm() {
+  let isValid = true;
+
+  if (!paymentForm.contractFile) {
+    paymentErrors.contractFile = '請上傳合約';
+    isValid = false;
+  } else {
+    paymentErrors.contractFile = '';
+  }
+
+  if (!paymentForm.paymentProof) {
+    paymentErrors.paymentProof = '請上傳付款憑證';
+    isValid = false;
+  } else {
+    paymentErrors.paymentProof = '';
+  }
+
+  if (!paymentForm.accountLast5 || !/^\d{5}$/.test(paymentForm.accountLast5)) {
+    paymentErrors.accountLast5 = '請輸入正確的帳戶後五碼';
+    isValid = false;
+  } else {
+    paymentErrors.accountLast5 = '';
+  }
+
+  return isValid;
+}
+
+// 提交表單
+async function handlePaymentSubmit() {
+  if (!validatePaymentForm()) {
+    return;
+  }
+
+  try {
+    const formData = {
+      planId: paymentForm.planId,
+      userId: paymentForm.userId,
+      accountLast5: paymentForm.accountLast5,
+      amount: paymentForm.amount,
+      contractFile: paymentForm.contractFile,
+      paymentProof: paymentForm.paymentProof
+    }
+
+    // console.log(formData)
+    // 調用你的 API
+    const response = await userCheckApi.createContractPaymentInfoByUser(formData);
+    // console.log(response)
+
+    if (response.code === 0) {
+      alert('成功');
+      showPaymentDialog.value = false;
+      await getAllPlanByUser()
+    } else {
+      alert(response.message || '上傳失敗');
+    }
+  } catch (error) {
+    console.error('上傳失敗:', error);
+    alert('上傳失敗，請稍後再試');
+  }
+}
+
+function changeProgressStep(currentStep) {
+  // 申請中
+  if (currentStep < 3) {
+    return 1
+  }
+
+  // 審核中
+  if (currentStep >= 3 && currentStep < 5) {
+    return 2
+  }
+
+  // 付款上傳合約
+  if (currentStep >= 5 && currentStep < 7) {
+    return 3
+  }
+
+  // 審核中
+  if (currentStep >= 7 && currentStep < 10) {
+    return 4
+  }
+
+  // 準備上架
+  if (currentStep >= 10 && currentStep < 14) {
+    return 5
+  }
+
+  if(currentStep >= 14 && currentStep < 17) {
+    return 6
+  }
+
+  if (currentStep >= 17 && currentStep < 22 )
+  {
+    return 7
+  }
+
+  if (currentStep >= 22) {
+    return 8
+  }
+}
+
+onMounted(() => {
+  if (isLoggedIn.value) {
+    getAllPlanStep()
+    getAllPlanByUser()
+  }
+})
+
+function handleUploadSuccess(fileType, result) {
+  const fileId = result.data?.id;
+  const fileName = result.data?.displayName || result.data?.name;
+  console.log(result)
+  if (fileId) {
+    if (fileType === 'userContractFile') {
+      paymentForm.contractFile = fileId;
+      paymentForm.contractFileName = fileName;
+    } else if (fileType === 'userPaymentProofFile') {
+      paymentForm.paymentProof = fileId;
+      paymentForm.paymentProofName = fileName;
+    }
+  }
+}
+
+
+watch(activeTab, (newTab) => {
+  if (newTab === 'detail' && isLoggedIn.value) {
+   getTransactionByUser()
+  }
+});
+
+const transactionsData = ref([]);
+async function getTransactionByUser() {
+  const formData = {
+    userId: currentUser.value,
+  }
+
+  try {
+    const response = await transactionApi.getTransactionByUser(formData)
+
+    if (response.code === 0) {
+      // 清空原有資料
+      records.splice(0, records.length)
+
+      // 處理並填入新資料
+      const processedData = response.data.map(record => ({
+        id: `rec-${record.id}`,
+        date: record.date,
+        title: record.planName,
+        action: actionMap[record.action] || '未知操作',
+        status: statusMap[record.status] || '未知狀態'
+      }))
+
+      // 填入新資料
+      records.push(...processedData)
+
+      console.log('處理後的交易記錄:', records)
+    } else {
+      alert("取得交易紀錄失敗，請稍後再試。")
+    }
+  } catch (error) {
+    console.error('取得交易紀錄錯誤:', error)
+    alert("取得交易紀錄失敗，請稍後再試。")
+  }
+}
+
+// 對應表
+const actionMap = {
+  1: '初次投入',
+  2: '追加投入',
+  3: '退出'
+}
+
+const statusMap = {
+  1: '處理中',
+  2: '成功',
+  3: '失敗'
+}
+
+
+
 </script>
 
 <style lang="scss" scoped>
@@ -865,7 +1185,7 @@ async function createPlan() {
   position: relative;
   background: #fff;
   margin-bottom: 2px;
-  width: 70%;
+  width: 80%;
   @media (max-width: 576px) {
     width: 100%;
   }
@@ -1063,6 +1383,23 @@ async function createPlan() {
     border: 0;
     box-shadow: none;
     padding: 24px 0;
+  }
+}
+
+.btn-upload {
+  background: #ff6634;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  margin-top: 5px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #ff7f50;
   }
 }
 

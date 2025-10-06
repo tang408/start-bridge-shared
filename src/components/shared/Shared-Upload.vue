@@ -141,7 +141,13 @@ async function onChange(e) {
       let result = null;
       if (props.name === 'companyLogo') {
         result = await fileApi.uploadImageFile(file, props.account,props.name)
-      } else {
+      } else if (props.name === 'userPaymentProofFile') {
+        result = await fileApi.uploadPaymentProofByUser(file, props.account, props.name);
+      } else if (props.name === 'userContractFile') {
+        result = await fileApi.uploadContractFile(file, props.account, props.name);
+      }
+
+      else {
         result = await fileApi.uploadFile(file, props.account, props.name);
       }
 
