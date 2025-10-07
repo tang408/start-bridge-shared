@@ -46,6 +46,15 @@
       :rows="displayedMembers"
       empty-text="目前沒有符合條件的會員"
     >
+      <template #review="{ row }">
+        <div class="review-btn-group">
+          <button class="btn-pass">通過</button>
+          <button class="btn-fail">不通過</button>
+        </div>
+      </template>
+      <template #notify="{ row }">
+        <button class="btn-notify" @click="sendNotify(row)">通知</button>
+      </template>
       <template #actions="{ row }">
         <button class="icon-btn" @click="viewMember(row)">
           <img src="@/assets/icon/search.png" alt="查看" />
@@ -185,6 +194,8 @@ const columns = [
   { key: "name", label: "會員名字" },
   { key: "planName", label: "專案名稱" },
   { key: "planStatus", label: "專案狀態"},
+  { key: "review", label: "審核操作" },
+  { key: "notify", label: "通知" },
   { key: "actions", label: "查看" },
 ];
 
@@ -430,82 +441,11 @@ function getTypeId(type) {
 
 async function viewMember(row) {
   selectedMember.value = { ...row };
-
-  const formData = {
-    salesId: currentSales.value,
-    userId: row.id,
-    type:getTypeId(row.type),
-    planId:row.planId
-  }
-
-  try {
-    const response = await salesApi.getUserInfoBySales(formData);
-    if (response.code === 0) {
-      selectedMemberDetail.value = response.data;
-      if (selectedMemberDetail.value.founderPlan[0].currentStep === 2) {
-        reviewStatus.value = false;
-      } else if (selectedMemberDetail.value.founderPlan[0].currentStep === 1) {
-        reviewStatus.value = "";
-      } else if (selectedMemberDetail.value.founderPlan[0].currentStep > 2) {
-        reviewStatus.value = true;
-      }
-
-      // 處理所有共創計劃的狀態
-      if (selectedMemberDetail.value.coreFounderPlan) {
-        selectedMemberDetail.value.coreFounderPlan =
-            selectedMemberDetail.value.coreFounderPlan.map(plan => {
-              const step = corePlanStep.value.find(step => step.id === plan.status);
-              return {
-                ...plan,
-                status: step ? step.step : `未知狀態 (${plan.status})`
-              };
-            });
-      }
-
-      // 處理創業計劃的狀態（如果有的話）
-      if (selectedMemberDetail.value.founderPlan) {
-        selectedMemberDetail.value.founderPlan =
-            selectedMemberDetail.value.founderPlan.map(plan => {
-              const step = planSteps.value.find(step => step.id === plan.status);
-              return {
-                ...plan,
-                status: step ? step.step : `未知狀態 (${plan.status})`
-              };
-            });
-      }
-    }
-  } catch (error) {
-    console.error('獲取用戶詳情失敗:', error);
-  }
-
   showModal.value = true;
 }
 
 function handleClose(val) {
   showModal.value = val;
-}
-
-const reviewStatus = ref("");
-const reviewRemark = ref("");
-async function handleSave(val) {
-  console.log(reviewStatus.value);
-  if (reviewStatus.value !== "") {
-    const formData = {
-      planId: selectedMemberDetail.value.founderPlan[0].id,
-      salesId: currentSales.value,
-      approved: reviewStatus.value,
-      remark: reviewRemark.value
-    }
-    const response = await salesCheckApi.checkPlanBySales(formData)
-    if (response.code !== 0) {
-      alert(response.message);
-    } else {
-      alert("審核成功")
-      await getAllUserBySales();
-    }
-  }
-  showModal.value = val;
-
 }
 </script>
 <style scoped lang="scss">
@@ -548,5 +488,43 @@ async function handleSave(val) {
     line-height: 18px;
     color: $text-dark;
   }
+}
+
+.review-btn-group {
+  display: flex;
+  gap: 8px;
+
+  button {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.btn-pass {
+      background: #ff6634;
+      color: #ffffff;
+    }
+
+    &.btn-fail {
+      background: #ffcc66;
+      color: #373a36;
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+.btn-notify {
+  padding: 4px 10px;
+  border-radius: 4px;
+  background-color: #ff6634;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 </style>
