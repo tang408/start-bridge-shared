@@ -51,6 +51,15 @@
       :rows="displayedMembers"
       empty-text="目前沒有符合條件的會員"
     >
+      <template #review="{ row }">
+        <div class="review-btn-group">
+          <button class="btn-pass">通過</button>
+          <button class="btn-fail">不通過</button>
+        </div>
+      </template>
+      <template #notify="{ row }">
+        <button class="btn-notify" @click="sendNotify(row)">通知</button>
+      </template>
       <template #actions="{ row }">
         <button class="icon-btn" @click="viewMember(row)">
           <img src="@/assets/icon/search.png" alt="查看" />
@@ -139,6 +148,8 @@ const columns = [
   { key: "name", label: "會員名字" },
   { key: "projectName", label: "專案名稱" },
   { key: "status", label: "專案狀態" },
+  { key: "review", label: "審核操作" },
+  { key: "notify", label: "通知" },
   { key: "actions", label: "查看" },
 ];
 
@@ -245,5 +256,43 @@ function handleClose(val) {
     line-height: 18px;
     color: $text-dark;
   }
+}
+
+.review-btn-group {
+  display: flex;
+  gap: 8px;
+
+  button {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.btn-pass {
+      background: #ff6634;
+      color: #ffffff;
+    }
+
+    &.btn-fail {
+      background: #ffcc66;
+      color: #373a36;
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+.btn-notify {
+  padding: 4px 10px;
+  border-radius: 4px;
+  background-color: #ff6634;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 </style>
