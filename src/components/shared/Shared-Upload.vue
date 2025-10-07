@@ -145,6 +145,8 @@ async function onChange(e) {
         result = await fileApi.uploadPaymentProofByUser(file, props.account, props.name);
       } else if (props.name === 'userContractFile') {
         result = await fileApi.uploadContractFile(file, props.account, props.name);
+      } else if (props.name === 'salesContractFile') {
+        result = await fileApi.uploadSalesContractFile(file, props.account, props.name);
       }
 
       else {

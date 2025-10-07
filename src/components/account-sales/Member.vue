@@ -8,8 +8,8 @@
         placeholder="身分別"
         :options="[
           { label: '全部', value: '' },
-          { label: '創業者', value: '創業者' },
-          { label: '共創者', value: '共創者' },
+          { label: '創業者', value: 1 },
+          { label: '共創者', value: 2 },
         ]"
       />
 
@@ -36,7 +36,7 @@
         placeholder="依專案狀態排序"
         :options="[
           { label: '全部', value: '' },
-          ...planSteps.map(step => ({ label: step.step, value: step.step }))
+          ...planSteps.map(step => ({ label: step.step, value: step.id }))
         ]"
       />
     </div>
@@ -46,14 +46,24 @@
       :rows="displayedMembers"
       empty-text="目前沒有符合條件的會員"
     >
-      <template #review="{ row }">
-        <div class="review-btn-group">
-          <button class="btn-pass">通過</button>
-          <button class="btn-fail">不通過</button>
-        </div>
+      <template #planStatus="{ row }">
+        {{formatPlanStatus(row.planStatus, row.type)}}
       </template>
-      <template #notify="{ row }">
-        <button class="btn-notify" @click="sendNotify(row)">通知</button>
+      <template #review="{ row }">
+        <div v-if="getActionType(row) === 'review'" class="review-btn-group">
+          <button class="btn-pass" @click="handleApproveClick(row, true)">通過</button>
+          <button class="btn-fail" @click="handleApproveClick(row, false)">不通過</button>
+        </div>
+
+        <button
+            v-else-if="getActionType(row) === 'notify'"
+            class="btn-notify"
+            @click="handleApprove(row, true)"
+        >
+          通知
+        </button>
+
+        <span v-else class="status-text">-</span>
       </template>
       <template #actions="{ row }">
         <button class="icon-btn" @click="viewMember(row)">
@@ -64,15 +74,15 @@
   </div>
   <SharedModal
       v-model="showModal"
-      :title="selectedMember.type === '共創者' ? '共創者詳細資訊' : '會員詳細資訊'"
-      :mode="selectedMember.type === '共創者' ? 'close' : 'member'"
+      :title="selectedMember.type === 1 ? '共創者詳細資訊' : '會員詳細資訊'"
+      :mode="selectedMember.type === 2 ? 'close' : 'member'"
       @save="handleSave"
       @update:modelValue="handleClose"
       class="member-modal form"
       titleAlign="center"
   >
     <!-- Type 1: 創業者 -->
-    <template v-if="selectedMember.type === '創業者'">
+    <template v-if="selectedMember.type === 1">
       <div class="modal-section">
         <div class="title">基本資料</div>
         <div>姓名：{{ selectedMember.name }}</div>
@@ -94,7 +104,7 @@
         </div>
 
         <SharedDropdown
-            v-model="reviewStatus"
+            v-model="selectedMemberDetail.reviewStatus"
             label="創業計劃書"
             :options="[
           { label: '通過', value: true },
@@ -142,7 +152,7 @@
     </template>
 
     <!-- Type 2: 共創者 -->
-    <template v-else-if="selectedMember.type === '共創者'">
+    <template v-else-if="selectedMember.type === 2">
       <div class="modal-section">
         <div class="title">共創專案資訊</div>
         <div>專案名稱：{{ selectedMemberDetail.planName }}</div>
@@ -165,6 +175,53 @@
       </div>
     </template>
   </SharedModal>
+
+  <!-- 合約上傳 Dialog -->
+  <SharedModal
+      v-model="showContractDialog"
+      title="上傳合約資料"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleContractSubmit"
+  >
+    <div class="payment-form">
+      <SharedUpload
+          label="上傳合約*"
+          accept=".pdf,.doc,.docx"
+          :max-size="10"
+          name="salesContractFile"
+          v-model="contractForm.contractFileName"
+          :error="contractErrors.contractFile"
+          @upload-success="(result) => handleUploadSuccess('salesContractFile', result)"
+          required
+          :account="currentSales.value"  :id="currentSales.value"/>
+    </div>
+  </SharedModal>
+
+  <!-- 不通過 Dialog -->
+  <SharedModal
+      v-model="showRemarkDialog"
+      title="不通過原因"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleRejectSubmit"
+  >
+    <div class="payment-form">
+      <SharedInput
+          id="remark"
+          v-model="remark"
+          label="不通過原因"
+          placeholder="請輸入不通過的原因"
+          type="textarea"
+          class="form-group ml-3"
+          :required="true"
+      />
+    </div>
+  </SharedModal>
 </template>
 
 <script setup>
@@ -182,6 +239,7 @@ import {cityApi} from "@/api/modules/city.js";
 const { isLoggedIn, currentSales } = useAuth();
 
 import { useRoute } from 'vue-router';
+import SharedUpload from "@/components/shared/Shared-Upload.vue";
 
 const route = useRoute();
 
@@ -193,11 +251,35 @@ const columns = [
   { key: "planDate", label: "時間" },
   { key: "name", label: "會員名字" },
   { key: "planName", label: "專案名稱" },
-  { key: "planStatus", label: "專案狀態"},
-  { key: "review", label: "審核操作" },
-  { key: "notify", label: "通知" },
+  { key: "planStatus", label: "專案狀態" },
+  { key: "review", label: "操作" },
   { key: "actions", label: "查看" },
 ];
+
+
+
+const getActionType = (row) => {
+  if (row.type === 1 && reviewStepsFounder.includes(row.planStatus)) {
+    return 'review';
+  }
+  if (notifySteps.includes(row.planStatus)) {
+    return 'notify';
+  }
+  return 'none';
+}
+
+
+// 格式化步驟狀態
+const formatPlanStatus = (statusId, type) => {
+  if (type === 1) {
+    const step = planSteps.value.find(s => s.id === statusId);
+    return step ? step.step : `未知狀態 (${statusId})`;
+  } else if (type === 2) {
+    const step = corePlanStep.value.find(s => s.id === statusId);
+    return step ? step.step : `未知狀態 (${statusId})`;
+  }
+  return `未知狀態 (${statusId})`;
+}
 
 const members = reactive([
   {
@@ -297,35 +379,20 @@ async function getAllUserBySales() {
 
   const response = await salesApi.getAllUserBySales(formData);
 
-  // 直接修改每個成員的 planStatus 為對應的文字
   const processedMembers = response.data.map(member => {
-    // 根據 type 決定使用哪個 step
-    let stepName;
-    if (member.type === 1) {
-      // 創業者：使用 planSteps
-      const step = planSteps.value.find(step => step.id === member.planStatus);
-      stepName = step ? step.step : `未知狀態 (${member.planStatus})`;
-    } else if (member.type === 2) {
-      // 共創者：使用 corePlanSteps
-      const coreStep = corePlanStep.value.find(step => step.id === member.planStatus);
-      stepName = coreStep ? coreStep.step : `未知狀態 (${member.planStatus})`;
-    } else {
-      stepName = `未知狀態 (${member.planStatus})`;
-    }
-
     const level = SalesLevels.value.find(level => level.id === member.rank);
-    const type = member.type === 1 ? '創業者' : member.type === 2 ? '共創者' : `未知身分 (${member.type})`;
 
     return {
       ...member,
-      planStatus: stepName,
+      planStatus: member.planStatus,  // 保留原始 ID
       rank: level ? level.name : `未知等級 (${member.rank})`,
-      type: type
     };
   });
 
   members.splice(0, members.length, ...processedMembers);
+  console.log(members)
 }
+
 function formatAmount(amount) {
   if (!amount) return '0';
   return amount.toLocaleString('zh-TW');
@@ -357,19 +424,20 @@ onMounted(async () => {
     }
   }
 });
-const selectedMemberDetail = ref(null);
+const selectedMemberDetail = ref({});
 
 // 自動打開會員詳情的函數
 async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = null) {
   // 優先從 query 參數獲取，否則從 members 中查找
   const member = members.find(m => m.id === parseInt(userId));
-
+  console.log("test")
   const formData = {
     salesId: currentSales.value,
     userId: parseInt(userId),
-    type: typeFromQuery || (member ? getTypeId(member.type) : 1),
+    type: typeFromQuery || member.type,
     planId: planIdFromQuery || (member ? member.planId : 0)
   }
+  console.log(formData)
 
   try {
     const response = await salesApi.getUserInfoBySales(formData);
@@ -392,12 +460,13 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
       // 只在 type === 1 (創業者) 時處理審核狀態
       if (formData.type === 1 && selectedMemberDetail.value.founderPlan?.[0]) {
         const currentStep = selectedMemberDetail.value.founderPlan[0].currentStep;
+
         if (currentStep === 2) {
-          reviewStatus.value = false;
+          selectedMemberDetail.reviewStatus = false;
         } else if (currentStep === 1) {
-          reviewStatus.value = "";
+          selectedMemberDetail.reviewStatus = "";
         } else if (currentStep > 2) {
-          reviewStatus.value = true;
+          selectedMemberDetail.reviewStatus = true;
         }
       }
 
@@ -433,15 +502,183 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
   }
 }
 
-function getTypeId(type) {
-  if (type === '創業者') return 1;
-  if (type === '共創者') return 2;
-  return null; // 或其他預設值
-}
 
 async function viewMember(row) {
   selectedMember.value = { ...row };
   showModal.value = true;
+  await openMemberDetail(row.id, row.type, row.planId);
+}
+
+// 需要審核的步驟（創業者）
+const reviewStepsFounder = [1, 4, 8, 14, 16, 18, 20];
+// 需要通知的步驟
+const notifySteps = [5];
+
+const showRemarkDialog = ref(false);
+const remark = ref('');
+const currentProcessingRow = ref(null);
+
+async function handleApproveClick(row, approved) {
+  // 保存當前處理的 row
+  currentProcessingRow.value = row;
+
+  if (row.planStatus === 8 && approved) {
+    showContractDialog.value = true;
+    return; // 等待合約上傳完成
+  }
+
+  if (!approved) {
+    showRemarkDialog.value = true;
+    return; // 等待輸入不通過原因
+  }
+
+  // 如果是通過且不需要上傳合約，直接處理
+  await handleApprove(row, true);
+}
+
+async function handleRejectSubmit() {
+  if (!remark.value || remark.value.trim() === '') {
+    alert('不通過原因不可為空');
+    return;
+  }
+
+  // 使用保存的 currentProcessingRow 而不是 selectedMember
+  await handleApprove(currentProcessingRow.value, false);
+
+  showRemarkDialog.value = false;
+  remark.value = '';
+  currentProcessingRow.value = null; // 清空
+}
+
+async function handleContractSubmit() {
+  if (!contractForm.contractFileName) {
+    contractErrors.contractFile = '請上傳合約文件';
+    return;
+  }
+
+  contractErrors.contractFile = '';
+
+  // 在這裡處理合約提交邏輯
+  alert('合約上傳成功');
+
+  showContractDialog.value = false;
+
+  // 清空合約表單
+  contractForm.contractFileName = '';
+
+  // 繼續進行審核
+  await handleApprove(currentProcessingRow.value, true);
+  currentProcessingRow.value = null; // 清空
+}
+async function handleApprove(row, approved) {
+  console.log(row)
+    const formData = {
+      salesId: currentSales.value,
+      planId: row.planId || 0,
+      approved: approved,
+      remark: remark.value || ''
+    }
+    let response;
+    switch (row.planStatus) {
+      case 1: // 創業計劃書審核
+        response = await salesCheckApi.checkPlanBySales(formData)
+          if (response.code === 0) {
+            alert('已處理創業計劃書審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+      case 4: // 通知創業者進行下一步
+        response = await salesCheckApi.paymentNotifyBySales(formData)
+          if (response.code === 0) {
+            alert('已處理創業者進行下一步');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+      case 8:
+        formData.contractId = contractForm.contractFileId;
+        response = await salesCheckApi.checkContractBySales(formData)
+          if (response.code === 0) {
+            alert('已處理合約審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+          break;
+      case 14:
+        response = await salesCheckApi.checkResourceBySales(formData)
+          if (response.code === 0) {
+            alert('已處理資源確認審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+
+      case 16:
+        response = await salesCheckApi.checkFranchiseBySales(formData)
+          if (response.code === 0) {
+            alert('已處理加盟審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+
+      case 18:
+        response = await salesCheckApi.checkAddressBySales(formData)
+          if (response.code === 0) {
+            alert('已處理營業地址審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+
+      case 20:
+        response = await salesCheckApi.finishPlanBySales(formData)
+          if (response.code === 0) {
+            alert('已處理專案結案審核');
+            await getAllUserBySales();
+            showModal.value = false;
+          } else {
+            alert('操作失敗: ' + response.message);
+          }
+        break;
+
+      default:
+        alert('此步驟無法操作');
+        return;
+    }
+}
+
+const showContractDialog = ref(false);
+const contractForm = reactive({
+  contractFileId: null,
+  contractFileName: '',
+});
+
+const contractErrors = reactive({
+  contractFile: '',
+});
+
+function handleUploadSuccess(field, result) {
+  console.log('Upload success result:', result); // 用來檢查返回的結果結構
+  if (field === 'salesContractFile') {
+    // 嘗試不同的可能屬性名稱
+    contractForm.contractFileId = result.data?.id
+    contractForm.contractFileName = result.data?.displayName
+    contractErrors.contractFile = '';
+  }
 }
 
 function handleClose(val) {
