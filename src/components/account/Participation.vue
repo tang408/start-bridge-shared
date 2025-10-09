@@ -75,7 +75,7 @@
                 <input
                   type="text"
                   class="form-input"
-                  v-model="p.increaseAmountStr"
+                  v-model="increaseAmount"
                   @input="onAmountInput(p)"
                   @blur="onAmountBlur(p)"
                   inputmode="numeric"
@@ -83,7 +83,7 @@
                 <button
                   type="button"
                   class="btn-dollar"
-                  @click="handleIncrease(p)"
+                  @click="handleIncrease(increaseAmount)"
                 >
                   增加金額
                 </button>
@@ -401,7 +401,6 @@ const projects = reactive([
     lastUpdate: "12天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     progress: 80,
-    reached: 113456789,
     dollar: 123456789,
     remain: 86543211,
     goal: 1200000,
@@ -421,7 +420,6 @@ const projects = reactive([
     lastUpdate: "2天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     progress: 80,
-    reached: 113456789,
     dollar: 123456789,
     remain: 86543211,
     goal: 1200000,
@@ -657,11 +655,6 @@ function fmtMoney(n) {
   return Number(n).toLocaleString("zh-Hant-TW");
 }
 
-function handleIncrease(p) {
-  if (!p.increaseAmount || p.increaseAmount <= 0) return;
-  alert(`已為「${p.title}」增加 ${fmtMoney(p.increaseAmount)} 元`);
-  p.increaseAmount = 0;
-}
 
 function downloadFile(f) {
   alert(`下載：${f.name}`);
@@ -721,6 +714,7 @@ function syncModeFromRoute() {
 }
 
 onMounted(() => {
+  getAllParticipantPlanByUser()
   syncModeFromRoute();
   if (!route.query.tab) activeTab.value = props.preselectTab;
 });
@@ -738,9 +732,6 @@ watch(
 );
 
 async function participate(p) {
-  console.log(route.query.brandId)
-  console.log(route.query.planId)
-  console.log(currentUser.value)
 
   const formData = {
     userId: currentUser.value,
@@ -751,10 +742,74 @@ async function participate(p) {
   const response = await planApi.participantPlan(formData)
   if (response.code === 0) {
     alert('參與成功')
-    await router.push({name: 'Account', query: {tab: 'records'}})
+    await router.push({name: 'Account', query: {tab: 'participation'}})
   } else {
     alert(response.message ||'參與失敗，請稍後再試')
   }
+}
+
+async function getAllParticipantPlanByUser() {
+  const formData = {
+    userId: currentUser.value,
+  }
+
+  const response = await planApi.getAllParticipantPlanByUser(formData)
+  if (response.code === 0) {
+    // 清空原本的陣列
+    projects.splice(0, projects.length)
+
+    // 添加新資料
+    response.data.forEach((plan) => {
+      const progress = plan.targetAmount > 0
+          ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
+          : 0
+
+      const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0)
+      const lastUpdate = calculateTimeRemaining(plan.endDate)
+      let status
+      if (plan.currentStep === 11) {
+        status = 'running'
+      }
+      projects.push({
+        id: plan.planId,
+        status: status,
+        lastUpdate: lastUpdate,
+        title: plan.planName,
+        progress: progress,
+        dollar: plan.totalParticipantAmount *10000,
+        remain: remain *10000,
+        goal: plan.targetAmount *10000,
+        showFundBox: true,
+        fav: false,
+        files: []
+      })
+    })
+
+    console.log('轉換後的資料:', projects)
+  } else {
+    alert(response.message || '取得參與專案失敗，請稍後再試')
+  }
+}
+
+// 3. 倒數時間計算函數
+function calculateTimeRemaining(endDate) {
+  const now = new Date()
+  const end = new Date(endDate)
+  const diff = end - now
+
+  if (diff <= 0) return "已結束"
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+
+  return `${days}天 ${hours}小時 ${minutes}分`
+}
+
+const increaseAmount = ref(0)
+
+function handleParticipantPlan() {
+
 }
 </script>
 

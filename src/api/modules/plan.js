@@ -19,7 +19,17 @@ export const planApi = {
 
     async getAllPlanByUser(params = {}) {
         return api.post("/f/private/plan/get-all-plan-by-user", params);
+    },
+
+    async getAllParticipantPlanByUser(params = {}) {
+        return api.post("/f/private/plan/get-all-participant-plan-by-user", params);
+    },
+
+    async getAllParticipantPlanDetailByUser(params = {}) {
+        return api.post("/f/private/plan/get-all-participant-plan-detail-by-user", params);
+    },
+
+    async getAllParticipantPlanRecordByUser(params = {}) {
+        return api.post("/f/private/plan/get-all-participant-plan-record-by-user", params);
     }
-
-
 };
