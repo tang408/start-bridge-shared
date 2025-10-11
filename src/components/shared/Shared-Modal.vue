@@ -58,7 +58,7 @@ const emit = defineEmits([
   "apply",
   "manage",
   "save",
-    "submit",
+  "submit",
 ]);
 
 function close() {

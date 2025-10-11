@@ -28,4 +28,8 @@ export const salesApi = {
     async resetPassword(params = {}) {
         return api.post("/f/private/sales/reset-password", params);
     },
+
+    async getUserSignContractBySales(params = {}) {
+        return api.post("/f/private/sales/get-user-sign-contract-by-sales", params);
+    }
 };

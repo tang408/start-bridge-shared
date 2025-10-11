@@ -27,12 +27,22 @@ export default defineConfig(({ command, mode }) => {
         "@": path.resolve(__dirname, "./src"),
       },
     },
+    optimizeDeps: {
+      include: ['pdfjs-dist'],
+      esbuildOptions: {
+        target: 'es2020'
+      }
+    },
+    build: {
+      target: 'es2020',
+      outDir: mode === 'production' ? 'dist' : 'dist-dev',
+      commonjsOptions: {
+        include: [/pdfjs-dist/, /node_modules/],
+        transformMixedEsModules: true
+      },
     server: {
       port: 5173
     },
-    build: {
-      // 可以根據需要調整輸出目錄
-      outDir: mode === 'production' ? 'dist' : 'dist-dev'
     },
     css: {
       preprocessorOptions: {
@@ -42,4 +52,6 @@ export default defineConfig(({ command, mode }) => {
       },
     },
   };
+
+
 });

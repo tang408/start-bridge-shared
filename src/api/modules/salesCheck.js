@@ -5,8 +5,8 @@ export const salesCheckApi = {
         return api.post("/f/private/sales-check/check-plan-by-sales", params);
     },
 
-    async paymentNotifyBySales(params = {}) {
-        return api.post("/f/private/sales-check/payment-notify-by-sales", params);
+    async uploadContractBySales(params = {}) {
+        return api.post("/f/private/sales-check/upload-contract-by-sales", params);
     },
 
     async checkContractBySales(params = {}) {

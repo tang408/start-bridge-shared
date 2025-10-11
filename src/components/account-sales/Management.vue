@@ -91,6 +91,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const showModal = ref(false);
+
 const selectedProject = ref({});
 const { isLoggedIn, currentSales } = useAuth();
 
@@ -189,7 +190,26 @@ const displayedProjects = computed(() => {
 });
 
 const planInfo = ref({});
+const userSignContractInfo = ref({});
 async function viewProject(row) {
+  console.log(row)
+  if (row.currentStep === '簽約資料業務審核中') {
+    const formData = {
+      salesId: currentSales.value,
+      planId: row.id
+    }
+    const response = await salesApi.getUserSignContractBySales(formData);
+    if (response.code === 0 ) {
+      userSignContractInfo.value = response.data;
+      // 開啟 url
+      window.open(userSignContractInfo.value.signContractUrl, '_blank');
+      return;
+    } else {
+      alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
+      return;
+    }
+
+  }
   selectedProject.value = row;
   const formData = {
     salesId: currentSales.value,

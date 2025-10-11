@@ -28,13 +28,13 @@
 
     <div class="cards-grid">
       <SharedSalesCard title="共創者">
+        <div>業績金額：</div>
         <div>獎金金額：</div>
-        <div>獎金金數：</div>
       </SharedSalesCard>
 
       <SharedSalesCard title="創業者">
+        <div>業績金額：</div>
         <div>獎金金額：</div>
-        <div>獎金金數：</div>
       </SharedSalesCard>
     </div>
 
@@ -45,17 +45,17 @@
     </SharedSalesCard>
 
     <SharedSalesCard title="月度金額" strong>
-      <div>應付薪酬：</div>
+      <div>應付所得：</div>
       <div>獎金：</div>
       <div>二代健保：</div>
-      <div>給付總額：</div>
+      <div>給付淨額：</div>
     </SharedSalesCard>
 
     <SharedSalesCard title="年度金額" strong>
-      <div>應付薪酬：</div>
+      <div>應付所得：</div>
       <div>獎金：</div>
       <div>二代健保：</div>
-      <div>給付總額：</div>
+      <div>給付淨額：</div>
     </SharedSalesCard>
   </div>
 </template>

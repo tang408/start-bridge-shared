@@ -31,5 +31,9 @@ export const planApi = {
 
     async getAllParticipantPlanRecordByUser(params = {}) {
         return api.post("/f/private/plan/get-all-participant-plan-record-by-user", params);
-    }
+    },
+
+    async getSalesContractByPlanUser(params = {}) {
+        return api.post("/f/private/plan/get-sales-contract-by-plan-user", params);
+    },
 };
