@@ -147,10 +147,43 @@
         <div>募資進度：{{ selectedMemberDetail.fundingProgress?.toFixed(2) }}%</div>
       </div>
 
+
+      <!-- 新增：參與明細列表 -->
       <div class="modal-section mt-3">
-        <div class="title">參與資訊</div>
-        <div>參與金額：NT$ {{ formatAmount(selectedMemberDetail.myAmount) }}</div>
-        <div>參與狀態：{{ getParticipantStatus(selectedMemberDetail.myStatus) }}</div>
+        <div class="title">參與明細</div>
+        <div v-if="selectedMemberDetail.participantDetails && selectedMemberDetail.participantDetails.length > 0">
+          <div
+              v-for="(detail, index) in selectedMemberDetail.participantDetails"
+              :key="index"
+              class="participant-detail-item"
+          >
+            <div class="detail-row">
+              <span class="detail-label">參與時間：</span>
+              <span>{{ detail.createdAt }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">參與金額：</span>
+              <span>NT$ {{ formatAmount(detail.amount) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">狀態：</span>
+              <div class="status-action-group">
+          <span :class="detail.status">
+            {{ getParticipantStatus(detail.status) }}
+          </span>
+                <!-- 根據狀態顯示審核按鈕 -->
+                <div v-if="detail.status === 1" class="review-btn-group">
+                  <button class="btn-pass" @click="handleCoreApproveClick(detail, true)">通過</button>
+                  <button class="btn-fail" @click="handleCoreApproveClick(detail, false)">不通過</button>
+                </div>
+              </div>
+            </div>
+            <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2" />
+          </div>
+        </div>
+        <div v-else class="text-muted">
+          暫無參與記錄
+        </div>
       </div>
     </template>
   </SharedModal>
@@ -484,7 +517,7 @@ const formatPlanStatus = (statusId, type) => {
     const step = planSteps.value.find(s => s.id === statusId);
     return step ? step.step : `未知狀態 (${statusId})`;
   } else if (type === 2) {
-    const step = corePlanStep.value.find(s => s.id === statusId);
+    const step = planSteps.value.find(s => s.id === statusId);
     return step ? step.step : `未知狀態 (${statusId})`;
   }
   return `未知狀態 (${statusId})`;
@@ -719,7 +752,7 @@ async function viewMember(row) {
 }
 
 // 需要審核的步驟（創業者）
-const reviewStepsFounder = [1,6,  8, 14, 16, 18, 20];
+const reviewStepsFounder = [1, 6,  8, 14, 16, 18, 20];
 
 const showRemarkDialog = ref(false);
 const remark = ref('');
@@ -741,6 +774,37 @@ async function handleApproveClick(row, approved) {
 
   // 如果是通過且不需要上傳合約，直接處理
   await handleApprove(row, true);
+}
+
+async function handleCoreApproveClick(detail, approved) {
+  console.log(detail)
+  const formData = {
+    salesId: currentSales.value,
+    userId: detail.userId,
+    participantPlanId: detail.participantPlanId,
+    approved: approved,
+    remark: ''
+  }
+
+  let response;
+  switch (detail.status) {
+    case 1: // 待審核
+      response = await salesCheckApi.checkCoreMoneyBySales(formData)
+      if (response.code === 0) {
+        alert('已處理共創者審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
+
+    default:
+      alert('此步驟無法操作');
+      showModal.value = false;
+      return;
+  }
+
 }
 
 async function handleRejectSubmit() {
@@ -1135,5 +1199,29 @@ const closeDocDialog = () => {
   text-align: center;
   padding: 40px 20px;
   color: #6b7280;
+}
+
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.detail-table th,
+.detail-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.detail-table th {
+  background: #f8f9fa;
+  font-weight: 500;
+  color: #666;
+}
+
+.detail-table tbody tr:hover {
+  background: #f8f9fa;
 }
 </style>
