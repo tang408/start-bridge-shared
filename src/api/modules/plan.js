@@ -36,4 +36,8 @@ export const planApi = {
     async getSalesContractByPlanUser(params = {}) {
         return api.post("/f/private/plan/get-sales-contract-by-plan-user", params);
     },
+
+    async getParticipantPlan(params = {}) {
+        return api.post("/f/private/plan/get-participant-plan", params);
+    },
 };

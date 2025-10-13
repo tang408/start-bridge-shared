@@ -44,19 +44,35 @@
           <ul class="row list-unstyled small text-body">
             <li class="col-12 col-md-6">
               <div class="title">公司成立狀態</div>
-              <div class="title-content">已成立 (2022-06-15)</div>
+              <div v-if="props.brandData?.companyStatus" class="title-content">
+                {{ getCompanyStatusName(props.brandData?.companyStatus) }} ({{ props.brandData.establishedDate }})
+              </div>
+              <div v-else class="title-content">
+                已成立 (2022-06-15)
+              </div>
             </li>
             <li class="col-12 col-md-6">
               <div class="title">公司網址</div>
-              <div class="title-content">https://www.super-milk-tea.com/</div>
+              <div v-if="props.brandData?.website" class="title-content">
+                {{ props.brandData?.website }}
+                </div>
+              <div v-else class="title-content">
+                https://www.super-milk-tea.com/
+              </div>
             </li>
             <li class="col-12 col-md-6">
               <div class="title">領域別</div>
-              <div class="title-content">飲料店業</div>
+              <div v-if="props.brandData?.industryType" class="title-content">
+                {{ industryTypesData.find(item => item.id === props.brandData?.industryType)?.name || '未知' }}
+              </div>
+              <div v-else class="title-content">飲料店業</div>
             </li>
             <li class="col-12 col-md-6">
               <div class="title">FB粉絲團</div>
-              <div class="title-content">
+              <div v-if="props.brandData?.facebook" class="title-content">
+                {{ props.brandData?.facebook }}
+              </div>
+              <div v-else class="title-content">
                 https://www.facebook.com/super.milk.tea2022
               </div>
             </li>
@@ -66,44 +82,44 @@
             </li>
             <li class="col-12">
               <div class="title">資本額</div>
-              <div class="title-content">100萬元 經濟部商業司查詢</div>
+              <div v-if="props.brandData?.capital" class="title-content">
+                {{ props.brandData?.capital }}萬元
+              </div>
+              <div v-else class="title-content">100萬元 經濟部商業司查詢</div>
             </li>
           </ul>
+          <p class="title">詳細介紹</p>
 
-          <p class="mb-2 mt-5">三旬國際餐飲有限公司</p>
-          <p class="mt-4 mb-4">
+          <p v-if="props.brandData?.brandIntro" class="mt-4 mb-4">
+            {{ props.brandData?.brandIntro }}
+          </p>
+          <p v-else class="mt-4 mb-4">
             於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。
             【一杯顏太煮 生活不會苦】。
           </p>
-          <p>
-            為持續提升市場競爭力，不斷地研發新品與尋找高品質原物料，從中累積的務實經驗，以成熟技術打造特色連鎖奶茶店，拓展業務從加盟業務到開店技術指導，用不斷累積的know-how，造就全方位品牌力。
-          </p>
 
-          <p class="mt-5">經營理念</p>
-          <p class="">品牌核心 — 「以人為本，從心出發」</p>
-          <p class="">「堅持力」：堅持最好的服務、品質。</p>
-          <p class="">「專業力」：將每個最細微的地方做到最好</p>
+
+          <p class="title">經營理念</p>
+          <p v-if="props.brandData?.businessPhilosophy" class="mt-4 mb-4">
+            {{ props.brandData?.businessPhilosophy }}
+          </p>
+          <p v-else class="">品牌核心 — 「以人為本，從心出發」</p>
+          <p v-else class="">「堅持力」：堅持最好的服務、品質。</p>
+          <p v-else class="">「專業力」：將每個最細微的地方做到最好</p>
         </template>
 
         <div v-else-if="t.key === 'joinInfo'">
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-            ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </p>
+            <div class="join-info">
+              <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
+                <div class="ji-label">{{ row.label }}</div>
+                <div class="ji-value">
+                  <template v-if="row.value">{{ row.value }}</template>
+                  <ul v-else-if="row.list?.length" class="ji-list">
+                    <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           <div class="tabs-2-content d-flex-block justify-content-between mt-4">
             <div class="col-2">
               <img src="/src/assets/images/project-tabs-icon1.png" class="" />
@@ -146,10 +162,21 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import {computed, onMounted, ref} from "vue";
 import { useRouter } from "vue-router";
 import Tab from "bootstrap/js/dist/tab";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 
+const props = defineProps({
+  brandData: {
+    type: Object,
+    required: true,
+  },
+  planData: {
+    type: Object,
+    required: true,
+  },
+});
 const router = useRouter();
 const tabs = [
   { key: "brand", label: "品牌資訊" },
@@ -176,20 +203,80 @@ onMounted(() => {
       history.replaceState(null, "", `#${id}`);
     })
   );
+
+  getIndustryTypeName();
 });
 
 function goToParticipation() {
+
   router.push({
     name: "participation",
     query: {
       source: "brand",
       tab: "progress",
-      brandId: 2,
-      brandName: "顏太煮奶茶",
-      planId: 1,
+      brandId: props.planData?.brand,
+      brandName: props.brandData?.name,
+      planId: props.planData?.id,
     },
   });
 }
+
+const industryTypesData = ref([]);
+async function getIndustryTypeName() {
+  try {
+    const response = await industryTypeApi.getIndustryTypes();
+    if (response.code === 0) {
+      industryTypesData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取行業類型失敗:', error);
+    return "未知";
+  }
+}
+
+const getCompanyStatusName = (status) => {
+  const statuses = {
+    1: "已設立",
+    2: "籌備中",
+    // 添加更多狀態映射
+  };
+  return statuses[status] || "未知";
+};
+
+// 動態生成加盟資訊數據 (保持原有邏輯，使用 extraFields)
+const joinInfoData = computed(() => {
+  if (!props.brandData) return [];
+
+  const data = props.brandData;
+  const extraFields = data.extraFields || {};
+
+  return [
+    { label: "加盟金", value: `${data.franchiseFee}萬元` },
+    { label: "保證金", value: `${data.deposit}萬元` },
+    { label: "加盟主門檻要求", value: `${data.threshold}萬元` },
+    {
+      label: "開幕準備項目表列",
+      list: extraFields.startup_projects?.map(item => `${item.displayName}：${item.value}`) || [],
+    },
+    {
+      label: "加盟主門檻要求",
+      list: extraFields.franchise_requirements?.map(item => `${item.displayName}：${item.value}`) || [],
+    },
+    { label: "目前開放加盟區域", value: data.location },
+    { label: "店面條件", value: `${data.storeCondition}坪以上` },
+    {
+      label: "裝潢期程",
+      list: extraFields.manufacturing_schedule?.map(item => `${item.displayName}：${item.value}天`) || [],
+    },
+    {
+      label: "其他成本",
+      list: extraFields.others?.map(item => `${item.displayName}：${item.value}`) || [],
+    },
+  ];
+});
+
 </script>
 
 <style scoped lang="scss">
@@ -280,4 +367,69 @@ function goToParticipation() {
   display: inline-flex;
   align-items: center;
 }
+
+.join-info {
+  .ji-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  .ji-label {
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 28px;
+    color: #373a36;
+    word-break: keep-all;
+  }
+
+  .ji-value {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 28px;
+    color: #555555;
+  }
+
+  .ji-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      position: relative;
+      padding-left: 1em;
+
+      &::before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    }
+  }
+
+  .ji-block + .ji-block {
+    margin-top: 8px;
+  }
+
+  .ji-block-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  @media (max-width: 576px) {
+    .ji-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      .ji-label {
+        color: #555;
+      }
+    }
+  }
+}
+
 </style>

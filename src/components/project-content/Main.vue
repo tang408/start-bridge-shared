@@ -1,9 +1,17 @@
 <template>
   <div class="project-content">
     <div class="container">
-      <SharedProjectContent />
-      <Swiper />
-      <Tabs />
+      <SharedProjectContent
+          :photo="brandData?.photo"
+          :description="brandData?.description"
+      />
+      <Swiper
+        :images="brandImages || []"
+      />
+      <Tabs
+        :brand-data="brandData"
+        :plan-data="planData"
+      />
       <div class="">
         <h1 class="mb-4 text-center">媒體介紹</h1>
         <div class="media-section-card row">
@@ -32,6 +40,7 @@ import {onMounted, ref} from "vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {useRoute, useRouter} from "vue-router";
 import {planApi as PlanApi} from "@/api/modules/plan.js";
+import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 
 // 必須先聲明 route 和 router
 const route = useRoute();
@@ -53,7 +62,10 @@ const cards = [
 ];
 
 const planData = ref();
+const brandData = ref();
+const brandImages = ref([])
 async function getPlan() {
+  console.log('getPlan')
   const formData = {
     userId: isLoggedIn.value ? currentUser.value : "",
     planId: Number(route.params.id)
@@ -61,6 +73,29 @@ async function getPlan() {
   const response = await PlanApi.getPlan(formData);
   if (response.code === 0) {
     planData.value = response.data;
+    await getOfficialPartner();
+  }
+}
+
+async function getOfficialPartner() {
+
+  const formData = {
+    officialPartnerId: planData.value.brand
+  }
+  const response = await officialPartnerApi.getOfficialPartner(formData)
+  if (response.code === 0) {
+    brandData.value = response.data;
+// 將 JSON 字串轉換成陣列
+    if (response.data.brandImage) {
+      try {
+        brandImages.value = JSON.parse(response.data.brandImage);
+      } catch (error) {
+        console.error('解析 brandImage 失敗:', error);
+        brandImages.value = [];
+      }
+    } else {
+      brandImages.value = [];
+    }
   }
 }
 

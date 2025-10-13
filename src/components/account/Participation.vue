@@ -83,7 +83,7 @@
                 <button
                   type="button"
                   class="btn-dollar"
-                  @click="handleIncrease(increaseAmount)"
+                  @click="handleIncrease(p.id, increaseAmount)"
                 >
                   增加金額
                 </button>
@@ -271,7 +271,7 @@
       </div>
     </div>
   </section>
-  <section v-else class="details">
+  <section v-else class="details" >
     <article
       v-for="p in projectsData"
       :key="p.id"
@@ -715,8 +715,14 @@ function syncModeFromRoute() {
 
 onMounted(() => {
   getAllParticipantPlanByUser()
+  getAllParticipantPlanDetailByUser()
+  getAllParticipantPlanRecordByUser()
   syncModeFromRoute();
   if (!route.query.tab) activeTab.value = props.preselectTab;
+
+  if (mode.value === "brand" && route.query.brandId) {
+    getParticipantPlan();
+  }
 });
 
 watch(
@@ -728,10 +734,56 @@ watch(
     if (typeof route.query.tab === "string") {
       activeTab.value = route.query.tab;
     }
+
   }
 );
 
+async function getParticipantPlan() {
+  const formData = {
+    userId: currentUser.value,
+    planId: Number(route.query.planId),
+  }
+  const response = await planApi.getParticipantPlan(formData)
+  if (response.code === 0) {
+    const plan = response.data
+    const progress = plan.targetAmount > 0
+        ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
+        : 0
+
+    const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0)
+    const lastUpdate = calculateTimeRemaining(plan.endDate)
+    let status
+    if (plan.currentStep === 11) {
+      status = 'running'
+    }
+    projectsData.splice(0, projectsData.length)
+    projectsData.push({
+      id: plan.planId,
+      status: status,
+      lastUpdate: lastUpdate,
+      title: plan.planName,
+      progress: progress,
+      dollar: plan.totalParticipantAmount ,
+      remain: remain ,
+      goal: plan.targetAmount ,
+      increaseAmount: 200000,
+    })
+    console.log('轉換後的資料:', projectsData)
+  } else {
+    alert(response.message || '取得專案失敗，請稍後再試')
+  }
+}
 async function participate(p) {
+  // 驗證
+  errors.agree = ""
+  if (!p.increaseAmount || p.increaseAmount <= 0) {
+    alert('請輸入參與金額')
+    return
+  }
+  if (!form.agree) {
+    errors.agree = "請同意風險聲明及平台免責聲明"
+    return
+  }
 
   const formData = {
     userId: currentUser.value,
@@ -742,7 +794,8 @@ async function participate(p) {
   const response = await planApi.participantPlan(formData)
   if (response.code === 0) {
     alert('參與成功')
-    await router.push({name: 'Account', query: {tab: 'participation'}})
+    await router.push('/account/participation')
+    await getAllParticipantPlanByUser()
   } else {
     alert(response.message ||'參與失敗，請稍後再試')
   }
@@ -790,6 +843,111 @@ async function getAllParticipantPlanByUser() {
     alert(response.message || '取得參與專案失敗，請稍後再試')
   }
 }
+async function getAllParticipantPlanRecordByUser() {
+  const formData = {
+    userId: currentUser.value,
+  }
+
+  const response = await planApi.getAllParticipantPlanRecordByUser(formData)
+  if (response.code === 0) {
+    // 清空原本的陣列
+    records.splice(0, records.length)
+
+    // 添加新資料
+    response.data.forEach((record) => {
+      let action
+      if (record.action === 1) {
+        action = '初次投入'
+      } else if (record.action === 2) {
+        action = '追加投入'
+      } else if (record.action === 3) {
+        action = '退款'
+      } else if (record.action === 4) {
+        action = '取消'
+      }
+      let status
+      if (record.status === 1) {
+        status = '處理中'
+      } else if (record.status === 2) {
+        status = '成功'
+      } else if (record.status === 3) {
+        status = '失敗'
+      }
+      records.push({
+        id: record.recordId,
+        date: record.date,
+        title: record.planName,
+        action: action,
+        status: status,
+        amount: record.amount,
+      })
+    })
+
+    console.log('轉換後的資料:', records)
+  } else {
+    alert(response.message || '取得共創紀錄失敗，請稍後再試')
+  }
+
+}
+async function getAllParticipantPlanDetailByUser() {
+  const formData = {
+    userId: currentUser.value,
+  }
+
+  const response = await planApi.getAllParticipantPlanDetailByUser(formData)
+  if (response.code === 0) {
+    // 清空原本的陣列
+    details.splice(0, details.length)
+
+    // 添加新資料
+    response.data.forEach((plan) => {
+      let status
+      if (plan.currentStep === 11) {
+        status = 'running'
+      } else if (plan.currentStep === 12) {
+        status = 'match-success'
+      } else if (plan.currentStep === 13) {
+        status = 'match-failed'
+      } else if (plan.currentStep === 14) {
+        status = 'success'
+      } else if (plan.currentStep === 15) {
+        status = 'failed'
+      }
+      const lastUpdate = calculateTimeRemaining(plan.endDate)
+      const transactions = plan.participantData.map((tx) => ({
+        date: tx.date,
+        statusKey: formatStatusKey(tx.status),
+        amount: tx.amount,
+      }))
+      details.push({
+        id: plan.planId,
+        status: status,
+        lastUpdate: lastUpdate,
+        title: plan.planName,
+        dollar: plan.participantTotalAmount,
+        transactions: transactions,
+      })
+    })
+
+    console.log('轉換後的資料:', details)
+  } else {
+    alert(response.message || '取得共創明細失敗，請稍後再試')
+  }
+}
+
+function formatStatusKey(status) {
+  switch (status) {
+    case 1:
+      return 'pending'
+    case 2:
+      return 'success'
+    case 3:
+      return 'failed'
+    default:
+      return 'unknown'
+  }
+
+}
 
 // 3. 倒數時間計算函數
 function calculateTimeRemaining(endDate) {
@@ -807,9 +965,21 @@ function calculateTimeRemaining(endDate) {
 }
 
 const increaseAmount = ref(0)
-
-function handleParticipantPlan() {
-
+async function handleIncrease(planId, amount) {
+  const formData = {
+    userId: currentUser.value,
+    planId: planId,
+    amount: Number(amount),
+  }
+  const response = await planApi.participantPlan(formData)
+  if (response.code === 0) {
+    alert('追加成功')
+    await getAllParticipantPlanByUser()
+    await getAllParticipantPlanDetailByUser()
+    await getAllParticipantPlanRecordByUser()
+  } else {
+    alert(response.message || '追加失敗，請稍後再試')
+  }
 }
 </script>
 

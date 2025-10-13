@@ -1,11 +1,15 @@
 <template>
   <div class="row pt-5 pb-5 g-4">
     <div class="col-md-4">
-      <img src="@/assets/images/project-content-img-1.png" class="w-100" />
+      <!-- 使用傳入的 photo -->
+      <img :src="photo || '@/assets/images/project-content-img-1.png'" class="w-100" />
     </div>
 
     <div class="col-md-8">
-      <p>
+      <!-- 使用傳入的 description -->
+      <p v-if="description">{{ description }}</p>
+      <!-- 如果沒有數據，顯示預設內容 -->
+      <p v-else>
         相傳元朝最會煮奶茶的人- 《元太祖的姑姑》 <br />
         手中隨時捧著一杯厚奶茶 茶香四溢，路人無一不駐足<br />
         姑姑穿越各朝代，改名為顏太煮 盼天下人嘗盡這杯好滋味！
@@ -14,7 +18,19 @@
   </div>
 </template>
 
-<script setup></script>
+<script setup>
+// 定義 props
+const props = defineProps({
+  photo: {
+    type: String,
+    default: ''
+  },
+  description: {
+    type: String,
+    default: ''
+  }
+})
+</script>
 
 <style scoped lang="scss">
 .col-md-8 {

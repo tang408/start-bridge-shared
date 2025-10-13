@@ -18,13 +18,18 @@
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination } from "swiper/modules";
 import "swiper/swiper-bundle.css";
+const props = defineProps({
+  images: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+console.log(props.images)
+//轉換成陣列
 
 const modules = [Autoplay, Pagination];
-const images = [
-  new URL("@/assets/images/project-content-img-2.jpg", import.meta.url).href,
-  new URL("@/assets/images/project-content-img-2.jpg", import.meta.url).href,
-  new URL("@/assets/images/project-content-img-2.jpg", import.meta.url).href,
-];
+
 </script>
 
 <style lang="scss" scoped>
@@ -36,7 +41,7 @@ const images = [
 
   .banner-swiper {
     width: 100%;
-    height: auto;
+    height: 300px;
     background: #f54c23;
     img {
       width: 100%;
