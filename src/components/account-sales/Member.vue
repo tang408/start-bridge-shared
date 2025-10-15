@@ -172,10 +172,13 @@
             {{ getParticipantStatus(detail.status) }}
           </span>
                 <!-- 根據狀態顯示審核按鈕 -->
-                <div v-if="detail.status === 1" class="review-btn-group">
+                <div v-if="detail.status === 1 || detail.status === 6" class="review-btn-group">
                   <button class="btn-pass" @click="handleCoreApproveClick(detail, true)">通過</button>
                   <button class="btn-fail" @click="handleCoreApproveClick(detail, false)">不通過</button>
                 </div>
+                <div v-if="detail.status===6" class="notify-btn-group mt-2">
+                  <button class="btn-notify" @click="getUserSignCoreContractBySales(detail)">查看合約</button>
+                  </div>
               </div>
             </div>
             <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2" />
@@ -483,7 +486,7 @@ import SharedInput from "@/components/shared/Shared-Input.vue";
 import {cityApi} from "@/api/modules/city.js";
 const { isLoggedIn, currentSales } = useAuth();
 
-import { useRoute } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import SharedUpload from "@/components/shared/Shared-Upload.vue";
 
 const route = useRoute();
@@ -775,7 +778,22 @@ async function handleApproveClick(row, approved) {
   // 如果是通過且不需要上傳合約，直接處理
   await handleApprove(row, true);
 }
+const userSignCoreContractInfo = ref({});
+async function getUserSignCoreContractBySales(detail) {
+    const formData = {
+      salesId: currentSales.value,
+      userId: detail.userId,
+      participantPlanId: detail.participantPlanId,
+    }
 
+    const response = await salesApi.getUserSignCoreContractBySales(formData)
+    if (response.code === 0) {
+      userSignCoreContractInfo.value = response.data;
+      window.open(userSignCoreContractInfo.value.signCoreContractUrl, '_blank')
+    } else {
+      alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
+    }
+}
 async function handleCoreApproveClick(detail, approved) {
   console.log(detail)
   const formData = {
@@ -792,6 +810,16 @@ async function handleCoreApproveClick(detail, approved) {
       response = await salesCheckApi.checkCoreMoneyBySales(formData)
       if (response.code === 0) {
         alert('已處理共創者審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
+    case 6: // 待簽署合約
+      response = await salesCheckApi.checkCoreContractBySales(formData)
+      if (response.code === 0) {
+        alert('已處理共創者合約審核');
         await getAllUserBySales();
         showModal.value = false;
       } else {

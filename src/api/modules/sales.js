@@ -31,5 +31,9 @@ export const salesApi = {
 
     async getUserSignContractBySales(params = {}) {
         return api.post("/f/private/sales/get-user-sign-contract-by-sales", params);
-    }
+    },
+
+    async getUserSignCoreContractBySales(params = {}) {
+        return api.post("/f/private/sales/get-user-sign-core-contract-by-sales", params);
+    },
 };

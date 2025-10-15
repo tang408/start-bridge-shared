@@ -251,6 +251,7 @@
 
   <!-- PDF簽名組件 -->
   <SharedPDFSign
+      :mode="'planContract'"
       :contract-data="contractForm"
       :visible="showSignContractDialog"
       @close="showSignContractDialog = false"

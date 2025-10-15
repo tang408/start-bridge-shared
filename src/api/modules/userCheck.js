@@ -13,6 +13,10 @@ export const userCheckApi = {
         return api.post("/f/private/user-check/sign-contract-by-user", params);
     },
 
+    async signCoreContractByUser(params = {}) {
+        return api.post("/f/private/user-check/sign-core-contract-by-user", params);
+    },
+
     async uploadContractByUser(params = {}) {
         return api.post("/f/private/user-check/upload-contract-by-user", params);
     },

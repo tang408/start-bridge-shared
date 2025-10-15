@@ -2,8 +2,8 @@
   <div class="fs-24">參與專案管理</div>
   <section v-if="mode === 'account'">
     <SharedTabs
-      v-model="activeTab"
-      :tabs="[
+        v-model="activeTab"
+        :tabs="[
         { label: '共創進度', value: 'progress' },
         { label: '共創明細', value: 'details' },
         { label: '共創紀錄', value: 'records' },
@@ -13,24 +13,24 @@
     <!-- 共創進度 -->
     <div v-if="activeTab === 'progress'" class="stack">
       <article
-        v-for="p in projects"
-        :key="p.id"
-        class="article-card"
-        :class="{ expanded: expandedId === p.id }"
+          v-for="p in projects"
+          :key="p.id"
+          class="article-card"
+          :class="{ expanded: expandedId === p.id }"
       >
         <button
-          type="button"
-          class="summary"
-          @click="toggle(p.id)"
-          :aria-expanded="expandedId === p.id ? 'true' : 'false'"
-          :aria-controls="`details-${p.id}`"
+            type="button"
+            class="summary"
+            @click="toggle(p.id)"
+            :aria-expanded="expandedId === p.id ? 'true' : 'false'"
+            :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
             <span class="status-pill" :class="statusClass(p.status)">{{
-              statusLabel(p.status)
-            }}</span>
+                statusLabel(p.status)
+              }}</span>
             <span class="time" v-if="isRunning(p.status)"
-              >剩餘 {{ p.lastUpdate }}</span
+            >剩餘 {{ p.lastUpdate }}</span
             >
           </header>
 
@@ -38,15 +38,15 @@
 
           <div class="progress-wrap" v-if="isRunning(p.status)">
             <div
-              class="progress-bar"
-              role="progressbar"
-              :aria-valuemin="0"
-              :aria-valuemax="100"
-              :aria-valuenow="p.progress"
+                class="progress-bar"
+                role="progressbar"
+                :aria-valuemin="0"
+                :aria-valuemax="100"
+                :aria-valuenow="p.progress"
             >
               <div
-                class="progress-inner"
-                :style="{ width: p.progress + '%' }"
+                  class="progress-inner"
+                  :style="{ width: p.progress + '%' }"
               ></div>
               <div class="progress-text">募資進度 {{ p.progress }}%</div>
             </div>
@@ -60,11 +60,11 @@
 
         <transition name="collapse">
           <div
-            v-show="expandedId === p.id"
-            class="details"
-            :id="`details-${p.id}`"
+              v-show="expandedId === p.id"
+              class="details"
+              :id="`details-${p.id}`"
           >
-            <hr />
+            <hr/>
             <div class="fund-box" v-if="p.showFundBox">
               <div class="form-row">
                 <label class="label">共創金額</label>
@@ -73,17 +73,17 @@
 
               <div class="form-row">
                 <input
-                  type="text"
-                  class="form-input"
-                  v-model="increaseAmount"
-                  @input="onAmountInput(p)"
-                  @blur="onAmountBlur(p)"
-                  inputmode="numeric"
+                    type="text"
+                    class="form-input"
+                    v-model="increaseAmount"
+                    @input="onAmountInput(p)"
+                    @blur="onAmountBlur(p)"
+                    inputmode="numeric"
                 />
                 <button
-                  type="button"
-                  class="btn-dollar"
-                  @click="handleIncrease(p.id, increaseAmount)"
+                    type="button"
+                    class="btn-dollar"
+                    @click="handleIncrease(p.id, increaseAmount)"
                 >
                   增加金額
                 </button>
@@ -96,24 +96,24 @@
                 <div class="file-content">
                   <span class="file-name">{{ f.fileName }}</span>
                   <button
-                    type="button"
-                    class="file-icon"
-                    @click="downloadFile(f)"
+                      type="button"
+                      class="file-icon"
+                      @click="downloadFile(f)"
                   >
-                    <img src="@/assets/icon/dowload.png" alt="下載" />
+                    <img src="@/assets/icon/dowload.png" alt="下載"/>
                   </button>
                 </div>
               </div>
             </div>
 
             <SharedFabActions
-              :favorite="p.fav"
-              iconType="heart"
-              :showTrash="false"
-              @favorite-toggle="(v) => (p.fav = v)"
-              @remove="removeProject(p.id)"
-              :right="16"
-              :bottom="16"
+                :favorite="p.fav"
+                iconType="heart"
+                :showTrash="false"
+                @favorite-toggle="(v) => (p.fav = v)"
+                @remove="removeProject(p.id)"
+                :right="16"
+                :bottom="16"
             />
           </div>
         </transition>
@@ -123,24 +123,24 @@
     <!-- 共創明細 -->
     <div v-else-if="activeTab === 'details'" class="details">
       <article
-        v-for="p in details"
-        :key="p.id"
-        class="article-card"
-        :class="{ expanded: expandedDetailsId === p.id }"
+          v-for="p in details"
+          :key="p.id"
+          class="article-card"
+          :class="{ expanded: expandedDetailsId === p.id }"
       >
         <button
-          type="button"
-          class="summary"
-          @click="toggleDetails(p.id)"
-          :aria-expanded="expandedDetailsId === p.id ? 'true' : 'false'"
-          :aria-controls="`details-${p.id}`"
+            type="button"
+            class="summary"
+            @click="toggleDetails(p.id)"
+            :aria-expanded="expandedDetailsId === p.id ? 'true' : 'false'"
+            :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
             <span class="status-pill" :class="statusClass(p.status)">{{
-              statusLabel(p.status)
-            }}</span>
+                statusLabel(p.status)
+              }}</span>
             <span class="time" v-if="isRunning(p.status)"
-              >剩餘 {{ p.lastUpdate }}</span
+            >剩餘 {{ p.lastUpdate }}</span
             >
             <span class="time" v-if="p.status === 'match-failed'">退款中</span>
           </header>
@@ -149,21 +149,28 @@
           <div>
             <transition name="collapse">
               <div
-                v-show="expandedDetailsId === p.id"
-                class="detail-panel"
-                :id="`details-${p.id}`"
+                  v-show="expandedDetailsId === p.id"
+                  class="detail-panel"
+                  :id="`details-${p.id}`"
               >
                 <div class="tx-list">
                   <div
-                    v-for="(t, i) in p.transactions"
-                    :key="i"
-                    class="tx-row"
-                    :class="[
+                      v-for="(t, i) in p.transactions"
+                      :key="i"
+                      class="tx-row"
+                      :class="[
                       txRowClass(t.statusKey),
                       { 'is-disabled': t.statusKey === 'failed' },
                     ]"
                   >
                     <div class="tx-date">{{ t.date }}</div>
+                    <button
+                        type="button"
+                        class="tx-download"
+                        @click="handleClick(t,p)"
+                        v-if="t.statusKey !== 'failed'"
+                    >簽名
+                    </button>
                     <div class="tx-label">共創金額</div>
                     <div class="tx-status">
                       {{ txStatusLabel(t.statusKey) }}
@@ -171,36 +178,37 @@
                     <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
                   </div>
                 </div>
-                <hr />
+                <hr/>
               </div>
             </transition>
             <div class="details-dollar d-flex justify-content-end">
               <span>共創總額</span>
               <span class="details-dollar-content">{{
-                fmtMoney(p.dollar)
-              }}</span>
+                  fmtMoney(p.dollar)
+                }}</span>
             </div>
           </div>
         </button>
       </article>
     </div>
 
+
     <!-- 共創紀錄 -->
     <div v-else-if="activeTab === 'records'" class="records">
       <div class="toolbar">
         <SharedDropdown
-          v-model="recFilter.timeOrder"
-          placeholder="依時間排序"
-          :options="[
+            v-model="recFilter.timeOrder"
+            placeholder="依時間排序"
+            :options="[
             { label: '新→舊', value: 'desc' },
             { label: '舊→新', value: 'asc' },
           ]"
         />
 
         <SharedDropdown
-          v-model="recFilter.action"
-          placeholder="依動作排序"
-          :options="[
+            v-model="recFilter.action"
+            placeholder="依動作排序"
+            :options="[
             { label: '全部', value: '' },
             { label: '初次投入', value: '初次投入' },
             { label: '追加投入', value: '追加投入' },
@@ -210,9 +218,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.status"
-          placeholder="依狀態排序"
-          :options="[
+            v-model="recFilter.status"
+            placeholder="依狀態排序"
+            :options="[
             { label: '全部', value: '' },
             { label: '成功', value: '成功' },
             { label: '失敗', value: '失敗' },
@@ -221,9 +229,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.amountOrder"
-          placeholder="依金額排序"
-          :options="[
+            v-model="recFilter.amountOrder"
+            placeholder="依金額排序"
+            :options="[
             { label: '不排序', value: '' },
             { label: '高→低', value: 'desc' },
             { label: '低→高', value: 'asc' },
@@ -231,9 +239,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.export"
-          placeholder="匯出格式"
-          :options="[
+            v-model="recFilter.export"
+            placeholder="匯出格式"
+            :options="[
             { label: 'CSV', value: '1' },
             { label: 'JPG', value: '2' },
           ]"
@@ -243,54 +251,54 @@
       <div class="table-wrap">
         <table class="records-table">
           <thead>
-            <tr>
-              <th width="12%">時間</th>
-              <th width="50%">專案名稱</th>
-              <th width="13%">動作</th>
-              <th width="13%">狀態</th>
-              <th width="12%" class="ta-right">金額</th>
-            </tr>
+          <tr>
+            <th width="12%">時間</th>
+            <th width="50%">專案名稱</th>
+            <th width="13%">動作</th>
+            <th width="13%">狀態</th>
+            <th width="12%" class="ta-right">金額</th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="row in displayedRecords" :key="row.id">
-              <td class="table-wrap-date" data-th="時間">{{ row.date }}</td>
-              <td class="ellipsis" :title="row.title" data-th="專案名稱">
-                {{ row.title }}
-              </td>
-              <td data-th="動作">{{ row.action }}</td>
-              <td data-th="狀態">{{ row.status }}</td>
-              <td class="ta-right" data-th="金額">
-                {{ fmtMoney(row.amount) }}
-              </td>
-            </tr>
-            <tr v-if="!displayedRecords.length">
-              <td colspan="5" class="empty">目前沒有符合條件的紀錄</td>
-            </tr>
+          <tr v-for="row in displayedRecords" :key="row.id">
+            <td class="table-wrap-date" data-th="時間">{{ row.date }}</td>
+            <td class="ellipsis" :title="row.title" data-th="專案名稱">
+              {{ row.title }}
+            </td>
+            <td data-th="動作">{{ row.action }}</td>
+            <td data-th="狀態">{{ row.status }}</td>
+            <td class="ta-right" data-th="金額">
+              {{ fmtMoney(row.amount) }}
+            </td>
+          </tr>
+          <tr v-if="!displayedRecords.length">
+            <td colspan="5" class="empty">目前沒有符合條件的紀錄</td>
+          </tr>
           </tbody>
         </table>
       </div>
     </div>
   </section>
-  <section v-else class="details" >
+  <section v-else class="details">
     <article
-      v-for="p in projectsData"
-      :key="p.id"
-      class="article-card"
-      :class="{ expanded: expandedId === p.id }"
+        v-for="p in projectsData"
+        :key="p.id"
+        class="article-card"
+        :class="{ expanded: expandedId === p.id }"
     >
       <button
-        type="button"
-        class="summary"
-        @click="toggle(p.id)"
-        :aria-expanded="expandedId === p.id ? 'true' : 'false'"
-        :aria-controls="`details-${p.id}`"
+          type="button"
+          class="summary"
+          @click="toggle(p.id)"
+          :aria-expanded="expandedId === p.id ? 'true' : 'false'"
+          :aria-controls="`details-${p.id}`"
       >
         <header class="card-head">
           <span class="status-pill" :class="statusClass(p.status)">{{
-            statusLabel(p.status)
-          }}</span>
+              statusLabel(p.status)
+            }}</span>
           <span class="time" v-if="isRunning(p.status)"
-            >剩餘 {{ p.lastUpdate }}</span
+          >剩餘 {{ p.lastUpdate }}</span
           >
         </header>
 
@@ -299,15 +307,15 @@
         <div>
           <div class="progress-wrap" v-if="isRunning(p.status)">
             <div
-              class="progress-bar"
-              role="progressbar"
-              :aria-valuemin="0"
-              :aria-valuemax="100"
-              :aria-valuenow="p.progress"
+                class="progress-bar"
+                role="progressbar"
+                :aria-valuemin="0"
+                :aria-valuemax="100"
+                :aria-valuenow="p.progress"
             >
               <div
-                class="progress-inner"
-                :style="{ width: p.progress + '%' }"
+                  class="progress-inner"
+                  :style="{ width: p.progress + '%' }"
               ></div>
               <div class="progress-text">募資進度 {{ p.progress }}%</div>
             </div>
@@ -318,17 +326,19 @@
             </div>
           </div>
 
-          <hr />
+          <hr/>
           <div class="form-group">
             <div class="agree-row">
-              <input id="agree" type="checkbox" v-model="form.agree" />
+              <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
               <RouterLink class="agree-link" @click.stop
-                >參與風險聲明</RouterLink
+              >參與風險聲明
+              </RouterLink
               >
               及
               <RouterLink class="agree-link" @click.stop
-                >平台免責聲明</RouterLink
+              >平台免責聲明
+              </RouterLink
               >
             </div>
 
@@ -337,10 +347,10 @@
 
           <div class="form-row mt-3">
             <input
-              type="number"
-              class="form-input"
-              v-model.number="p.increaseAmount"
-              min="0"
+                type="number"
+                class="form-input"
+                v-model.number="p.increaseAmount"
+                min="0"
             />
             <button type="button" class="btn-dollar" @click="participate(p)">
               參與共創
@@ -350,11 +360,20 @@
       </button>
     </article>
   </section>
+
+  <!-- PDF簽名組件 -->
+  <SharedPDFSign
+      :mode="'planCoreContract'"
+      :contract-data="contractForm"
+      :visible="showSignCoreContractDialog"
+      @close="showSignCoreContractDialog = false"
+      @submit="handleSignatureSubmitted"
+  />
 </template>
 
 <script setup>
-import { useRouter, useRoute } from "vue-router";
-import { ref, reactive, computed, onMounted, watch } from "vue";
+import {useRouter, useRoute} from "vue-router";
+import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
@@ -367,7 +386,10 @@ import {
 } from "@/utils/status";
 import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
-const { isLoggedIn, currentUser } = useAuth();
+import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
+import {userCheckApi} from "@/api/modules/userCheck.js";
+
+const {isLoggedIn, currentUser} = useAuth();
 
 
 const router = useRouter();
@@ -377,19 +399,20 @@ const activeTab = ref("progress");
 const expandedId = ref(null);
 const expandedDetailsId = ref(null);
 const mode = ref("account");
-const form = reactive({ agree: false });
-const errors = reactive({ agree: "" });
+const form = reactive({agree: false});
+const errors = reactive({agree: ""});
 
 const props = defineProps({
-  entry: { type: String, default: "account" },
-  preselectTab: { type: String, default: "progress" },
-  brandId: { type: [Number, String, null], default: null },
-  brandName: { type: String, default: "" },
+  entry: {type: String, default: "account"},
+  preselectTab: {type: String, default: "progress"},
+  brandId: {type: [Number, String, null], default: null},
+  brandName: {type: String, default: ""},
 });
 
 function toggle(id) {
   expandedId.value = expandedId.value === id ? null : id;
 }
+
 function toggleDetails(id) {
   expandedDetailsId.value = expandedDetailsId.value === id ? null : id;
 }
@@ -408,10 +431,10 @@ const projects = reactive([
     showFundBox: true,
     fav: false,
     files: [
-      { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
-      { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
-      { id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#" },
-      { id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#" },
+      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
+      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
+      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
+      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
     ],
   },
   {
@@ -427,10 +450,10 @@ const projects = reactive([
     showFundBox: false,
     fav: true,
     files: [
-      { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
-      { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
-      { id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#" },
-      { id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#" },
+      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
+      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
+      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
+      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
     ],
   },
   {
@@ -438,10 +461,10 @@ const projects = reactive([
     status: "success",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     files: [
-      { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
-      { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
-      { id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#" },
-      { id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#" },
+      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
+      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
+      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
+      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
     ],
   },
   {
@@ -449,10 +472,10 @@ const projects = reactive([
     status: "failed",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
     files: [
-      { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
-      { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
-      { id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#" },
-      { id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#" },
+      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
+      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
+      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
+      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
     ],
   },
 ]);
@@ -466,16 +489,19 @@ const details = reactive([
     dollar: 1200000,
     transactions: [
       {
+        id: 1,
         date: "2024-12-03",
         statusKey: "success",
         amount: 1200000,
       },
       {
+        id: 1,
         date: "2024-12-03",
         statusKey: "pending",
         amount: 200000,
       },
       {
+        id: 1,
         date: "2024-12-03",
         statusKey: "failed",
         amount: 1200000,
@@ -692,9 +718,9 @@ const displayedRecords = computed(() => {
   // 金額排序
   if (recFilter.amountOrder) {
     list.sort((a, b) =>
-      recFilter.amountOrder === "asc"
-        ? a.amount - b.amount
-        : b.amount - a.amount
+        recFilter.amountOrder === "asc"
+            ? a.amount - b.amount
+            : b.amount - a.amount
     );
   }
 
@@ -726,16 +752,16 @@ onMounted(() => {
 });
 
 watch(
-  () => [props.entry, route.query.source, route.query.tab],
-  () => {
-    const byProp = props.entry === "brand";
-    const byQuery = route.query.source === "brand";
-    mode.value = byProp || byQuery ? "brand" : "account";
-    if (typeof route.query.tab === "string") {
-      activeTab.value = route.query.tab;
-    }
+    () => [props.entry, route.query.source, route.query.tab],
+    () => {
+      const byProp = props.entry === "brand";
+      const byQuery = route.query.source === "brand";
+      mode.value = byProp || byQuery ? "brand" : "account";
+      if (typeof route.query.tab === "string") {
+        activeTab.value = route.query.tab;
+      }
 
-  }
+    }
 );
 
 async function getParticipantPlan() {
@@ -763,9 +789,9 @@ async function getParticipantPlan() {
       lastUpdate: lastUpdate,
       title: plan.planName,
       progress: progress,
-      dollar: plan.totalParticipantAmount ,
-      remain: remain ,
-      goal: plan.targetAmount ,
+      dollar: plan.totalParticipantAmount,
+      remain: remain,
+      goal: plan.targetAmount,
       increaseAmount: 200000,
     })
     console.log('轉換後的資料:', projectsData)
@@ -773,6 +799,7 @@ async function getParticipantPlan() {
     alert(response.message || '取得專案失敗，請稍後再試')
   }
 }
+
 async function participate(p) {
   // 驗證
   errors.agree = ""
@@ -797,7 +824,7 @@ async function participate(p) {
     await router.push('/account/participation')
     await getAllParticipantPlanByUser()
   } else {
-    alert(response.message ||'參與失敗，請稍後再試')
+    alert(response.message || '參與失敗，請稍後再試')
   }
 }
 
@@ -829,9 +856,9 @@ async function getAllParticipantPlanByUser() {
         lastUpdate: lastUpdate,
         title: plan.planName,
         progress: progress,
-        dollar: plan.totalParticipantAmount *10000,
-        remain: remain *10000,
-        goal: plan.targetAmount *10000,
+        dollar: plan.totalParticipantAmount * 10000,
+        remain: remain * 10000,
+        goal: plan.targetAmount * 10000,
         showFundBox: true,
         fav: false,
         files: []
@@ -843,6 +870,7 @@ async function getAllParticipantPlanByUser() {
     alert(response.message || '取得參與專案失敗，請稍後再試')
   }
 }
+
 async function getAllParticipantPlanRecordByUser() {
   const formData = {
     userId: currentUser.value,
@@ -889,6 +917,7 @@ async function getAllParticipantPlanRecordByUser() {
   }
 
 }
+
 async function getAllParticipantPlanDetailByUser() {
   const formData = {
     userId: currentUser.value,
@@ -915,6 +944,7 @@ async function getAllParticipantPlanDetailByUser() {
       }
       const lastUpdate = calculateTimeRemaining(plan.endDate)
       const transactions = plan.participantData.map((tx) => ({
+        id: tx.id,
         date: tx.date,
         statusKey: formatStatusKey(tx.status),
         amount: tx.amount,
@@ -965,6 +995,7 @@ function calculateTimeRemaining(endDate) {
 }
 
 const increaseAmount = ref(0)
+
 async function handleIncrease(planId, amount) {
   const formData = {
     userId: currentUser.value,
@@ -980,6 +1011,66 @@ async function handleIncrease(planId, amount) {
   } else {
     alert(response.message || '追加失敗，請稍後再試')
   }
+}
+
+const showSignCoreContractDialog = ref(false);
+const contractForm = reactive({
+  id: null,
+  displayName: '',
+  coreContractByAdminUrl: '',
+})
+
+const selectedData = ref(null);
+const selectedPlanData = ref(null);
+
+async function handleClick(participantPlan, plan) {
+  console.log('點擊簽名', participantPlan)
+  if (!isLoggedIn.value) {
+    alert('請先登入')
+    router.push({name: 'Login', query: {redirect: router.currentRoute.value.fullPath}})
+    return
+  }
+  selectedData.value = participantPlan
+  selectedPlanData.value = plan
+  // 檢查是否有合約資料
+  const formData = {
+    userId: currentUser.value,
+    participantPlanId: participantPlan.id,
+  }
+  const response = await planApi.getAdminCoreContractByPlanUser(formData)
+  if (response.code === 0) {
+    contractForm.id = response.data.id
+    contractForm.displayName = response.data.displayName
+    contractForm.coreContractByAdminUrl = response.data.adminCoreContractUrl
+  }
+
+  await nextTick();
+  showSignCoreContractDialog.value = true
+}
+
+async function handleSignatureSubmitted(result) {
+  showSignCoreContractDialog.value = false;
+  console.log(selectedData.value)
+  console.log(selectedPlanData.value)
+  console.log(result)
+
+  const formData = {
+    planId: selectedPlanData.value.id,
+    participantPlanId: selectedData.value.id,
+    userId: currentUser.value,
+    coreContractId: result.signContractId
+  }
+
+  const response = await userCheckApi.signCoreContractByUser(formData)
+  if (response.code === 0) {
+    // 更新狀態或進行其他操作
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  } else {
+    alert(response.message || "合約簽名失敗，請稍後再試");
+  }
+
 }
 </script>
 
@@ -1032,6 +1123,7 @@ async function handleIncrease(planId, amount) {
   cursor: pointer;
   padding: 6px 4px 12px;
   border-radius: 22px;
+
   &:focus-visible {
     outline: 2px solid #ffcc41;
   }
@@ -1063,15 +1155,18 @@ async function handleIncrease(planId, amount) {
   font-weight: 400;
   font-size: $fs-14;
   line-height: 17px;
+
   &.running {
     background: $text-green;
     color: $white;
   }
+
   &.success,
   &.match-success {
     background: $text-dark;
     color: $white;
   }
+
   &.failed,
   &.match-failed {
     background: $brand-gray;
@@ -1091,6 +1186,7 @@ async function handleIncrease(planId, amount) {
   background: #fff;
   margin-bottom: 2px;
 }
+
 .progress-bar {
   position: relative;
   height: 24px;
@@ -1103,6 +1199,7 @@ async function handleIncrease(planId, amount) {
   height: 100%;
   background: linear-gradient(90deg, #ffb54a, #ff6634);
 }
+
 .progress-text {
   position: absolute;
   inset: 0;
@@ -1167,10 +1264,12 @@ async function handleIncrease(planId, amount) {
   max-height: 0;
   opacity: 0;
 }
+
 .collapse-enter-active,
 .collapse-leave-active {
   transition: max-height 0.25s ease, opacity 0.2s ease;
 }
+
 .collapse-enter-to,
 .collapse-leave-from {
   max-height: 1000px;
@@ -1182,6 +1281,7 @@ async function handleIncrease(planId, amount) {
   display: grid;
   gap: 10px;
 }
+
 .fund-box .form-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1190,16 +1290,19 @@ async function handleIncrease(planId, amount) {
   @media (max-width: 576px) {
     display: contents;
   }
+
   &:first-child {
     grid-template-columns: 1fr;
   }
 }
+
 .label {
   font-weight: $fw-500;
   font-size: $fs-16;
   line-height: $lh-19;
   color: $text-dark;
 }
+
 .form-input {
   width: 100%;
   border-radius: 10px;
@@ -1207,6 +1310,7 @@ async function handleIncrease(planId, amount) {
   border: 1px solid #e9ece8;
   font-size: $fs-14;
 }
+
 .btn-dollar {
   border: 0;
   padding: 10px 20px;
@@ -1225,6 +1329,7 @@ async function handleIncrease(planId, amount) {
   display: grid;
   gap: 8px;
 }
+
 .file-row {
   display: grid;
   padding: 10px 0;
@@ -1251,6 +1356,7 @@ async function handleIncrease(planId, amount) {
   padding: 0;
   display: inline-flex;
 }
+
 .file-name {
   color: $text-dark;
   font-weight: $fw-400;
@@ -1264,6 +1370,7 @@ async function handleIncrease(planId, amount) {
   @media (max-width: 576px) {
     gap: 20px;
   }
+
   .tx-row {
     display: flex;
     color: #555555;
@@ -1271,6 +1378,7 @@ async function handleIncrease(planId, amount) {
       display: grid;
       gap: 5px;
     }
+
     .tx-date {
       width: 17%;
       font-weight: 400;
@@ -1320,10 +1428,12 @@ async function handleIncrease(planId, amount) {
       }
     }
   }
+
   .is {
     &-pending {
       color: $brand-orange;
     }
+
     &-failed {
       color: $text-gray;
     }
@@ -1332,6 +1442,7 @@ async function handleIncrease(planId, amount) {
 
 .records {
   width: 100%;
+
   .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -1349,6 +1460,7 @@ async function handleIncrease(planId, amount) {
       font-weight: 600;
       line-height: 1;
       transition: background 0.15s ease, box-shadow 0.15s ease;
+
       &:hover {
         background: #fff7ef;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
@@ -1388,6 +1500,7 @@ async function handleIncrease(planId, amount) {
   .table-wrap-date {
     letter-spacing: 2px;
   }
+
   .records-table .ta-right {
     text-align: start;
   }
@@ -1416,6 +1529,7 @@ async function handleIncrease(planId, amount) {
   line-height: 1;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
+
 .records .dropdown.open .dropdown-btn,
 .records .dropdown-btn:hover {
   background: #fff7ef;
@@ -1425,6 +1539,7 @@ async function handleIncrease(planId, amount) {
 @media (max-width: 576px) {
   .records .toolbar {
     gap: 10px;
+
     .btn-export {
       width: 100%;
       margin-left: 0;
@@ -1506,6 +1621,7 @@ hr {
   display: flex;
   gap: 10px;
 }
+
 .agree-row {
   justify-content: left !important;
 }

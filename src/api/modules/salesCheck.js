@@ -31,5 +31,9 @@ export const salesCheckApi = {
 
     async checkCoreMoneyBySales(params = {}) {
         return api.post("/f/private/sales-check/check-core-money-by-sales", params);
-    }
+    },
+
+    async checkCoreContractBySales(params = {}) {
+        return api.post("/f/private/sales-check/check-core-contract-by-sales", params);
+    },
 }

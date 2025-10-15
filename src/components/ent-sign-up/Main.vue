@@ -123,6 +123,7 @@ import SharedPassword from "@/components/shared/Shared-Password.vue";
 import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
 import {userApi} from "@/api/modules/user.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {useRouter} from "vue-router";
 
 const form = reactive({
   phone: "",
@@ -150,6 +151,8 @@ const errors = reactive({
   referralCode: "",
   agree: "",
 });
+
+const router = useRouter();
 
 // 為每個欄位創建 ref
 const phoneRef = ref(null);

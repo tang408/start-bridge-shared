@@ -3,7 +3,7 @@
     <div class="modal-overlay" @click="closeModal"></div>
     <div class="modal-content">
       <div class="modal-header">
-        <h3>銷售合約 - 查看與簽名</h3>
+        <h3>合約 - 查看與簽名</h3>
         <button @click="closeModal" class="close-btn">✕</button>
       </div>
 
@@ -51,6 +51,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 // pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs';
 
 const props = defineProps({
+  mode:{
+    type: String,
+    default: 'planContract'
+  },
   contractData: {
     type: Object,
     required: true
@@ -87,9 +91,20 @@ const initializeModal = async () => {
 
 // 載入 PDF
 const loadPDF = async () => {
+  console.log(props.contractData)
   try {
     isLoading.value = true;
-    const loadingTask = pdfjsLib.getDocument(props.contractData.salesContractUrl);
+    let loadingTask
+    if (props.mode === 'planContract') {
+      console.log('planContract')
+      loadingTask = pdfjsLib.getDocument(props.contractData.salesContractUrl);
+    } else if (props.mode === "planCoreContract") {
+      console.log('planCoreContract')
+      loadingTask = pdfjsLib.getDocument(props.contractData.coreContractByAdminUrl);
+    } else {
+      throw new Error('未知的合約類型');
+    }
+
     const pdf = await loadingTask.promise;
     pdfDoc.value = pdf;
 
@@ -155,8 +170,14 @@ const submitSignature = async () => {
     // 獲取簽名圖片
     const signatureDataUrl = signaturePadInstance.value.toDataURL('image/png');
 
+
     // 下載原始PDF
-    const existingPdfBytes = await fetch(props.contractData.salesContractUrl).then(res => res.arrayBuffer());
+    let existingPdfBytes
+    if (props.mode === 'planContract') {
+      existingPdfBytes = await fetch(props.contractData.salesContractUrl).then(res => res.arrayBuffer());
+    } else if (props.mode === "planCoreContract") {
+      existingPdfBytes = await fetch(props.contractData.coreContractByAdminUrl).then(res => res.arrayBuffer());
+    }
 
     // 使用 pdf-lib 添加簽名
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -200,9 +221,14 @@ const uploadSignedPDF = async (file) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('contractId', props.contractData.id);
-
+  let response
   try {
-    const response = await fileApi.uploadUserSignContractFile(file, props.contractData.id);
+    if (props.mode === 'planContract') {
+       response = await fileApi.uploadUserSignContractFile(file, props.contractData.id);
+    } else if (props.mode === "planCoreContract") {
+       response = await fileApi.uploadUserSignCoreContractFile(file, props.contractData.id)
+    }
+
 
     if (response.code !== 0) {
       throw new Error(response.message || '上傳失敗');

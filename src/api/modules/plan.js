@@ -37,6 +37,10 @@ export const planApi = {
         return api.post("/f/private/plan/get-sales-contract-by-plan-user", params);
     },
 
+    async getAdminCoreContractByPlanUser(params = {}) {
+        return api.post("/f/private/plan/get-admin-core-contract-by-plan-user", params);
+    },
+
     async getParticipantPlan(params = {}) {
         return api.post("/f/private/plan/get-participant-plan", params);
     },
