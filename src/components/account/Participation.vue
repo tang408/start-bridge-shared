@@ -168,8 +168,15 @@
                         type="button"
                         class="tx-download"
                         @click="handleClick(t,p)"
-                        v-if="t.statusKey !== 'failed'"
+                        v-if="t.status === 5 "
                     >簽名
+                    </button>
+                    <button
+                        type="button"
+                        class="tx-download"
+                        @click="handleClick(t,p)"
+                        v-if="t.status === 11 "
+                    >支付服務費
                     </button>
                     <div class="tx-label">共創金額</div>
                     <div class="tx-status">
@@ -361,6 +368,45 @@
     </article>
   </section>
 
+  <!-- 支付上傳 Dialog -->
+  <SharedModal
+      v-model="showPaymentDialog"
+      title="上傳支付資料"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handlePaymentSubmit"
+  >
+    <div class="payment-form">
+      <div class="form-group">
+        <label>支付金額</label>
+        <div class="readonly-field">{{ formatAmount(paymentForm.amount) }} 元</div>
+      </div>
+
+      <SharedInput
+          id="accountLast5"
+          label="帳號後五碼*"
+          type="text"
+          placeholder="請輸入帳號後五碼"
+          v-model="paymentForm.accountLast5"
+          :error="paymentErrors.accountLast5"
+          required
+      />
+
+      <SharedUpload
+          label="上傳付款憑證*"
+          accept=".pdf,.jpg,.jpeg,.png"
+          :max-size="5"
+          name="userPaymentProofFile"
+          v-model="paymentForm.paymentProofName"
+          :error="paymentErrors.paymentProof"
+          @upload-success="(result) => handleUploadSuccess('userPaymentProofFile', result)"
+          required
+          account="currentUser.value" :id="currentUser.value" />
+    </div>
+  </SharedModal>
+
   <!-- PDF簽名組件 -->
   <SharedPDFSign
       :mode="'planCoreContract'"
@@ -388,6 +434,9 @@ import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
 import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
 import {userCheckApi} from "@/api/modules/userCheck.js";
+import SharedInput from "@/components/shared/Shared-Input.vue";
+import SharedUpload from "@/components/shared/Shared-Upload.vue";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
 
 const {isLoggedIn, currentUser} = useAuth();
 
@@ -671,6 +720,20 @@ const projectsData = reactive([
   },
 ]);
 
+const paymentForm = reactive({
+  participantPlanId : null,
+  userId: null,
+  accountLast5: "",
+  amount: 0,
+  paymentProof:null,
+  paymentProofName: "",
+});
+
+const paymentErrors = reactive({
+  accountLast5: "",
+  paymentProof: "",
+});
+
 function removeProject(id) {
   const i = projects.findIndex((p) => p.id === id);
   if (i !== -1) projects.splice(i, 1);
@@ -934,18 +997,15 @@ async function getAllParticipantPlanDetailByUser() {
       if (plan.currentStep === 11) {
         status = 'running'
       } else if (plan.currentStep === 12) {
-        status = 'match-success'
-      } else if (plan.currentStep === 13) {
         status = 'match-failed'
-      } else if (plan.currentStep === 14) {
-        status = 'success'
-      } else if (plan.currentStep === 15) {
-        status = 'failed'
+      } else if (plan.currentStep >= 13) {
+        status = 'match-success'
       }
       const lastUpdate = calculateTimeRemaining(plan.endDate)
       const transactions = plan.participantData.map((tx) => ({
         id: tx.id,
         date: tx.date,
+        status: tx.status,
         statusKey: formatStatusKey(tx.status),
         amount: tx.amount,
       }))
@@ -1024,7 +1084,7 @@ const selectedData = ref(null);
 const selectedPlanData = ref(null);
 
 async function handleClick(participantPlan, plan) {
-  console.log('點擊簽名', participantPlan)
+
   if (!isLoggedIn.value) {
     alert('請先登入')
     router.push({name: 'Login', query: {redirect: router.currentRoute.value.fullPath}})
@@ -1033,19 +1093,32 @@ async function handleClick(participantPlan, plan) {
   selectedData.value = participantPlan
   selectedPlanData.value = plan
   // 檢查是否有合約資料
-  const formData = {
-    userId: currentUser.value,
-    participantPlanId: participantPlan.id,
-  }
-  const response = await planApi.getAdminCoreContractByPlanUser(formData)
-  if (response.code === 0) {
-    contractForm.id = response.data.id
-    contractForm.displayName = response.data.displayName
-    contractForm.coreContractByAdminUrl = response.data.adminCoreContractUrl
+  if (participantPlan.status === 5) {
+    const formData = {
+      userId: currentUser.value,
+      participantPlanId: participantPlan.id,
+    }
+    const response = await planApi.getAdminCoreContractByPlanUser(formData)
+    if (response.code === 0) {
+      contractForm.id = response.data.id
+      contractForm.displayName = response.data.displayName
+      contractForm.coreContractByAdminUrl = response.data.adminCoreContractUrl
+    }
+
+    await nextTick();
+    showSignCoreContractDialog.value = true
   }
 
-  await nextTick();
-  showSignCoreContractDialog.value = true
+  if (participantPlan.status === 11) {
+    paymentForm.participantPlanId = participantPlan.id
+    paymentForm.userId = currentUser.value
+    paymentForm.amount = participantPlan.amount * 5 / 100
+    paymentForm.accountLast5 = ''
+    paymentForm.paymentProof = null
+
+    showPaymentDialog.value = true;
+    return
+  }
 }
 
 async function handleSignatureSubmitted(result) {
@@ -1070,7 +1143,75 @@ async function handleSignatureSubmitted(result) {
   } else {
     alert(response.message || "合約簽名失敗，請稍後再試");
   }
+}
 
+const showPaymentDialog = ref(false);
+function handleUploadSuccess(fileType, result) {
+  const fileId = result.data?.id;
+  const fileName = result.data?.displayName || result.data?.name;
+  console.log(result)
+  if (fileId) {
+     if (fileType === 'userPaymentProofFile') {
+      paymentForm.paymentProof = fileId;
+      paymentForm.paymentProofName = fileName;
+    }
+  }
+}
+
+function formatAmount(amount) {
+  if (amount === null || amount === undefined || isNaN(amount)) return "—";
+  return Number(amount).toLocaleString("zh-Hant-TW");
+}
+
+function validatePaymentForm() {
+  let isValid = true;
+
+  if (!paymentForm.paymentProof) {
+    paymentErrors.paymentProof = '請上傳付款憑證';
+    isValid = false;
+  } else {
+    paymentErrors.paymentProof = '';
+  }
+
+  if (!paymentForm.accountLast5 || !/^\d{5}$/.test(paymentForm.accountLast5)) {
+    paymentErrors.accountLast5 = '請輸入正確的帳戶後五碼';
+    isValid = false;
+  } else {
+    paymentErrors.accountLast5 = '';
+  }
+
+  return isValid;
+}
+
+async function handlePaymentSubmit() {
+  if (!validatePaymentForm()) {
+    return;
+  }
+
+  // 提交支付資料
+  const formData = {
+    participantPlanId: selectedData.value.id,
+    userId: currentUser.value,
+    accountLast5: paymentForm.accountLast5,
+    amount: paymentForm.amount,
+    paymentProof: paymentForm.paymentProof,
+  };
+
+  const response = await userCheckApi.createCoreServiceChargeInfoByUser(formData);
+  if (response.code === 0) {
+    alert("支付資料上傳成功");
+    showPaymentDialog.value = false;
+    // 重置表單
+    paymentForm.accountLast5 = "";
+    paymentForm.paymentProof = null;
+    paymentForm.paymentProofName = "";
+    // 更新資料
+    await getAllParticipantPlanByUser();
+    await getAllParticipantPlanDetailByUser();
+    await getAllParticipantPlanRecordByUser();
+  } else {
+    alert(response.message || "支付資料上傳失敗，請稍後再試");
+  }
 }
 </script>
 

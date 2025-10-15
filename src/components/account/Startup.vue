@@ -62,6 +62,14 @@
           >
             查看合約並簽名
           </button>
+          <button
+              v-if="p.status === 13"
+              type="button"
+              class="btn-upload"
+              @click="handleButtonClick(p)"
+          >
+            上傳合約並支付服務費
+          </button>
         </button>
       </article>
     </div>
@@ -207,7 +215,7 @@
       confirmText="確認上傳"
       cancelText="取消"
       :showCancel="true"
-      @submit="handlePaymentSubmit"
+      @submit="handleContractPaymentSubmit"
   >
     <div class="payment-form">
       <div class="form-group">
@@ -229,10 +237,10 @@
           label="上傳合約*"
           accept=".pdf,.doc,.docx"
           :max-size="10"
-          name="userContractFile"
+          name="planFinalContract"
           v-model="paymentForm.contractFileName"
           :error="paymentErrors.contractFile"
-          @upload-success="(result) => handleUploadSuccess('userContractFile', result)"
+          @upload-success="(result) => handleUploadSuccess('planFinalContract', result)"
           required
        :account="currentUser.value"  :id="currentUser.value"/>
 
@@ -1031,9 +1039,8 @@ async function handleButtonClick(plan) {
     await nextTick();
     showSignContractDialog.value = true;
   }
-  if (plan.status === 8) {
+  if (plan.status === 13) {
     showPaymentDialog.value = true;
-    return
   }
 
 }
@@ -1107,12 +1114,11 @@ async function handleReleaseChargeSubmit() {
     } else {
       alert(response.message || '上傳失敗');
     }
-
-
 }
 
 // 提交表單
-async function handlePaymentSubmit() {
+async function handleContractPaymentSubmit() {
+  console.log(paymentForm)
   if (!validatePaymentForm()) {
     return;
   }
@@ -1127,7 +1133,7 @@ async function handlePaymentSubmit() {
       paymentProof: paymentForm.paymentProof
     }
 
-    // console.log(formData)
+    console.log(formData)
     // 調用你的 API
     const response = await userCheckApi.createContractPaymentInfoByUser(formData);
     // console.log(response)
@@ -1197,7 +1203,7 @@ function handleUploadSuccess(fileType, result) {
   const fileName = result.data?.displayName || result.data?.name;
   console.log(result)
   if (fileId) {
-    if (fileType === 'userContractFile') {
+    if (fileType === 'planFinalContract') {
       paymentForm.contractFile = fileId;
       paymentForm.contractFileName = fileName;
     } else if (fileType === 'userPaymentProofFile') {

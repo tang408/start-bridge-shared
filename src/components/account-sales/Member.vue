@@ -168,17 +168,20 @@
             <div class="detail-row">
               <span class="detail-label">狀態：</span>
               <div class="status-action-group">
-          <span :class="detail.status">
-            {{ getParticipantStatus(detail.status) }}
-          </span>
+                <span :class="detail.status">
+                  {{ getParticipantStatus(detail.status) }}
+                </span>
                 <!-- 根據狀態顯示審核按鈕 -->
-                <div v-if="detail.status === 1 || detail.status === 6" class="review-btn-group">
+                <div v-if="detail.status === 1 || detail.status === 6 || detail.status === 13" class="review-btn-group">
                   <button class="btn-pass" @click="handleCoreApproveClick(detail, true)">通過</button>
                   <button class="btn-fail" @click="handleCoreApproveClick(detail, false)">不通過</button>
                 </div>
-                <div v-if="detail.status===6" class="notify-btn-group mt-2">
+                <div v-if="detail.status=== 6" class="notify-btn-group mt-2">
                   <button class="btn-notify" @click="getUserSignCoreContractBySales(detail)">查看合約</button>
-                  </div>
+                </div>
+                <div v-if="detail.status=== 10" class="notify-btn-group mt-2">
+                  <button class="btn-notify" @click="handleCoreApproveClick(detail, true)">通知完成</button>
+                </div>
               </div>
             </div>
             <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2" />
@@ -210,6 +213,30 @@
           v-model="contractForm.contractFileName"
           :error="contractErrors.contractFile"
           @upload-success="(result) => handleUploadSuccess('salesContractFile', result)"
+          required
+          :account="currentSales.value"  :id="currentSales.value"/>
+    </div>
+  </SharedModal>
+
+  <!-- 合約上傳 Dialog -->
+  <SharedModal
+      v-model="showCorePlanFinalContractDialog"
+      title="上傳最後合約資料"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleCorePlanFinalContractSubmit"
+  >
+    <div class="payment-form">
+      <SharedUpload
+          label="上傳合約*"
+          accept=".pdf,.doc,.docx"
+          :max-size="10"
+          name="corePlanFinalContract"
+          v-model="contractForm.contractFileName"
+          :error="contractErrors.contractFile"
+          @upload-success="(result) => handleUploadSuccess('corePlanFinalContract', result)"
           required
           :account="currentSales.value"  :id="currentSales.value"/>
     </div>
@@ -760,7 +787,6 @@ const reviewStepsFounder = [1, 6,  8, 14, 16, 18, 20];
 const showRemarkDialog = ref(false);
 const remark = ref('');
 const currentProcessingRow = ref(null);
-
 async function handleApproveClick(row, approved) {
   // 保存當前處理的 row
   currentProcessingRow.value = row;
@@ -794,45 +820,108 @@ async function getUserSignCoreContractBySales(detail) {
       alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
     }
 }
+
+// 狀態管理
+const currentProcessingDetail = ref(null); // 當前處理的明細
+
+// 1. 審核按鈕點擊處理
 async function handleCoreApproveClick(detail, approved) {
-  console.log(detail)
+  console.log('審核操作:', detail, approved);
+
+  // 如果是步驟 13 且通過，需要先上傳合約
+  if (detail.status === 13 && approved) {
+    // 檢查是否已有合約 ID
+    if (!contractForm.contractFileId) {
+      // 保存當前處理的明細
+      currentProcessingDetail.value = detail;
+      // 打開合約上傳對話框
+      showCorePlanFinalContractDialog.value = true;
+      return; // 等待合約上傳完成
+    }
+  }
+
+  // 如果不是步驟 13，或者已經有合約 ID，直接進行審核
+  await submitCoreApproval(detail, approved);
+}
+
+// 2. 提交審核（統一的審核邏輯）
+async function submitCoreApproval(detail, approved) {
   const formData = {
     salesId: currentSales.value,
     userId: detail.userId,
     participantPlanId: detail.participantPlanId,
     approved: approved,
     remark: ''
-  }
+  };
 
   let response;
-  switch (detail.status) {
-    case 1: // 待審核
-      response = await salesCheckApi.checkCoreMoneyBySales(formData)
-      if (response.code === 0) {
-        alert('已處理共創者審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-    case 6: // 待簽署合約
-      response = await salesCheckApi.checkCoreContractBySales(formData)
-      if (response.code === 0) {
-        alert('已處理共創者合約審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
 
-    default:
-      alert('此步驟無法操作');
-      showModal.value = false;
-      return;
+  try {
+    switch (detail.status) {
+      case 1: // 待審核
+        response = await salesCheckApi.checkCoreMoneyBySales(formData);
+        if (response.code === 0) {
+          alert('已處理共創者審核');
+          await getAllUserBySales();
+          showModal.value = false;
+        } else {
+          alert('操作失敗: ' + response.message);
+        }
+        break;
+
+      case 6: // 待簽署合約
+        response = await salesCheckApi.checkCoreContractBySales(formData);
+        if (response.code === 0) {
+          alert('已處理共創者合約審核');
+          await getAllUserBySales();
+          showModal.value = false;
+        } else {
+          alert('操作失敗: ' + response.message);
+        }
+        break;
+
+      case 10: // 通知用戶完成
+        response = await salesCheckApi.contactUserBySales(formData);
+        if (response.code === 0) {
+          alert('已通知共創者完成');
+          await getAllUserBySales();
+          showModal.value = false;
+        } else {
+          alert('操作失敗: ' + response.message);
+        }
+        break;
+
+      case 13: // 待上傳最終合約
+        if (!contractForm.contractFileId) {
+          alert('請先上傳最終合約');
+          return;
+        }
+
+        formData.finalContractId = contractForm.contractFileId;
+        response = await salesCheckApi.uploadCorePlanFinalContractBySales(formData);
+
+        if (response.code === 0) {
+          alert('已上傳共創者最終合約');
+          await getAllUserBySales();
+          showModal.value = false;
+
+          // 清空合約表單
+          contractForm.contractFileId = null;
+          contractForm.contractFileName = null;
+        } else {
+          alert('操作失敗: ' + response.message);
+        }
+        break;
+
+      default:
+        alert('此步驟無法操作');
+        showModal.value = false;
+        return;
+    }
+  } catch (error) {
+    console.error('審核失敗:', error);
+    alert('操作失敗，請稍後再試');
   }
-
 }
 
 async function handleRejectSubmit() {
@@ -867,6 +956,29 @@ async function handleContractSubmit() {
 
   // 繼續進行審核
   await handleApprove(currentProcessingRow.value, true);
+  currentProcessingRow.value = null; // 清空
+}
+
+const showCorePlanFinalContractDialog = ref(false);
+
+async function handleCorePlanFinalContractSubmit(){
+  if (!contractForm.contractFileName) {
+    contractErrors.contractFile = '請上傳合約文件';
+    return;
+  }
+
+  contractErrors.contractFile = '';
+
+  // 在這裡處理合約提交邏輯
+  alert('合約上傳成功');
+
+  showCorePlanFinalContractDialog.value = false;
+
+  // 清空合約表單
+  contractForm.contractFileName = '';
+
+  // 繼續進行審核
+  await submitCoreApproval(currentProcessingDetail.value, true);
   currentProcessingRow.value = null; // 清空
 }
 async function handleApprove(row, approved) {
@@ -974,6 +1086,10 @@ function handleUploadSuccess(field, result) {
   console.log('Upload success result:', result); // 用來檢查返回的結果結構
   if (field === 'salesContractFile') {
     // 嘗試不同的可能屬性名稱
+    contractForm.contractFileId = result.data?.id
+    contractForm.contractFileName = result.data?.displayName
+    contractErrors.contractFile = '';
+  } else if (field === 'corePlanFinalContract') {
     contractForm.contractFileId = result.data?.id
     contractForm.contractFileName = result.data?.displayName
     contractErrors.contractFile = '';

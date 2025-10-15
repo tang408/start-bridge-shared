@@ -36,4 +36,12 @@ export const salesCheckApi = {
     async checkCoreContractBySales(params = {}) {
         return api.post("/f/private/sales-check/check-core-contract-by-sales", params);
     },
+
+    async contactUserBySales(params = {}) {
+        return api.post("/f/private/sales-check/contact-user-by-sales", params);
+    },
+
+    async uploadCorePlanFinalContractBySales(params = {}) {
+        return api.post("/f/private/sales-check/upload-core-plan-final-contract-by-sales", params);
+    }
 }

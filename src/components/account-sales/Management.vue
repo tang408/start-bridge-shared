@@ -208,7 +208,6 @@ async function viewProject(row) {
       alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
       return;
     }
-
   }
   selectedProject.value = row;
   const formData = {
