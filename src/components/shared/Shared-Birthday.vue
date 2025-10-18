@@ -1,26 +1,27 @@
 <template>
   <div class="form-group">
     <label :for="id">{{ label }}</label>
-    <input
-      ref="inputEl"
-      :id="id"
-      type="date"
-      :value="modelValue"
-      :min="min"
-      :max="max"
-      :required="required"
-      :class="{ 'is-invalid': error }"
-      @focus="openPicker"
-      @click="openPicker"
-      @input="onInput"
-      @blur="emitValid()"
+    <VueDatePicker
+        v-model="date"
+        :id="id"
+        class="custom-datepicker"
+        :min-date="min"
+        :max-date="max"
+        :required="required"
+        :enable-time-picker="false"
+        format="yyyy-MM-dd"
+        locale="zh-TW"
+        :class="{ 'is-invalid': error }"
+        @update:model-value="onDateChange"
     />
     <p class="error-msg" v-if="error">{{ error }}</p>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch } from 'vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 const props = defineProps({
   id: { type: String, default: "birthday" },
@@ -30,48 +31,36 @@ const props = defineProps({
   required: { type: Boolean, default: false },
   min: { type: String, default: "" },
   max: { type: String, default: "" },
-  readonly: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["update:modelValue", "valid-change"]);
 
-const inputEl = ref(null);
+const date = ref(props.modelValue ? new Date(props.modelValue) : null);
 
-function openPicker() {
-  if (props.readonly) return;
-  const el = inputEl.value;
-  if (!el) return;
-  if (typeof el.showPicker === "function") {
-    el.showPicker();
+watch(() => props.modelValue, (newVal) => {
+  date.value = newVal ? new Date(newVal) : null;
+});
+
+function onDateChange(value) {
+  if (value) {
+    const formatted = value.toISOString().split('T')[0];
+    emit("update:modelValue", formatted);
   } else {
-    el.focus();
+    emit("update:modelValue", "");
   }
-}
-
-function onInput(e) {
-  const val = e.target.value;
-  emit("update:modelValue", val);
   emitValid();
 }
 
 function emitValid() {
-  const ok =
-    (!props.required && !props.modelValue) ||
-    (props.modelValue &&
-      isValidDate(props.modelValue) &&
-      inRange(props.modelValue));
+  const ok = (!props.required && !props.modelValue) || !!props.modelValue;
   emit("valid-change", ok);
 }
-
-function isValidDate(v) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
-  const d = new Date(v);
-  return !isNaN(d.getTime());
-}
-
-function inRange(v) {
-  if (props.min && v < props.min) return false;
-  if (props.max && v > props.max) return false;
-  return true;
-}
 </script>
+
+<style scoped>
+/* 調整日曆圖標的位置 */
+.custom-datepicker :deep(.dp__input_icon) {
+  display: none;
+}
+
+</style>

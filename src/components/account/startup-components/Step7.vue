@@ -18,6 +18,7 @@
       </li>
     </ul>
 
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step6')">上一步</button>
     <button type="button" class="apply-btn write w-100 mt-4" @click="goNext">
       下一頁
     </button>

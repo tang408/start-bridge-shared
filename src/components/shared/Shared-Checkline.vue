@@ -6,27 +6,29 @@
 
     <div class="checks" :class="{ inline }">
       <div
-        class="option"
-        v-for="opt in options"
-        :key="opt.key"
-        :for="`${uid}-${opt.key}`"
+          class="option"
+          v-for="opt in options"
+          :key="opt.key"
+          :for="`${uid}-${opt.key}`"
       >
         <input
-          type="checkbox"
-          :id="`${uid}-${opt.key}`"
-          :checked="model[opt.key]?.checked || false"
-          @change="onToggle(opt.key, $event.target.checked)"
+            type="checkbox"
+            :id="`${uid}-${opt.key}`"
+            :checked="model[opt.key]?.checked || false"
+            :disabled="readonly"
+            @change="onToggle(opt.key, $event.target.checked)"
         />
         <label class="option-label" :for="`${uid}-${opt.key}`">
           {{ opt.text }}
         </label>
         <input
-          v-if="opt.withInput !== false"
-          class="textline ml"
-          :type="opt.inputType || 'text'"
-          :value="model[opt.key]?.value || ''"
-          :disabled="!model[opt.key]?.checked"
-          @input="onInput(opt.key, $event.target.value)"
+            v-if="opt.withInput !== false"
+            class="textline"
+            :type="opt.inputType || 'text'"
+            :value="model[opt.key]?.value || ''"
+            :disabled="!model[opt.key]?.checked || readonly"
+            :readonly="readonly"
+            @input="onInput(opt.key, $event.target.value)"
         />
       </div>
     </div>
@@ -36,7 +38,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import {computed, watch} from "vue";
 
 defineOptions({ name: "SharedCheckline" });
 
@@ -49,6 +51,7 @@ const props = defineProps({
   error: { type: String, default: "" },
   inline: { type: Boolean, default: false },
   single: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
 });
 
 const uid = computed(() => `cli-${Math.random().toString(36).slice(2, 9)}`);
@@ -58,6 +61,9 @@ function ensureKey(key) {
 }
 
 function onToggle(key, checked) {
+  // 預覽模式不允許切換
+  if (props.readonly) return;
+
   ensureKey(key);
 
   if (props.single) {
@@ -79,9 +85,23 @@ function onToggle(key, checked) {
 }
 
 function onInput(key, val) {
+  // 預覽模式不允許輸入
+  if (props.readonly) return;
+
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], value: val } };
 }
+
+// 監聽 modelValue 變化
+watch(
+    () => props.modelValue,
+    (newVal) => {
+      if (newVal) {
+        Object.assign(model.value, newVal);
+      }
+    },
+    { deep: true }
+);
 </script>
 
 <style scoped lang="scss">
@@ -105,14 +125,14 @@ function onInput(key, val) {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 100%; // 確保容器寬度
+  width: 100%;
 }
 
 .option {
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%; // 確保每個選項佔滿寬度
+  width: 100%;
 }
 
 input[type="checkbox"] {
@@ -121,22 +141,26 @@ input[type="checkbox"] {
   height: 18px;
   margin: 0;
   cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 }
 
 .option-label {
-  flex-shrink: 0; // 不壓縮 label
-  white-space: nowrap; // 不換行
+  flex-shrink: 0;
+  white-space: nowrap;
   margin: 0;
   cursor: pointer;
   font-size: 15px;
 }
 
-// 關鍵:讓 textline 延伸到最右邊
 .textline {
-  flex: 1 !important;
-  min-width: 0 !important;
-  width: auto !important; // 改成 auto
-  max-width: none !important; // 移除最大寬度限制
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  max-width: none;
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -149,7 +173,13 @@ input[type="checkbox"] {
     color: #999;
   }
 
-  &:not(:disabled):focus {
+  &:read-only {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+
+  &:not(:disabled):not(:read-only):focus {
     outline: none;
     border-color: #4CAF50;
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
@@ -160,7 +190,6 @@ input[type="number"].textline {
   text-align: right;
 }
 
-// inline 模式
 .checks.inline {
   flex-direction: row;
   flex-wrap: wrap;

@@ -69,25 +69,7 @@ async function getUserNameAndAvatar() {
   user.value = response.data;
   console.log(response.data)
 
-  // 獲取用戶資料後，檢查當前路由
-  checkContractAccess();
 }
-
-// 檢查是否可以訪問 contracts 頁面
-function checkContractAccess() {
-  if (route.name === 'Contract' && user.value.type === 0) {
-    alert('您沒有權限訪問此頁面');
-    router.push({ name: 'profile' }); // 重定向到其他頁面
-  }
-}
-
-// 監聽路由變化
-onBeforeRouteUpdate((to, from) => {
-  if (to.name === 'contracts' && user.value.type === 0) {
-    alert('您沒有權限訪問此頁面');
-    return { name: 'profile' }; // 阻止導航並重定向
-  }
-})
 
 onMounted(() => {
   if (isLoggedIn.value) {
@@ -99,12 +81,6 @@ onMounted(() => {
 });
 
 function onSelect(item) {
-  // 在導航前檢查權限
-  if (item.key === 'contracts' && user.value.type === 0) {
-    alert('您沒有權限訪問此頁面');
-    return;
-  }
-
   if (route.name !== item.key) {
     router.push({ name: item.key });
   }

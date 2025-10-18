@@ -93,6 +93,7 @@ import SharedTable from "@/components/shared/Shared-Table.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {standardContractApi} from "@/api/modules/standardContract.js";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
+import {userApi} from "@/api/modules/user.js";
 
 const {isLoggedIn, currentUser} = useAuth();
 
@@ -129,6 +130,12 @@ function changePage(p) {
 }
 
 function openModal(row) {
+  if (founderData.value.status !== 1 && coreFounderData.value.status !== 1) {
+    alert('請先完成創業者或共創者認證，才能預覽合約內容');
+    return;
+  }
+
+
   selectedContract.value = row;
   showModal.value = true;
   // 防止背景滾動
@@ -142,8 +149,29 @@ function closeModal() {
   document.body.style.overflow = 'auto';
 }
 
+const userData = ref({})
+const founderData = ref({})
+const coreFounderData = ref({})
+const getUserInfo = async () => {
+  try {
+    const formData = {
+      userId: currentUser.value,
+    }
+    const response = await userApi.getUserInfo(formData);
+    userData.value = response.data;
+    founderData.value = userData.value.founderInfoData || {};
+    coreFounderData.value = userData.value.coreFounderData || {};
+  } catch (error) {
+    console.error('獲取用戶資料失敗:', error);
+  }
+}
+
 // 強制下載檔案
 async function downloadFile(contract) {
+  if (founderData.value.status !== 1 || coreFounderData.value.status !== 1  ) {
+    alert('請先完成創業者或共創者認證，才能下載合約內容');
+    return;
+  }
   try {
     // 方法1: 使用 fetch 下載並創建 blob
     const response = await fetch(contract.standardContractUrl);
@@ -197,6 +225,7 @@ async function getStandardContracts() {
 // 組件掛載時獲取數據
 onMounted(async () => {
   await Promise.all([
+    getUserInfo(),
     getStandardContracts()
   ]);
 });

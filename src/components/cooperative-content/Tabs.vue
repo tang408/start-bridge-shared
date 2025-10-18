@@ -69,7 +69,7 @@
             <!-- 使用資料庫的 product_images 欄位 -->
             <div class="row g-3" v-if="productImages.length">
               <div class="col-md-4 col-12" v-for="(img, index) in productImages" :key="index">
-                <img :src="img" class="w-100" style="border-radius: 30px;" />
+                <img :src="img" class="w-100" style="border-radius: 30px;"/>
               </div>
             </div>
             <p v-else>暫無營運項目圖片</p>
@@ -120,9 +120,13 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import {onMounted, ref, computed} from "vue";
 import Tab from "bootstrap/js/dist/tab";
-import { useRouter } from "vue-router";
+import {useRouter} from "vue-router";
+import {useAuth} from "@/composables/useAuth.js";
+import {userApi} from "@/api/modules/user.js";
+
+const {isLoggedIn, currentUser} = useAuth();
 const router = useRouter();
 
 const props = defineProps({
@@ -157,9 +161,9 @@ const joinInfoData = computed(() => {
   const extraFields = data.extraFields || {};
 
   return [
-    { label: "加盟金", value: `${data.franchiseFee}萬元` },
-    { label: "保證金", value: `${data.deposit}萬元` },
-    { label: "加盟主門檻要求", value: `${data.threshold}萬元` },
+    {label: "加盟金", value: `${data.franchiseFee}萬元`},
+    {label: "保證金", value: `${data.deposit}萬元`},
+    {label: "加盟主門檻要求", value: `${data.threshold}萬元`},
     {
       label: "開幕準備項目表列",
       list: extraFields.startup_projects?.map(item => `${item.displayName}：${item.value}`) || [],
@@ -168,8 +172,8 @@ const joinInfoData = computed(() => {
       label: "加盟主門檻要求",
       list: extraFields.franchise_requirements?.map(item => `${item.displayName}：${item.value}`) || [],
     },
-    { label: "目前開放加盟區域", value: data.location },
-    { label: "店面條件", value: `${data.storeCondition}坪以上` },
+    {label: "目前開放加盟區域", value: data.location},
+    {label: "店面條件", value: `${data.storeCondition}坪以上`},
     {
       label: "裝潢期程",
       list: extraFields.manufacturing_schedule?.map(item => `${item.displayName}：${item.value}天`) || [],
@@ -196,7 +200,7 @@ const supportData = computed(() => {
       label: "加盟主培訓資訊",
       list: extraFields.franchise_training?.map(item => `${item.displayName}：${item.value}`) || [],
     },
-    { label: "加盟主門檻要求", value: `${props.projectData.threshold}萬元` },
+    {label: "加盟主門檻要求", value: `${props.projectData.threshold}萬元`},
     {
       label: "總部支援綱要",
       list: extraFields.support_services?.map(item => `${item.displayName}：${item.value}`) || [],
@@ -205,9 +209,9 @@ const supportData = computed(() => {
 });
 
 const tabs = [
-  { key: "brand", label: "品牌資訊" },
-  { key: "joinInfo", label: "加盟資訊" },
-  { key: "support", label: "營運與支援" },
+  {key: "brand", label: "品牌資訊"},
+  {key: "joinInfo", label: "加盟資訊"},
+  {key: "support", label: "營運與支援"},
 ];
 
 const activeTab = ref(tabs[0].key);
@@ -230,8 +234,43 @@ onMounted(() => {
   );
 });
 
-function goToStartup() {
-  router.push({
+const userData = ref({})
+
+async function goToStartup() {
+  if (!isLoggedIn.value) {
+    alert("請先登入會員");
+    await router.push({path: "/login"});
+    return;
+  } else {
+    const formData = {
+      userId: currentUser.value,
+    }
+    const response = await userApi.getUserInfo(formData);
+    if (response.code === 0) {
+      userData.value = response.data;
+
+      // 檢查 founderInfoData 是否存在且完整
+      if (userData.value.founderInfoData) {
+        const founderInfo = userData.value.founderInfoData;
+        const hasEmptyOrNull = Object.values(founderInfo).some(value => {
+          return value === null || value === undefined || value === '' || value === 0;
+        });
+        if (founderInfo.status === 0) {
+          alert("資料審核中，待審核通過後再進行申請。");
+          return;
+        }
+        if (hasEmptyOrNull) {
+          alert("請填寫完整資料");
+          router.push({path: "/account/profile"});
+          return;
+        }
+      } else {
+        alert("請填寫完整資料");
+        return;
+      }
+    }
+  }
+  await router.push({
     path: "/account/startup",
     query: {
       source: "business",
@@ -270,6 +309,7 @@ function goToStartup() {
 
 .company {
   margin-bottom: 3rem;
+
   .tab-pane {
     padding: 3rem;
     background: rgba(255, 255, 255, 0.9);
@@ -318,6 +358,7 @@ span {
     grid-template-columns: 160px 1fr;
     gap: 16px;
     padding: 14px 0;
+
     &:last-child {
       border-bottom: 0;
     }
@@ -369,6 +410,7 @@ span {
     .ji-row {
       grid-template-columns: 1fr;
       gap: 6px;
+
       .ji-label {
         color: #555;
       }

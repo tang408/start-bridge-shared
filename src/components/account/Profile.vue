@@ -979,6 +979,7 @@ watch(userProfile, (newValue) => {
     formFounder.companyNameEn = newValue.companyInfoData?.nameEn || "";
     formFounder.taxId = newValue.companyInfoData?.businessId || "";
     formFounder.companyLogo = newValue.companyInfoData?.logoName || "";
+    formFounder.companyLogoId = newValue.companyInfoData?.logoId || null;
     formFounder.slogan = newValue.companyInfoData?.slogan || "";
     formFounder.companyBrief = newValue.companyInfoData?.info || "";
     formFounder.bankName = newValue.companyInfoData?.bankAccountName || "";
@@ -1037,6 +1038,14 @@ const getActiveErrors = () =>
   activeTab.value === "founder" ? errFounder : errCo;
 
 function handleRegister() {
+  const form = getActiveForm();
+  const errors = getActiveErrors();
+
+  clearFieldErrors(Object.keys(errors));
+
+  if (Object.values(errors).some(Boolean)) return;
+
+  // 提交表單邏輯
   Object.keys(errors).forEach((k) => (errors[k] = ""));
 
   if (!form.companyName) errors.companyName = "此欄位為必填";
@@ -1063,6 +1072,7 @@ function isValidUrl(v) {
 }
 
 function clearFieldErrors(keys) {
+  const errors = getActiveErrors();
   keys.forEach((k) => (errors[k] = ""));
 }
 
@@ -1124,7 +1134,7 @@ function submitForReview() {
 
 
 
-function submitForFounderAndCompany() {
+async function submitForFounderAndCompany() {
   const formData = {
     userId: currentUser.value,
     name: formFounder.fullname,
@@ -1155,17 +1165,14 @@ function submitForFounderAndCompany() {
     status: 0
   }
   console.log(formData)
-  const response = userApi.updateFounderAndCompany(formData);
+  const response = await userApi.updateFounderAndCompany(formData);
   if (response.code === 0) {
     alert('送出審核成功');
     isEditing.value = false;
-    editableFields.value.clear();
-  } else {
-    alert(response.message);
   }
 }
 
-function submitForCoreFounder() {
+async function submitForCoreFounder() {
   const formData = {
     userId: currentUser.value,
     name: formCo.fullname,
@@ -1189,7 +1196,7 @@ function submitForCoreFounder() {
     secondaryCertification: formCo.idProofSecondId,
     status: 0,
   }
-  const response = userApi.updateCoreFounder(formData);
+  const response = await userApi.updateCoreFounder(formData);
   if (response.code === 0) {
     alert('送出審核成功');
     isEditing.value = false;

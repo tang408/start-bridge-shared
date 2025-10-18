@@ -1,8 +1,15 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-2 d-grid">
+      <button
+          v-if="readonly"
+          type="button"
+          class="btn-back mb-3"
+          @click="backToList"
+      >
+        ← 返回列表
+      </button>
       <h5 class="form-title">一、加盟表單</h5>
-
       <!-- 是否有創業經驗 -->
       <SharedRadio
         id="hasStartupExp"
@@ -14,6 +21,7 @@
           { text: '否', value: false },
         ]"
         :error="props.errors.hasStartupExp"
+        :disabled="readonly"
       />
 
       <SharedTextarea
@@ -22,6 +30,7 @@
         v-model="local.expDesc"
         :rows="4"
         placeholder="placeholder"
+        :readonly="readonly"
       />
 
       <!-- 是否有財務糾紛 -->
@@ -35,6 +44,7 @@
           { text: '否', value: false },
         ]"
         :error="props.errors.hasDispute"
+        :disabled="readonly"
       />
 
       <SharedTextarea
@@ -43,6 +53,7 @@
         v-model="local.disputeDesc"
         :rows="4"
         placeholder="placeholder"
+        :readonly="readonly"
       />
 
       <SharedTextarea
@@ -52,6 +63,7 @@
         v-model="local.selfAdv"
         :rows="4"
         placeholder="placeholder"
+        :readonly="readonly"
       />
 
       <SharedTextarea
@@ -60,6 +72,7 @@
         v-model="local.resources"
         :rows="4"
         placeholder="placeholder"
+        :readonly="readonly"
       />
 
       <SharedTextarea
@@ -69,6 +82,7 @@
         v-model="local.otherResources"
         :rows="4"
         placeholder="placeholder"
+        :readonly="readonly"
       />
 
       <!-- 願意提供佐證文件 -->
@@ -81,9 +95,12 @@
           { text: '否', value: false },
         ]"
           :error="props.errors.willingDocs"
+          :disabled="readonly"
+
       />
     </div>
 
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step2')">上一步</button>
     <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一步</button>
   </form>
 </template>
@@ -96,6 +113,7 @@ import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue", "next"]);
 
@@ -165,6 +183,22 @@ function submitStep() {
 </script>
 
 <style scoped>
+.btn-back {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #999;
+  }
+}
+
 .form-title {
   font-weight: 600;
   margin-bottom: 10px;

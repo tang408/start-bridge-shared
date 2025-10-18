@@ -1,6 +1,16 @@
 <template>
   <div class="form-wrapper">
     <form class="form-card" @submit.prevent="submitStep">
+      <!-- 預覽模式顯示返回按鈕 -->
+      <button
+          v-if="readonly"
+          type="button"
+          class="btn-back mb-3"
+          @click="backToList"
+      >
+        ← 返回列表
+      </button>
+
       <h5 class="form-title">創業計劃書</h5>
 
       <div class="content">
@@ -24,6 +34,7 @@
               { value: 'yearly', text: '每年結算並分潤一次(每十二個月)' },
             ]"
               :error="errors.sharePeriod"
+              :disabled="readonly"
           />
 
           <SharedRadio
@@ -40,6 +51,7 @@
               { value: 'other', text: '其他', withInput: true },
             ]"
               :error="errors.shareCalc"
+              :disabled="readonly"
           />
 
           <SharedRadio
@@ -53,34 +65,56 @@
               { value: 'other', text: '其他', withInput: true },
             ]"
               :error="errors.sharePay"
+              :disabled="readonly"
           />
 
           <p class="note">※ 以上皆須在「公司章程」中載明</p>
         </div>
       </div>
 
-      <button type="button" class="btn-submit" @click="submitStep">
-        下一頁
-      </button>
+      <!-- 按鈕區塊 -->
+      <template v-if="!readonly">
+        <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step5')">上一步</button>
+        <button type="button" class="btn-submit" @click="submitStep">
+          下一頁
+        </button>
+      </template>
     </form>
   </div>
 </template>
 
 <script setup>
 import { reactive, watch } from "vue";
+import { useRouter } from "vue-router";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 
 const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
+  readonly: { type: Boolean, default: false }, // 新增 readonly prop
 });
+
 const emit = defineEmits(["update:modelValue", "next"]);
+const router = useRouter();
 
 const local = reactive({ ...props.modelValue });
 
 watch(local, (val) => emit("update:modelValue", val), { deep: true });
 
+// 返回列表
+function backToList() {
+  router.push({
+    path: '/account/startup',
+    query: { source: 'account' }
+  });
+}
+
 function submitStep() {
+  // 預覽模式不允許提交
+  if (props.readonly) {
+    return;
+  }
+
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
   if (!local.sharePeriod) {
@@ -104,9 +138,34 @@ function submitStep() {
     emit("next", "step7");
   }
 }
+
+// 監聽 modelValue 變化
+watch(
+    () => props.modelValue,
+    (newVal) => {
+      Object.assign(local, newVal);
+    },
+    { deep: true }
+);
 </script>
 
 <style scoped lang="scss">
+.btn-back {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+  width: auto;
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #999;
+  }
+}
 
 .form-card {
   width: 100%;
@@ -177,6 +236,29 @@ function submitStep() {
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(255, 106, 74, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.btn-secondary {
+  width: 100%;
+  height: 48px;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 32px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
   }
 
   &:active {

@@ -25,6 +25,7 @@
               class="textline"
               type="number"
               min="0"
+              max="24"
               :value="model[opt.key]?.from || ''"
               :disabled="!model[opt.key]?.checked"
               @input="onInput(opt.key, 'from', $event.target.value)"
@@ -34,6 +35,7 @@
               class="textline"
               type="number"
               min="0"
+              max="24"
               :value="model[opt.key]?.to || ''"
               :disabled="!model[opt.key]?.checked"
               @input="onInput(opt.key, 'to', $event.target.value)"
@@ -90,6 +92,19 @@ function onToggle(key, checked) {
 
 function onInput(key, field, val) {
   ensureKey(key);
+
+  // 如果是時間欄位，進行即時驗證
+  if (field === 'from' || field === 'to') {
+    let numVal = parseFloat(val);
+
+    // 限制在 0-24 之間
+    if (!isNaN(numVal)) {
+      if (numVal < 0) numVal = 0;
+      if (numVal > 24) numVal = 24;
+      val = numVal.toString();
+    }
+  }
+
   model.value = {
     ...model.value,
     [key]: {...model.value[key], [field]: val},

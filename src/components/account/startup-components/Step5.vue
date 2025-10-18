@@ -1,6 +1,14 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-3 d-grid">
+      <button
+          v-if="readonly"
+          type="button"
+          class="btn-back mb-3"
+          @click="backToList"
+      >
+        ← 返回列表
+      </button>
       <h5 class="form-title">三、財務規劃與資金用途</h5>
 
       <div class="mb-3">
@@ -22,12 +30,13 @@
                   v-model="row.amount"
                   placeholder="輸入金額"
                   class="p-510"
+                  :readonly="readonly"
                 />
               </td>
             </tr>
           </tbody>
         </table>
-        <p v-if="errors.prepBudget" class="error-msg">
+        <p v-if="errors.prepBudget" class="error-msg" :readonly="readonly">
           {{ errors.prepBudget }}
         </p>
       </div>
@@ -46,6 +55,7 @@
                       v-model="local.targetRevenue"
                       placeholder="輸入金額"
                       class="inline-input w-110 p-510 border-1"
+                      :readonly="readonly"
                     />
                     為標準預期所需比例之佔比：
                   </div>
@@ -73,6 +83,7 @@
                     v-model="row.percent"
                     placeholder="%"
                     class="p-510"
+                    :readonly="readonly"
                   />
                 </td>
                 <td data-label="金額">
@@ -82,6 +93,7 @@
                     v-model="row.amount"
                     placeholder="金額"
                     class="p-510"
+                    :readonly="readonly"
                   />
                 </td>
                 <td data-label="備註">
@@ -90,6 +102,7 @@
                     v-model="row.note"
                     placeholder="備註"
                     class="p-510"
+                    :readonly="readonly"
                   />
                 </td>
               </tr>
@@ -106,6 +119,7 @@
               type="checkbox"
               v-model="local.rewardEnabled"
               class="reward-checkbox"
+              :readonly="readonly"
             />
             <span class="option-label">
               若營運月營業額達
@@ -116,6 +130,7 @@
                 placeholder="金額"
                 class="inline-input w-110 p-510"
                 :disabled="!local.rewardEnabled"
+                :readonly="readonly"
               />
               元，公司即按營業額之
               <SharedInput
@@ -125,6 +140,7 @@
                 placeholder="%"
                 class="inline-input w-110 p-510"
                 :disabled="!local.rewardEnabled"
+                :readonly="readonly"
               />
               % 給予創業者獎勵營運團隊。
             </span>
@@ -144,6 +160,7 @@
           },
         ]"
         :error="errors.fundNote"
+        :disabled="readonly"
       />
 
       <div class="mb-3">
@@ -154,10 +171,11 @@
           name="reportOptions"
           :options="local.reportOptions"
           :error="errors.reportSelected"
+          :disabled="readonly"
         />
       </div>
     </div>
-
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step4')">上一步</button>
     <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一步</button>
   </form>
 </template>
@@ -170,6 +188,7 @@ import SharedRadio from "@/components/shared/Shared-Radio.vue";
 const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue", "next"]);
 
@@ -189,45 +208,6 @@ watch(
     { deep: true }
 )
 
-// costStruct: [
-//   {
-//     item: "物料成本",
-//     percent: "",
-//     amount: "",
-//     note: "",
-//     desc: "(含物料及包材)",
-//   },
-//   {
-//     item: "人事成本",
-//     percent: "",
-//     amount: "",
-//     note: "",
-//     desc: "(含薪資及勞健保)",
-//   },
-//   {
-//     item: "租金成本",
-//     percent: "",
-//     amount: "",
-//     note: "",
-//     desc: "(不含押金)",
-//   },
-//   {
-//     item: "經營管理成本",
-//     percent: "",
-//     amount: "",
-//     note: "",
-//   },
-//   { item: "其他", percent: "", amount: "", note: "" },
-//   {
-//     item: "總計",
-//     percent: "",
-//     amount: "",
-//     note: "",
-//     desc: "(淨利，不含稅)",
-//   },
-// ],
-// targetRevenue: "",
-// amount = targetRevenue * (percent / 100)
 watch(
     () => [local.costStruct, local.targetRevenue],
     () => {
@@ -288,6 +268,21 @@ function submitStep() {
 </script>
 
 <style lang="scss" scoped>
+.btn-back {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #666;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f5f5f5;
+    border-color: #999;
+  }
+}
 .inline-input {
   display: inline-block;
   width: 100px;

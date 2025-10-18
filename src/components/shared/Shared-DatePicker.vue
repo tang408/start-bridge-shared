@@ -1,98 +1,134 @@
 <template>
   <div class="form-group">
     <label :for="id">{{ label }}</label>
-    <input
-        ref="inputEl"
+    <VueDatePicker
+        v-model="date"
         :id="id"
-        type="date"
-        :value="modelValue"
-        :min="minDate"
-        :max="max"
+        class="custom-datepicker"
+        :min-date="minDate"
+        :max-date="maxDate"
         :required="required"
-        :class="{ 'is-invalid': error }"
-        @focus="openPicker"
-        @click="openPicker"
-        @input="onInput"
-        @blur="emitValid()"
+        :enable-time-picker="false"
+        :disabled="readonly"
+        :readonly="readonly"
+        format="yyyy-MM-dd"
+        locale="zh-TW"
+        :class="{ 'is-invalid': error, 'is-readonly': readonly }"
+        @update:model-value="onDateChange"
     />
     <p class="error-msg" v-if="error">{{ error }}</p>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import {ref, watch, computed} from 'vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 const props = defineProps({
-  id: { type: String, default: "birthday" },
-  label: { type: String, default: "出生年月日*" },
-  modelValue: { type: String, default: "" },
-  error: { type: String, default: "" },
-  required: { type: Boolean, default: false },
-  min: { type: String, default: "" },
-  max: { type: String, default: "" },
-  readonly: { type: Boolean, default: false },
-  allowPastDates: { type: Boolean, default: false },
+  id: {type: String, default: "birthday"},
+  label: {type: String, default: "出生年月日*"},
+  modelValue: {type: String, default: ""},
+  error: {type: String, default: ""},
+  required: {type: Boolean, default: false},
+  min: {type: String, default: ""},
+  max: {type: String, default: ""},
+  readonly: {type: Boolean, default: false},
 });
 
 const emit = defineEmits(["update:modelValue", "valid-change"]);
 
-const inputEl = ref(null);
+const date = ref(props.modelValue ? new Date(props.modelValue) : null);
 
-// 修正後的 getTodayDate() 函式，回傳 YYYY-MM-DD 格式
-function getTodayDate() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+// 轉換 min/max 字串為 Date 物件
+const minDate = computed(() => props.min ? new Date(props.min) : null);
+const maxDate = computed(() => props.max ? new Date(props.max) : null);
 
-// 修正後的計算最小日期邏輯
-const minDate = computed(() => {
-  const today = getTodayDate();
-  if (props.min) {
-    return props.min > today ? props.min : today;
-  }
-
-  return today;
+watch(() => props.modelValue, (newVal) => {
+  date.value = newVal ? new Date(newVal) : null;
 });
 
-function openPicker() {
-  if (props.readonly) return;
-  const el = inputEl.value;
-  if (!el) return;
-  if (typeof el.showPicker === "function") {
-    el.showPicker();
-  } else {
-    el.focus();
-  }
-}
+function onDateChange(value) {
+  if (props.readonly) return; // 防止 readonly 模式下改變
 
-function onInput(e) {
-  const val = e.target.value;
-  emit("update:modelValue", val);
+  if (value) {
+    const formatted = value.toISOString().split('T')[0];
+    emit("update:modelValue", formatted);
+  } else {
+    emit("update:modelValue", "");
+  }
   emitValid();
 }
 
 function emitValid() {
-  const ok =
-      (!props.required && !props.modelValue) ||
-      (props.modelValue &&
-          isValidDate(props.modelValue) &&
-          inRange(props.modelValue));
+  const ok = (!props.required && !props.modelValue) || !!props.modelValue;
   emit("valid-change", ok);
 }
-
-function isValidDate(v) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
-  const d = new Date(v);
-  return !isNaN(d.getTime());
-}
-
-// inRange 函式不需要修正，因為它使用字串比對，只要格式正確即可
-function inRange(v) {
-  if (minDate.value && v < minDate.value) return false;
-  if (props.max && v > props.max) return false;
-  return true;
-}
 </script>
+
+<style scoped lang="scss">
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 15px;
+  }
+}
+
+.custom-datepicker {
+  width: 100%;
+
+  // 隱藏日曆圖標
+  :deep(.dp__input_icon) {
+    display: none;
+  }
+
+  // readonly 樣式
+  &.is-readonly {
+    :deep(.dp__input) {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+
+  // 錯誤樣式
+  &.is-invalid {
+    :deep(.dp__input) {
+      border-color: #db3838;
+      background: #fff0f0;
+    }
+  }
+
+  // 調整輸入框樣式
+  :deep(.dp__input) {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    }
+
+    &:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+  }
+}
+
+.error-msg {
+  color: #db3838;
+  font-size: 14px;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+</style>

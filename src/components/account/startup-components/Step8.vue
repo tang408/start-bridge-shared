@@ -63,6 +63,7 @@
       <p v-if="errors.agree" class="error-msg">{{ errors.agree }}</p>
     </div>
 
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step7')">上一步</button>
     <button type="submit" class="apply-btn write w-100 mt-4">送交審閱</button>
   </form>
 </template>
@@ -88,9 +89,7 @@ function submitStep() {
     return;
   }
 
-  if (local.agree === "agree") {
-    alert("送出成功！(這裡可以改成 API 呼叫)");
-  } else {
+  if (local.agree !== "agree") {
     props.errors.agree = "不同意將無法進行媒合程序";
   }
 }

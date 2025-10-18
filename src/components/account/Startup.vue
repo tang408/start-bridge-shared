@@ -155,6 +155,20 @@
       </div>
     </div>
   </section>
+  <!-- 預覽模式 -->
+  <section v-else-if="mode === 'preview'">
+    <div class="fs-24">
+      {{ docTitle }} (預覽模式)
+    </div>
+    <component
+        :is="currentStepComponent"
+        v-model="formData[docStep]"
+        :errors="formErrors[docStep]"
+        :readonly="true"
+        @next="goNext"
+    />
+  </section>
+
   <section v-else>
     <div class="fs-24">
       {{ docTitle }}
@@ -273,9 +287,6 @@ import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import { statusLabel, statusClass } from "@/utils/status";
-const { isLoggedIn, currentUser } = useAuth();
-
-
 import Step1 from "./startup-components/Step1.vue";
 import Step2 from "./startup-components/Step2.vue";
 import Step3 from "./startup-components/Step3.vue";
@@ -293,6 +304,8 @@ import {userCheckApi} from "@/api/modules/userCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {transactionApi} from "@/api/modules/transaction.js";
 import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
+
+const { isLoggedIn, currentUser } = useAuth();
 
 async function handleSignatureSubmitted(result) {
   showSignContractDialog.value = false;
@@ -327,11 +340,483 @@ const STEPS = {
 const docStep = ref("step1");
 const currentStepComponent = computed(() => STEPS[docStep.value]);
 const expandedId = ref(null);
+const currentPlanId = ref(null);
+async function toggle(planId) {
+  console.log('點擊計畫 ID:', planId);
+  expandedId.value = expandedId.value === planId ? null : planId;
 
-function toggle(id) {
-  console.log(id)
-  expandedId.value = expandedId.value === id ? null : id;
+  // 如果是展開,則載入該計畫資料並進入預覽模式
+  if (expandedId.value === planId) {
+    currentPlanId.value = planId;
+    await loadPlanData(planId);
+
+    await nextTick()
+
+    // 切換到預覽模式並更新路由
+    mode.value = 'preview';
+    router.push({
+      path: '/account/startup',
+      query: {
+        source: 'account',
+        planId: planId,
+        step: 'step1'
+      }
+    });
+  }
 }
+async function loadPlanData(planId) {
+  try {
+    const requestData = {
+      userId: currentUser.value,
+      planId: planId,
+    };
+
+    const response = await planApi.getPlan(requestData);
+
+    if (response.code === 0) {
+      const planData = response.data;
+      console.log('載入的計畫資料:', planData);
+
+      // Step1 - 基本資料
+      Object.assign(formData.step1, {
+        brand: String(planData.brand || ''),
+        budget: String(planData.startupBudget || ''),
+        selfFund: String(planData.selfPreparedFunds || ''),
+        totalFunding: String(planData.totalAmount || ''),
+        minAmount: String(planData.minimumAmount || ''),
+        amountRange: String(planData.amountRange || ''),
+        partnerLimit: String(planData.limitPartner || ''),
+        expireDate: planData.endTime || '',
+      });
+
+      // Step3 - 創業經驗
+      Object.assign(formData.step3, {
+        hasStartupExp: planData.hasExperience ? true : false,
+        expDesc: planData.experienceDetails || '',
+        hasDispute: planData.financialConstraints ? true : false,
+        disputeDesc: planData.constraintsExplanation || '',
+        selfAdv: planData.advantageExplanation || '',
+        resources: planData.availableResources || '',
+        otherResources: planData.otherResources || '',
+        willingDocs: planData.supportDocumentation ? true : false,
+      });
+
+      // Step4 - 創業計畫
+      Object.assign(formData.step4, {
+        q1: planData.innovationDescription || '',
+        q2: parseBriefingSession(planData.briefingSession),
+        q3: planData.nextStagePlan || '',
+        q4: parseRecruitmentMethods(planData.recruitmentMethods),
+        q5: {
+          total: {
+            checked: true,
+            value: String(planData.expectedNumberPeople || '')
+          },
+          channels: parseRecruitmentPipeline(planData.recruitmentPipeline)
+        },
+        q6: parseInvestTime(planData.investTime),
+        q7: parseCustomerSource(planData.customerSource),
+        q8Location: parseStoreLocation(planData.storeLocationType).value,
+        q8LocationNote: parseStoreLocation(planData.storeLocationType).note,
+        q9Location: parseCoFounderValue(planData.coFounderAddedValue).value,
+        q9LocationNote: parseCoFounderValue(planData.coFounderAddedValue).note,
+      });
+
+      // Step5 - 財務規劃
+      Object.assign(formData.step5, {
+        prepBudget: [
+          { item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '') },
+          { item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '') },
+          { item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '') },
+          { item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '') },
+          { item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '') },
+          { item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '') },
+          { item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '') },
+          { item: "營運週轉金及現金流", amount: String(planData.cashFlow || '') },
+          { item: "其他（請說明）", amount: String(planData.otherCosts || '') },
+          { item: "總計", amount: planData.franchiseFee &&
+                    planData.decorationCosts &&
+                    planData.equipmentCosts &&
+                    planData.firstMaterialCost &&
+                    planData.paySalaryBudget &&
+                    planData.otherPersonnelCosts &&
+                    planData.marketingExpenses &&
+                    planData.cashFlow &&
+                    planData.otherCosts
+              ? String(
+                  Number(planData.franchiseFee || 0) +
+                    Number(planData.decorationCosts || 0) +
+                    Number(planData.equipmentCosts || 0) +
+                    Number(planData.firstMaterialCost || 0) +
+                    Number(planData.paySalaryBudget || 0) +
+                    Number(planData.otherPersonnelCosts || 0) +
+                    Number(planData.marketingExpenses || 0) +
+                    Number(planData.cashFlow || 0) +
+                    Number(planData.otherCosts || 0)
+                )
+              : '',
+          },
+        ],
+        costStruct: [
+          {
+            item: "物料成本",
+            percent: String(planData.firstMaterialCostsPercent || ''),
+            amount: String(planData.firstMaterialCostsAmount || ''),
+            note: planData.firstMaterialCostsRemark || '',
+            desc: "(含物料及包材)",
+          },
+          {
+            item: "人事成本",
+            percent: String(planData.personnelCostsPercent || ''),
+            amount: String(planData.personnelCostsAmount || ''),
+            note: planData.personnelCostsRemark || '',
+            desc: "(含薪資及勞健保)",
+          },
+          {
+            item: "租金成本",
+            percent: String(planData.rentalCostsPercent || ''),
+            amount: String(planData.rentalCostsAmount || ''),
+            note: planData.rentalCostsRemark || '',
+            desc: "(不含押金)",
+          },
+          {
+            item: "經營管理成本",
+            percent: String(planData.peratingCostsPercent || ''),
+            amount: String(planData.peratingCostsAmount || ''),
+            note: planData.peratingCostsRemark || '',
+          },
+          {
+            item: "其他",
+            percent: String(planData.otherCostsPercent || ''),
+            amount: String(planData.otherCostsAmount || ''),
+            note: planData.otherCostsRemark || '',
+          },
+          {
+            item: "總計",
+            percent: planData.firstMaterialCostsPercent &&
+                    planData.personnelCostsPercent &&
+                    planData.rentalCostsPercent &&
+                    planData.peratingCostsPercent &&
+                    planData.otherCostsPercent
+              ? String(
+                  Number(planData.firstMaterialCostsPercent || 0) +
+                    Number(planData.personnelCostsPercent || 0) +
+                    Number(planData.rentalCostsPercent || 0) +
+                    Number(planData.peratingCostsPercent || 0) +
+                    Number(planData.otherCostsPercent || 0)
+                )
+              : '',
+            amount: planData.firstMaterialCostsAmount &&
+                    planData.personnelCostsAmount &&
+                    planData.rentalCostsAmount &&
+                    planData.peratingCostsAmount &&
+                    planData.otherCostsAmount
+              ? String(
+                  Number(planData.firstMaterialCostsAmount || 0) +
+                    Number(planData.personnelCostsAmount || 0) +
+                    Number(planData.rentalCostsAmount || 0) +
+                    Number(planData.peratingCostsAmount || 0) +
+                    Number(planData.otherCostsAmount || 0)
+                )
+              : '',
+            note: '',
+            desc: "(淨利，不含稅)",
+          },
+        ],
+        targetRevenue: String(planData.turnoverTarget || ''),
+        rewardEnabled: Boolean(planData.rewardThreshold),
+        rewardAmount: String(planData.rewardThreshold || ''),
+        rewardPercent: String(planData.rewardPercent || ''),
+        fundNote: 1,
+        reportSelected: parseReportSelected(planData.otherStatement),
+        otherReport: parseOtherReport(planData.otherStatement),
+      });
+
+      // Step6 - 分潤條款
+      Object.assign(formData.step6, {
+        sharePeriod: parseProfitCycle(planData.profitDistributionCycle),
+        shareCalc: parseProfitCalc(planData.profitCalculationMethod).value,
+        shareCalcOther: parseProfitCalc(planData.profitCalculationMethod).other,
+        sharePay: parseProfitPay(planData.profitPaymentMethod).value,
+        sharePayOther: parseProfitPay(planData.profitPaymentMethod).other,
+        agree: '',
+      });
+
+      await nextTick();
+      console.log('載入計畫資料成功');
+      console.log('formData:', formData);
+    } else {
+      alert('載入計畫資料失敗');
+    }
+  } catch (error) {
+    console.error('載入計畫資料錯誤:', error);
+    alert('載入計畫資料失敗');
+  }
+}
+
+// ==================== 解析函數 ====================
+
+// Step4: Q2 - 解析簡報會議 "否 (112233)"
+function parseBriefingSession(text) {
+  if (!text) return {};
+
+  if (text.startsWith('是')) {
+    const content = text.replace(/^是\s*\(|\)$/g, '').trim();
+    return { yes: { checked: true, value: content } };
+  } else if (text.startsWith('否')) {
+    const content = text.replace(/^否\s*\(|\)$/g, '').trim();
+    return { plan: { checked: true, value: content } };
+  }
+
+  return {};
+}
+
+// Step4: Q4 - 解析招募方式 "本人親自參與經營"
+function parseRecruitmentMethods(text) {
+  if (!text) return {};
+
+  const result = {};
+  const methods = text.split(',').map(m => m.trim());
+
+  methods.forEach(method => {
+    if (method.includes('本人親自參與經營')) {
+      result.founder = { checked: true, value: '' };
+    } else if (method.includes('邀約親友加入')) {
+      const match = method.match(/邀約親友加入:\s*(.+)/);
+      result.family = { checked: true, value: match ? match[1] : '' };
+    } else if (method.includes('另行招募')) {
+      const match = method.match(/另行招募:\s*(.+)/);
+      result.recruit = { checked: true, value: match ? match[1] : '' };
+    } else if (method.includes('其他')) {
+      const match = method.match(/其他:\s*(.+)/);
+      result.other = { checked: true, value: match ? match[1] : '' };
+    }
+  });
+
+  return result;
+}
+
+// Step4: Q5.channels - 解析招募管道 "人力銀行"
+function parseRecruitmentPipeline(text) {
+  if (!text) return {};
+
+  const result = {};
+  const channels = text.split(',').map(c => c.trim());
+
+  channels.forEach(channel => {
+    if (channel.includes('人力銀行')) {
+      result.jobBank = { checked: true, value: '' };
+    } else if (channel.includes('社群平台')) {
+      result.social = { checked: true, value: '' };
+    } else if (channel.includes('親友介紹')) {
+      result.referral = { checked: true, value: '' };
+    } else if (channel.includes('門店張貼')) {
+      result.poster = { checked: true, value: '' };
+    } else if (channel.includes('其他')) {
+      const match = channel.match(/其他:\s*(.+)/);
+      result.other = { checked: true, value: match ? match[1] : '' };
+    }
+  });
+
+  return result;
+}
+
+// Step4: Q6 - 解析投入時間 "全職投入並同步參與經營 16-24"
+function parseInvestTime(text) {
+  if (!text) return {};
+
+  if (text.includes('全職投入並同步參與經營')) {
+    const match = text.match(/(\d+)-(\d+)/);
+    return {
+      fulltime: {
+        checked: true,
+        from: match ? match[1] : '',
+        to: match ? match[2] : ''
+      }
+    };
+  } else if (text.includes('全職投入但隨機參與經營')) {
+    const match = text.match(/(\d+)-(\d+)/);
+    return {
+      parttime: {
+        checked: true,
+        from: match ? match[1] : '',
+        to: match ? match[2] : ''
+      }
+    };
+  } else if (text.includes('其他')) {
+    const match = text.match(/其他:\s*(.+)/);
+    return {
+      other: {
+        checked: true,
+        value: match ? match[1] : text
+      }
+    };
+  }
+
+  return {};
+}
+
+// Step4: Q7 - 解析客戶來源 "親友推薦"
+function parseCustomerSource(text) {
+  if (!text) return {};
+
+  const result = {};
+  const sources = text.split(',').map(s => s.trim());
+
+  sources.forEach(source => {
+    if (source.includes('親友推薦')) {
+      result.social = { checked: true, value: '' };
+    } else if (source.includes('過路散客')) {
+      result.passenger = { checked: true, value: '' };
+    } else if (source.includes('商圈經營')) {
+      result.business = { checked: true, value: '' };
+    } else if (source.includes('網路口碑')) {
+      result.web = { checked: true, value: '' };
+    } else if (source.includes('其他')) {
+      const match = source.match(/其他:\s*(.+)/);
+      result.other = { checked: true, value: match ? match[1] : '' };
+    }
+  });
+
+  return result;
+}
+
+// Step4: Q8 - 解析門市地點 "住家型商圈"
+function parseStoreLocation(text) {
+  if (!text) return { value: '', note: {} };
+
+  const locationMap = {
+    '核心商圈': 'core',
+    '住家型商圈': 'residential',
+    '辦公型商圈': 'office',
+    '學校周邊': 'school',
+    '百貨商場': 'mall'
+  };
+
+  for (const [key, value] of Object.entries(locationMap)) {
+    if (text.includes(key)) {
+      return { value, note: {} };
+    }
+  }
+
+  // 其他情況
+  const match = text.match(/其他:\s*(.+)/);
+  return {
+    value: 'other',
+    note: { other: match ? match[1] : text }
+  };
+}
+
+// Step4: Q9 - 解析共創者附加價值 "推廣親友及資源"
+function parseCoFounderValue(text) {
+  if (!text) return { value: '', note: {} };
+
+  const valueMap = {
+    '協助經營': 'operation',
+    '推廣親友及資源': 'network',
+    '協助行銷': 'sales',
+    '能協助籌資': 'finance',
+    '獨立經營': 'independent'
+  };
+
+  for (const [key, value] of Object.entries(valueMap)) {
+    if (text.includes(key)) {
+      return { value, note: {} };
+    }
+  }
+
+  // 其他情況
+  const match = text.match(/其他:\s*(.+)/);
+  return {
+    value: 'other',
+    note: { other: match ? match[1] : text }
+  };
+}
+
+// Step5: 解析報表選項 "提供店內 POS 帳號並開啟營業報表權限"
+function parseReportSelected(text) {
+  if (!text) return '';
+
+  const optionMap = {
+    'POS': 'pos',
+    '每月': 'monthly',
+    '每季': 'season',
+    '每年': 'yearly'
+  };
+
+  for (const [key, value] of Object.entries(optionMap)) {
+    if (text.includes(key)) {
+      return value;
+    }
+  }
+
+  return 'other';
+}
+
+function parseOtherReport(text) {
+  if (!text || !text.includes('其他')) return {};
+
+  const match = text.match(/其他:\s*(.+)/);
+  return match ? { other: match[1] } : {};
+}
+
+// Step6: 解析分潤週期 "每月結算並分潤一次(每一個月)"
+function parseProfitCycle(text) {
+  if (!text) return '';
+
+  if (text.includes('每月')) return 'monthly';
+  if (text.includes('每季')) return 'quarterly';
+  if (text.includes('每半年')) return 'halfyear';
+  if (text.includes('每年')) return 'yearly';
+
+  return '';
+}
+
+// Step6: 解析分潤計算方式
+function parseProfitCalc(text) {
+  if (!text) return { value: '', other: {} };
+
+  if (text.includes('同意依照')) {
+    return { value: 'agree', other: {} };
+  } else if (text.includes('其他')) {
+    const match = text.match(/其他:\s*(.+)/);
+    return {
+      value: 'other',
+      other: { other: match ? match[1] : text }
+    };
+  }
+
+  return { value: '', other: {} };
+}
+
+// Step6: 解析分潤支付方式
+function parseProfitPay(text) {
+  if (!text) return { value: '', other: {} };
+
+  if (text.includes('銀行匯款')) {
+    return { value: 'bank', other: {} };
+  } else if (text.includes('其他')) {
+    const match = text.match(/其他:\s*(.+)/);
+    return {
+      value: 'other',
+      other: { other: match ? match[1] : text }
+    };
+  }
+
+  return { value: '', other: {} };
+}
+
+// 返回列表
+function backToList() {
+  mode.value = 'account';
+  currentPlanId.value = null;
+  expandedId.value = null;
+  router.push({
+    path: '/account/startup',
+    query: { source: 'account' }
+  });
+}
+
 
 const formData = reactive({
   step1: {
@@ -488,21 +973,11 @@ const formErrors = reactive({
 });
 
 function goNext(nextStep) {
-  console.log("當前步驟:", docStep.value);
-  console.log("下一步驟:", nextStep);
-  console.log("完整 formData:", formData);
-
-  console.log("Step1 資料:", formData.step1);
-  console.log("Step3 資料:", formData.step3);
-  console.log("Step4 資料:", formData.step4);
-  console.log("Step5 資料:", formData.step5);
-  console.log("Step6 資料:", formData.step6);
-  console.log("Step8 資料:", formData.step8);
-
-
   if (Object.keys(STEPS).includes(nextStep)) {
     docStep.value = nextStep;
-    router.replace({ query: { ...route.query, step: nextStep } });
+
+    const query = { ...route.query, step: nextStep };
+    router.replace({ query });
   }
 }
 
@@ -549,6 +1024,35 @@ watch(
     mode.value = val === "business" ? "business" : "account";
   },
   { immediate: true }
+);
+
+
+watch(
+    () => route.query,
+    async (query) => {
+      // 判斷模式
+      if (query.source === 'account' && query.planId) {
+        mode.value = 'preview';
+        currentPlanId.value = parseInt(query.planId);
+        // 如果有 planId,載入資料
+        if (currentPlanId.value && !formData.step1.brand) {
+          await loadPlanData(currentPlanId.value);
+          await nextTick()
+        }
+      } else if (query.source === 'account') {
+        mode.value = 'account';
+        currentPlanId.value = null;
+      } else if (query.source === 'business') {
+        mode.value = 'business';
+      }
+
+      // 處理 step
+      const qStep = (query.step || '').toString();
+      if (Object.keys(STEPS).includes(qStep) && qStep !== docStep.value) {
+        docStep.value = qStep;
+      }
+    },
+    { immediate: true }
 );
 
 const progress = ref([
@@ -1162,7 +1666,7 @@ function changeProgressStep(currentStep) {
   }
 
   // 審核中
-  if (currentStep = 3) {
+  if (currentStep >= 3 && currentStep < 4) {
     return 2
   }
 
@@ -1197,11 +1701,29 @@ function changeProgressStep(currentStep) {
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    getAllPlanStep()
-    getAllPlanByUser()
+    getAllPlanStep();
+    getAllPlanByUser();
   }
-})
 
+  // 檢查初始路由
+  const { source, planId, step } = route.query;
+
+  if (source === 'account' && planId) {
+    mode.value = 'preview';
+    currentPlanId.value = parseInt(planId);
+    loadPlanData(currentPlanId.value);
+  } else if (source === 'account') {
+    mode.value = 'account';
+  } else if (source === 'business') {
+    mode.value = 'business';
+  }
+
+  if (step && Object.keys(STEPS).includes(step)) {
+    docStep.value = step;
+  } else {
+    setDocStep('step1');
+  }
+});
 function handleUploadSuccess(fileType, result) {
   const fileId = result.data?.id;
   const fileName = result.data?.displayName || result.data?.name;

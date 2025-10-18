@@ -9,6 +9,7 @@
         v-model="local.q1"
         :rows="4"
         :error="props.errors.q1"
+        :readonly="readonly"
       />
 
       <SharedCheckline
@@ -134,8 +135,8 @@
         :error="props.errors.q9Location"
       />
     </div>
-
-    <button type="button" class="apply-btn write w-100 mt-4" @click="submitStep">下一步</button>
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step3')">上一步</button>
+    <button type="button" class="apply-btn write w-100 mt-2" @click="submitStep">下一步</button>
   </form>
 </template>
 
@@ -150,6 +151,7 @@ import SharedRadio from "@/components/shared/Shared-Radio.vue";
 const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
+  readonly: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue", "next"]);
 
