@@ -1,19 +1,16 @@
 <template>
   <div class="project-content">
     <div class="container">
-      <SharedProjectContent />
+      <SharedProjectContent
+        :photo="successPlanData.photo"
+        :description="successPlanData.description"
+      />
     </div>
     <div class="swiper-pic">
       <div class="container">
         <div class="row">
-          <div class="col-md-4">
-            <img src="/src/assets/images/success1.jpg" />
-          </div>
-          <div class="col-md-4">
-            <img src="/src/assets/images/success2.jpg" />
-          </div>
-          <div class="col-md-4">
-            <img src="/src/assets/images/success3.jpg" />
+          <div class="col-md-4" v-for="(image, index) in successPlanData.brandImages || []" :key="index">
+            <img :src="image" alt="Project Image" />
           </div>
         </div>
       </div>
@@ -25,56 +22,53 @@
         <ul class="row list-unstyled small text-body">
           <li class="col-12 col-md-6">
             <div class="title">店家地址</div>
-            <div class="title-content">台中市OOOOOOOOOOO</div>
+            <div v-if="successPlanData.address" class="title-content">{{ successPlanData.address }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">媒合時間</div>
-            <div class="title-content">1個月</div>
+            <div v-if="matchTime" class="title-content">{{ matchTime }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">連絡電話</div>
-            <div class="title-content">0123456789</div>
+            <div v-if="successPlanData.contact" class="title-content">{{ successPlanData.contact }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">募資時間</div>
-            <div class="title-content">3個月</div>
+            <div v-if="fundraisingTime" class="title-content">{{ fundraisingTime }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">創業人數</div>
-            <div class="title-content">4</div>
+            <div v-if="successPlanData.founderNum" class="title-content">{{ successPlanData.founderNum }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">社群網址</div>
-            <div class="title-content">
-              https://www.facebook.com/milk.tea2022
+            <div v-if="successPlanData.facebook" class="title-content">{{ successPlanData.facebook }}</div>
+            <div v-else class="title-content">
+              不提供
             </div>
           </li>
           <li class="col-12 col-md-6">
-            <div class="title">資本額</div>
-            <div class="title-content">100萬元</div>
+            <div class="title">加盟金</div>
+            <div v-if="successPlanData.startupBudget" class="title-content">{{ successPlanData.startupBudget }}</div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">社群網址</div>
-            <div class="title-content">
-              https://www.facebook.com/milk.tea2022
+            <div v-if="successPlanData.instagram" class="title-content">{{ successPlanData.instagram }}</div>
+            <div v-else class="title-content">
+              不提供
             </div>
           </li>
         </ul>
         <hr class="hr-basic w-100" />
         <h3>創業者專訪(背景經歷/營運狀況分享...)</h3>
-        <p class="mb-2">三旬國際餐飲有限公司</p>
-        <p class="mt-4 mb-4">
-          於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。
-          【一杯顏太煮 生活不會苦】。
-        </p>
-        <p>
-          為持續提升市場競爭力，不斷地研發新品與尋找高品質原物料，從中累積的務實經驗，以成熟技術打造特色連鎖奶茶店，拓展業務從加盟業務到開店技術指導，用不斷累積的know-how，造就全方位品牌力。
-        </p>
-
-        <p class="mt-5">經營理念</p>
-        <p class="mb-0">品牌核心 — 「以人為本，從心出發」</p>
-        <p class="mb-0">「堅持力」：堅持最好的服務、品質。</p>
-        <p class="mb-0">「專業力」：將每個最細微的地方做到最好</p>
+        <div v-if="successPlanData.interview" v-html="successPlanData.interview"></div>
+        <p v-else>尚無專訪內容</p>
       </div>
     </div>
   </div>
@@ -82,6 +76,54 @@
 
 <script setup>
 import SharedProjectContent from "@/components/shared/Shared-project-content.vue";
+import {onMounted, ref} from "vue";
+import {useRoute} from "vue-router";
+import {successPlanApi} from "@/api/modules/successPlan.js";
+const route = useRoute();
+
+const successPlanData = ref({});
+const matchTime = ref('');
+const fundraisingTime = ref('');
+const getCurrentId = () => {
+  return route.params.id;
+};
+
+async function getSuccessPlan(successPlanId) {
+  const formData = {
+    successPlanId: Number(successPlanId),
+  }
+
+  const response = await successPlanApi.getSuccessPlan(formData)
+  if (response.code === 0) {
+    successPlanData.value = response.data
+    matchTime.value = formatTime(successPlanData.value.matchDays || 0);
+    fundraisingTime.value = formatTime(successPlanData.value.fundraisingDays || 0);
+  } else {
+    console.error("Failed to fetch success plan data:", response.message)
+  }
+}
+
+function formatTime(days) {
+  if (days < 30) {
+    return `${days}天`;
+  } else {
+    const months = Math.floor(days / 30);
+    return `${months}個月`;
+  }
+}
+
+
+
+onMounted(async () => {
+  const successPlanId = getCurrentId();
+  if (successPlanId) {
+    await getSuccessPlan(successPlanId);
+
+  } else {
+    console.error('無法獲取有效的項目 ID');
+  }
+});
+
 </script>
 
 <style lang="scss" scoped>
@@ -145,7 +187,7 @@ import SharedProjectContent from "@/components/shared/Shared-project-content.vue
   }
   .container {
     position: absolute;
-    top: -55px;
+    top: 0px;
     right: 0;
     @media (max-width: 576px) {
       top: 0;
@@ -164,6 +206,7 @@ import SharedProjectContent from "@/components/shared/Shared-project-content.vue
 }
 
 .success-content {
+  margin-top: 10rem;
   padding-bottom: 3rem;
   .container {
     background: rgba(255, 255, 255, 0.9);

@@ -85,8 +85,97 @@ function onInput(key, val) {
 </script>
 
 <style scoped lang="scss">
+.form-group {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.fg-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.req {
+  color: #f44336;
+}
+
+.checks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%; // 確保容器寬度
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%; // 確保每個選項佔滿寬度
+}
+
+input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.option-label {
+  flex-shrink: 0; // 不壓縮 label
+  white-space: nowrap; // 不換行
+  margin: 0;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+// 關鍵:讓 textline 延伸到最右邊
+.textline {
+  flex: 1 !important;
+  min-width: 0 !important;
+  width: auto !important; // 改成 auto
+  max-width: none !important; // 移除最大寬度限制
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 15px;
+  box-sizing: border-box;
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    color: #999;
+  }
+
+  &:not(:disabled):focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+  }
+}
+
 input[type="number"].textline {
-  width: 80px;
   text-align: right;
+}
+
+// inline 模式
+.checks.inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .option {
+    flex: 1 1 300px;
+    min-width: 300px;
+  }
+}
+
+.error-msg {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 6px;
+  margin-bottom: 0;
 }
 </style>

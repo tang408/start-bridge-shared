@@ -61,4 +61,43 @@ function onInput(key, val) {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style lang="scss" scoped>
+.checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  width: 100%;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto; /* 預設自動寬度 */
+
+  /* 有輸入框的選項 */
+  &:has(.textline) {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  input[type="checkbox"] {
+    flex-shrink: 0;
+  }
+
+  .option-label {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .textline {
+    flex: 1;
+    min-width: 0;
+    max-width: none;
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+}
+</style>

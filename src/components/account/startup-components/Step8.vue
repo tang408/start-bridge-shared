@@ -27,6 +27,9 @@
         </li>
         <li>
           5.【共同創業者】僅為初期出資之角色，無實際參與經營之責任與義務。
+          <p>
+            成功媒合後，雙方可依據平台提供之公版合約建立合作關係，明訂權責分界。
+          </p>
         </li>
         <li>
           6.若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
@@ -94,6 +97,11 @@ function submitStep() {
 </script>
 
 <style lang="scss" scoped>
+.form {
+  min-width: 576px;
+  margin: 0 auto;
+
+}
 .desc {
   font-size: $fs-15;
   margin-bottom: 12px;

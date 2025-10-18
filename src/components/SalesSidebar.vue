@@ -19,7 +19,7 @@
             <div class="mt-2 mb-2 d-flex gap-2">
               系統訊息<span class="notice">{{ totalUnreadCount }}</span>
             </div>
-            <div>當月業績：{{ salesPerformance }} 萬</div>
+            <div>當月業績：{{ formatAmount(salesPerformance) }} 元</div>
             <div>
               <span>創業者：{{ founderCount }}人</span> |
               <span>共創者：{{ coreFounderCount }}人</span>
@@ -99,6 +99,11 @@ const items = [
   { key: "assessment", label: "考核" },
   { key: "chart", label: "組織圖" },
 ];
+
+function formatAmount(amount) {
+  if (!amount) return '0';
+  return amount.toLocaleString('zh-TW');
+}
 </script>
 
 <style lang="scss" scoped>

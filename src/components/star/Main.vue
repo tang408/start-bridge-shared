@@ -21,13 +21,14 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
 import Swiper from "./Swiper.vue";
 import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
+import {partnerInterviewApi} from "@/api/modules/partnerInterview.js";
 
 const router = useRouter();
 const sampleImages = [img1, img2, img3, img4];
@@ -38,6 +39,23 @@ const items = ref(
     cover: sampleImages[i % 4],
   }))
 );
+
+async function getPartnerInterviewPhotos() {
+const response = await partnerInterviewApi.getPartnerInterviewPhotos()
+  if (response.code === 0) {
+    items.value = response.data.map((item) => ({
+      id: item.id,
+      title: item.name,
+      cover: item.photo,
+    }))
+  } else {
+    console.error("Failed to fetch success plan photos:", response.message)
+  }
+}
+
+onMounted(() => {
+  getPartnerInterviewPhotos()
+})
 
 function openDetail(card) {
   router.push({ name: "starDetail", params: { id: card.id } });

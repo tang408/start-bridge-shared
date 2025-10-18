@@ -1,26 +1,28 @@
 <template>
   <div class="node-wrapper">
     <div
-      class="node"
-      :class="[
-        isRoot ? 'root-node' : 'level-' + node.person,
+        class="node"
+        :class="[
+        'level-' + node.rank,
         { 'has-children': hasChildren },
       ]"
-      @click="toggle"
+        @click="toggle"
     >
-      <div>推薦碼</div>
-      <div>{{ node.name }}</div>
-      <div>職級{{ node.person }}人</div>
+      <div>推薦碼 {{ node.referralCode }}</div>
+      <div>姓名 {{ node.name }}</div>
+      <div>職級 {{ node.rank }}</div>
+      <div> {{ childrenCount }}人</div>
     </div>
 
+    <!-- 所有節點的子節點都需要展開/收合 -->
     <transition name="fade">
       <div v-show="isOpen && hasChildren" class="children">
         <ChartNode
-          v-for="(child, i) in node.children"
-          :key="i"
-          :node="child"
-          :is-root="false"
-          :force-close-key="closeKey"
+            v-for="child in node.children"
+            :key="child.salesId"
+            :node="child"
+            :is-root="false"
+            :force-close-key="closeKey"
         />
       </div>
     </transition>
@@ -31,14 +33,16 @@
 import { ref, computed, watch } from "vue";
 
 const props = defineProps({
-  node: { type: Object, required: true },
-  isRoot: { type: Boolean, default: false },
-  forceCloseKey: { type: Number, default: 0 },
+  node: {type: Object, required: true},
+  isRoot: {type: Boolean, default: false},
+  forceCloseKey: {type: Number, default: 0},
 });
 
 const isOpen = ref(false);
+
 const toggle = () => {
-  if (props.node.children) {
+  // 只有有子節點才能切換
+  if (hasChildren.value) {
     if (isOpen.value) {
       closeKey.value++;
     }
@@ -47,17 +51,21 @@ const toggle = () => {
 };
 
 const hasChildren = computed(
-  () => props.node.children && props.node.children.length > 0
+    () => props.node.children && props.node.children.length > 0
 );
+
+const childrenCount = computed(() => {
+  return props.node.children ? props.node.children.length : 0;
+});
 
 const closeKey = ref(props.forceCloseKey);
 
 watch(
-  () => props.forceCloseKey,
-  (newVal) => {
-    isOpen.value = false;
-    closeKey.value = newVal;
-  }
+    () => props.forceCloseKey,
+    (newVal) => {
+      isOpen.value = false;
+      closeKey.value = newVal;
+    }
 );
 </script>
 
@@ -67,6 +75,7 @@ watch(
   gap: 10px;
   display: flex;
   flex-flow: column;
+  align-items: center;
 }
 
 .node {
@@ -74,11 +83,12 @@ watch(
   background: linear-gradient(180deg, #ffe0cc, #ffd2b3);
   padding: 10px 15px;
   cursor: pointer;
-  width: 79px;
+  width: 120px;
   font-weight: 400;
   font-size: 13px;
   line-height: 18px;
   color: #555555;
+
   @media (max-width: 768px) {
     display: block;
     width: 100%;
@@ -93,33 +103,47 @@ watch(
 .children {
   display: flex;
   gap: 10px;
-  flex-flow: column;
+  flex-flow: row;
+  justify-content: center;
+  flex-wrap: wrap;
+
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: center;
   }
 }
 
-.root-node {
-  background: #ffbfa6;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .level {
   &-1 {
     background: #fff;
   }
+
   &-2 {
     background: #f8f0ec;
   }
+
   &-3 {
     background: #ffece4;
   }
+
   &-4 {
     background: #ffdbcd;
   }
+
   &-5 {
     background: #ffdbcd;
   }
+
   &-6 {
     background: #ffbfa6;
   }

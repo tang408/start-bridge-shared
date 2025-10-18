@@ -1,7 +1,7 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-2 d-grid">
-      <h5 class="form-title">一、加點表單</h5>
+      <h5 class="form-title">一、加盟表單</h5>
 
       <!-- 是否有創業經驗 -->
       <SharedRadio
@@ -48,6 +48,7 @@
       <SharedTextarea
         id="selfAdv"
         label="自身優勢說明"
+        description="請簡述您具備哪些能力或資源，有助於創業成功？"
         v-model="local.selfAdv"
         :rows="4"
         placeholder="placeholder"
@@ -56,7 +57,6 @@
       <SharedTextarea
         id="resources"
         label="具備資源"
-        description="請簡述您具備哪些能力或資源，有助於創業成功？"
         v-model="local.resources"
         :rows="4"
         placeholder="placeholder"

@@ -177,6 +177,81 @@ const local = reactive({ ...props.modelValue });
 
 watch(local, (val) => emit("update:modelValue", val), { deep: true });
 
+
+watch(
+    () => [local.prepBudget],
+    () => {
+      const total = local.prepBudget
+        .slice(0, local.prepBudget.length - 1)
+        .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+      local.prepBudget[local.prepBudget.length - 1].amount = total;
+    },
+    { deep: true }
+)
+
+// costStruct: [
+//   {
+//     item: "物料成本",
+//     percent: "",
+//     amount: "",
+//     note: "",
+//     desc: "(含物料及包材)",
+//   },
+//   {
+//     item: "人事成本",
+//     percent: "",
+//     amount: "",
+//     note: "",
+//     desc: "(含薪資及勞健保)",
+//   },
+//   {
+//     item: "租金成本",
+//     percent: "",
+//     amount: "",
+//     note: "",
+//     desc: "(不含押金)",
+//   },
+//   {
+//     item: "經營管理成本",
+//     percent: "",
+//     amount: "",
+//     note: "",
+//   },
+//   { item: "其他", percent: "", amount: "", note: "" },
+//   {
+//     item: "總計",
+//     percent: "",
+//     amount: "",
+//     note: "",
+//     desc: "(淨利，不含稅)",
+//   },
+// ],
+// targetRevenue: "",
+// amount = targetRevenue * (percent / 100)
+watch(
+    () => [local.costStruct, local.targetRevenue],
+    () => {
+      local.costStruct.forEach((row) => {
+        if (row.item === "總計") {
+          const totalPercent = local.costStruct
+            .slice(0, local.costStruct.length - 1)
+            .reduce((sum, r) => sum + Number(r.percent || 0), 0);
+          row.percent = totalPercent;
+          row.amount = local.targetRevenue
+            ? ((totalPercent / 100) * Number(local.targetRevenue)).toFixed(0)
+            : "";
+        } else {
+          row.amount = local.targetRevenue
+            ? ((Number(row.percent || 0) / 100) *
+                Number(local.targetRevenue)).toFixed(0)
+            : "";
+        }
+      });
+    },
+    { deep: true }
+)
+
+
 function submitStep() {
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 

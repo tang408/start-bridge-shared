@@ -329,6 +329,7 @@ const currentStepComponent = computed(() => STEPS[docStep.value]);
 const expandedId = ref(null);
 
 function toggle(id) {
+  console.log(id)
   expandedId.value = expandedId.value === id ? null : id;
 }
 
@@ -369,13 +370,14 @@ const formData = reactive({
   },
   step5: {
     prepBudget: [
-      { item: "品牌加盟的前期費用", amount: "" },
-      { item: "店鋪的裝潢設工程", amount: "" },
-      { item: "營運前購置設備費用", amount: "" },
-      { item: "開店前採購備貨費用", amount: "" },
-      { item: "創業初期營運週轉資金", amount: "" },
-      { item: "輔導培訓課程費用", amount: "" },
-      { item: "雜項費用", amount: "" },
+      { item: "品牌加盟的相關費用", amount: "" },
+      { item: "店面的裝潢設計工程", amount: "" },
+      { item: "營運設備與生財器具", amount: "" },
+      { item: "開店前首批儲備物料", amount: "" },
+      { item: "創業者預計支薪預算", amount: "" },
+      { item: "籌備期其他人事成本", amount: "" },
+      { item: "開店前品牌行銷費用", amount: "" },
+      { item: "營運週轉金及現金流", amount: "" },
       { item: "其他（請說明）", amount: "" },
       { item: "總計", amount: "" },
     ],
@@ -416,6 +418,7 @@ const formData = reactive({
         desc: "(淨利，不含稅)",
       },
     ],
+    targetRevenue: "",
     rewardAmount: "",
     rewardPercent: "",
 
@@ -888,13 +891,14 @@ function convertFormData(formData, userId) {
     coFounderAddedValue: getCoFounderValueText(step4.q9Location, step4.q9LocationNote) || "",
 
     // 財務規劃 (Step5) - 預算項目
-    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的前期費用"),
-    decorationCosts: getBudgetAmount(step5.prepBudget, "店鋪的裝潢設工程"),
-    equipmentCosts: getBudgetAmount(step5.prepBudget, "營運前購置設備費用"),
-    firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前採購備貨費用"),
-    paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業初期營運週轉資金"),
-    otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "輔導培訓課程費用"),
-    marketingExpenses: getBudgetAmount(step5.prepBudget, "雜項費用"),
+    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設工程"),
+    equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備與生財器具"),
+    firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
+    paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業者預計支薪預算"),
+    otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "籌備期其他人事成本"),
+    marketingExpenses: getBudgetAmount(step5.prepBudget, "開店前品牌行銷費用"),
+    cashFlow: getBudgetAmount(step5.prepBudget, "營運週轉金及現金流"),
     otherCosts: getBudgetAmount(step5.prepBudget, "其他（請說明）"),
 
     // 財務規劃 (Step5) - 營業目標和成本結構

@@ -1,19 +1,20 @@
 <template>
   <div class="project-content">
     <div class="container">
-      <SharedProjectContent />
+      <SharedProjectContent
+        :photo="partnerInterviewData.photo"
+        :description="partnerInterviewData.description"
+      />
     </div>
     <div class="swiper-pic">
       <div class="container">
         <div class="row">
-          <div class="col-md-4">
-            <img src="/src/assets/images/success1.jpg" />
-          </div>
-          <div class="col-md-4">
-            <img src="/src/assets/images/success2.jpg" />
-          </div>
-          <div class="col-md-4">
-            <img src="/src/assets/images/success3.jpg" />
+          <div
+            class="col-md-4"
+            v-for="(image, index) in partnerInterviewData.brandImages || []"
+            :key="index"
+          >
+            <img :src="image" alt="Project Image" />
           </div>
         </div>
       </div>
@@ -24,57 +25,74 @@
         <h3>案例資訊</h3>
         <ul class="row list-unstyled small text-body">
           <li class="col-12 col-md-6">
-            <div class="title">店家地址</div>
-            <div class="title-content">台中市OOOOOOOOOOO</div>
+            <div class="title">聯絡資訊</div>
+            <div
+                v-if="partnerInterviewData.contact"
+                class="title-content"
+                style="white-space: pre-line;"
+            >
+              {{ partnerInterviewData.contact }}
+            </div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
-            <div class="title">媒合時間</div>
-            <div class="title-content">1個月</div>
+            <div class="title">官方網址</div>
+            <div v-if="partnerInterviewData.website"class="title-content">
+              {{ partnerInterviewData.website }}
+            </div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
-            <div class="title">連絡電話</div>
-            <div class="title-content">0123456789</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">募資時間</div>
-            <div class="title-content">3個月</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">創業人數</div>
-            <div class="title-content">4</div>
+            <div class="title">產業類型</div>
+            <div v-if="partnerInterviewData.industryType" class="title-content">
+              {{
+                industryTypesData.find(
+                  (type) => type.id === partnerInterviewData.industryType
+                )?.name || "未分類"
+              }}
+            </div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">社群網址</div>
-            <div class="title-content">
-              https://www.facebook.com/milk.tea2022
+            <div v-if="partnerInterviewData.facebook"class="title-content">
+              {{ partnerInterviewData.facebook }}
             </div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
             <div class="title">資本額</div>
-            <div class="title-content">100萬元</div>
+            <div v-if="partnerInterviewData.capital" class="title-content">
+              {{ partnerInterviewData.capital }} 萬元
+            </div>
+            <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
-            <div class="title">社群網址</div>
-            <div class="title-content">
-              https://www.facebook.com/milk.tea2022
-            </div>
           </li>
+          <li class="col-12 col-md-6">
+            <div class="title">加盟金</div>
+            <div v-if="partnerInterviewData.franchiseFee" class="title-content">
+              {{ partnerInterviewData.franchiseFee }} 萬元
+            </div>
+            <div v-else class="title-content">不提供</div>
+          </li>
+          <li class="col-12 col-md-6">
+          </li>
+          <li class="col-12 col-md-6">
+            <div class="title">合作特約優惠</div>
+            <div v-if="partnerInterviewData.specialOffer" class="title-content">
+              {{ partnerInterviewData.specialOffer }} 萬元
+            </div>
+            <div v-else class="title-content">不提供</div>
+          </li>
+
+
+
         </ul>
         <hr class="hr-basic w-100" />
-        <h3>創業者專訪(背景經歷/營運狀況分享...)</h3>
-        <p class="mb-2">三旬國際餐飲有限公司</p>
-        <p class="mt-4 mb-4">
-          於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。
-          【一杯顏太煮 生活不會苦】。
-        </p>
-        <p>
-          為持續提升市場競爭力，不斷地研發新品與尋找高品質原物料，從中累積的務實經驗，以成熟技術打造特色連鎖奶茶店，拓展業務從加盟業務到開店技術指導，用不斷累積的know-how，造就全方位品牌力。
-        </p>
-
-        <p class="mt-5">經營理念</p>
-        <p class="mb-0">品牌核心 — 「以人為本，從心出發」</p>
-        <p class="mb-0">「堅持力」：堅持最好的服務、品質。</p>
-        <p class="mb-0">「專業力」：將每個最細微的地方做到最好</p>
+        <h3>合作品牌專訪(背景經歷/營運狀況分享...)</h3>
+        <div v-if="partnerInterviewData.interview" v-html="partnerInterviewData.interview"></div>
+        <p v-else>尚無專訪內容</p>
       </div>
     </div>
   </div>
@@ -82,6 +100,47 @@
 
 <script setup>
 import SharedProjectContent from "@/components/shared/Shared-project-content.vue";
+import {onMounted, ref} from "vue";
+import {useRoute} from "vue-router";
+import {partnerInterviewApi} from "@/api/modules/partnerInterview.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
+const route = useRoute();
+
+const partnerInterviewData = ref({})
+const industryTypesData = ref([]);
+async function getIndustryTypes() {
+  const res = await industryTypeApi.getIndustryTypes();
+  if (res && res.data) {
+    industryTypesData.value = res.data;
+  }
+}
+const getCurrentId = () => {
+  return route.params.id
+}
+
+async function getPartnerInterview(partnerInterviewId) {
+  const formData = {
+    partnerInterviewId: Number(partnerInterviewId),
+  }
+
+  const response = await partnerInterviewApi.getPartnerInterview(formData)
+  if (response.code === 0) {
+    partnerInterviewData.value = response.data
+  } else {
+    console.error("Failed to fetch partner interview:", response.message)
+  }
+}
+
+onMounted(async () => {
+  const id = getCurrentId()
+  if (id) {
+    await getIndustryTypes()
+    await getPartnerInterview(id)
+  } else {
+    console.error("No partner interview ID found in route parameters.")
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
@@ -145,7 +204,7 @@ import SharedProjectContent from "@/components/shared/Shared-project-content.vue
   }
   .container {
     position: absolute;
-    top: -55px;
+    top: px;
     right: 0;
     @media (max-width: 576px) {
       top: 0;
@@ -164,6 +223,7 @@ import SharedProjectContent from "@/components/shared/Shared-project-content.vue
 }
 
 .success-content {
+  margin-top: 10rem;
   padding-bottom: 3rem;
   .container {
     background: rgba(255, 255, 255, 0.9);

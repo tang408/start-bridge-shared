@@ -21,13 +21,14 @@
 
 <script setup>
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import {onMounted, ref} from "vue";
 import Swiper from "./Swiper.vue";
 import SharedNews from "@/components/shared/Shared-News.vue";
 import img1 from "@/assets/images/news-1.png";
 import img2 from "@/assets/images/news-2.png";
 import img3 from "@/assets/images/news-3.png";
 import img4 from "@/assets/images/news-4.png";
+import {successPlanApi} from "@/api/modules/successPlan.js";
 
 const router = useRouter();
 const sampleImages = [img1, img2, img3, img4];
@@ -36,9 +37,25 @@ const items = ref(
     id: i + 1,
     title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
     cover: sampleImages[i % 4],
-    favorite: false,
   }))
 );
+
+async function getSuccessPlanPhotos() {
+  const response = await successPlanApi.getSuccessPlanPhotos()
+  if (response.code === 0) {
+    items.value = response.data.map((item) => ({
+      id: item.id,
+      title: item.name,
+      cover: item.photo,
+    }))
+  } else {
+    console.error("Failed to fetch success plan photos:", response.message)
+}
+}
+
+onMounted(() => {
+  getSuccessPlanPhotos()
+})
 
 function openDetail(card) {
   router.push({ name: "SuccessDetail", params: { id: card.id } });

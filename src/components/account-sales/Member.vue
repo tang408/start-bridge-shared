@@ -4,9 +4,9 @@
   <div class="filter-table">
     <div class="toolbar">
       <SharedDropdown
-        v-model="filter.type"
-        placeholder="身分別"
-        :options="[
+          v-model="filter.type"
+          placeholder="身分別"
+          :options="[
           { label: '全部', value: '' },
           { label: '創業者', value: 1 },
           { label: '共創者', value: 2 },
@@ -14,9 +14,9 @@
       />
 
       <SharedDropdown
-        v-model="filter.dateOrder"
-        placeholder="依專案時間排序"
-        :options="[
+          v-model="filter.dateOrder"
+          placeholder="依專案時間排序"
+          :options="[
           { label: '新→舊', value: 'desc' },
           { label: '舊→新', value: 'asc' },
         ]"
@@ -32,9 +32,9 @@
       />
 
       <SharedDropdown
-        v-model="filter.status"
-        placeholder="依專案狀態排序"
-        :options="[
+          v-model="filter.status"
+          placeholder="依專案狀態排序"
+          :options="[
           { label: '全部', value: '' },
           ...planSteps.map(step => ({ label: step.step, value: step.id }))
         ]"
@@ -42,12 +42,12 @@
     </div>
 
     <SharedTable
-      :columns="columns"
-      :rows="displayedMembers"
-      empty-text="目前沒有符合條件的會員"
+        :columns="columns"
+        :rows="displayedMembers"
+        empty-text="目前沒有符合條件的會員"
     >
       <template #planStatus="{ row }">
-        {{formatPlanStatus(row.planStatus, row.type)}}
+        {{ formatPlanStatus(row.planStatus, row.type) }}
       </template>
       <template #review="{ row }">
         <div v-if="getActionType(row) === 'review'" class="review-btn-group">
@@ -67,7 +67,7 @@
       </template>
       <template #actions="{ row }">
         <button class="icon-btn" @click="viewMember(row)">
-          <img src="@/assets/icon/search.png" alt="查看" />
+          <img src="@/assets/icon/search.png" alt="查看"/>
         </button>
       </template>
     </SharedTable>
@@ -87,7 +87,9 @@
         <div class="title">基本資料</div>
         <div>姓名：{{ selectedMember.name }}</div>
         <div>會員身分：{{ selectedMemberDetail.type }}</div>
-        <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創: {{ selectedMemberDetail.coreFounderPlanCount }}</div>
+        <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創:
+          {{ selectedMemberDetail.coreFounderPlanCount }}
+        </div>
       </div>
 
       <div class="modal-section mt-3">
@@ -96,11 +98,17 @@
         <div>專案名稱：{{ selectedMemberDetail.founderPlan?.[0]?.name }}</div>
         <div>
           創業者上傳資訊：
-        <span
-            class="doc-tag clickable"
-            @click="openDocDialog('創業計劃書')"
-        >
+          <span
+              class="doc-tag clickable"
+              @click="openDocDialog('創業計劃書')"
+          >
           創業計劃書
+        </span>
+          <span
+              class="doc-tag clickable"
+              @click="openDocDialog('最終合約')"
+          >
+          最終合約
         </span>
         </div>
 
@@ -184,7 +192,7 @@
                 </div>
               </div>
             </div>
-            <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2" />
+            <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2"/>
           </div>
         </div>
         <div v-else class="text-muted">
@@ -192,6 +200,29 @@
         </div>
       </div>
     </template>
+  </SharedModal>
+  <!-- 輸入地址 Dialog -->
+  <SharedModal
+      v-model="showAddressDialog"
+      title="輸入地址"
+      mode="submit"
+      confirmText="確認送出"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleAddressSubmit"
+  >
+    <div class="payment-form">
+      <SharedInput
+          id="address"
+          v-model="addressForm.address"
+          label="地址*"
+          placeholder="請輸入地址"
+          type="text"
+          class="form-group ml-3"
+          :error="addressErrors.address"
+          :required="true"
+      />
+    </div>
   </SharedModal>
 
   <!-- 合約上傳 Dialog -->
@@ -214,7 +245,7 @@
           :error="contractErrors.contractFile"
           @upload-success="(result) => handleUploadSuccess('salesContractFile', result)"
           required
-          :account="currentSales.value"  :id="currentSales.value"/>
+          :account="currentSales.value" :id="currentSales.value"/>
     </div>
   </SharedModal>
 
@@ -238,7 +269,7 @@
           :error="contractErrors.contractFile"
           @upload-success="(result) => handleUploadSuccess('corePlanFinalContract', result)"
           required
-          :account="currentSales.value"  :id="currentSales.value"/>
+          :account="currentSales.value" :id="currentSales.value"/>
     </div>
   </SharedModal>
 
@@ -274,12 +305,26 @@
       @update:modelValue="closeDocDialog"
       class="doc-modal form"
       titleAlign="center"
-      >
+  >
 
     <div v-if="showDocDialog" class="dialog-overlay" @click="closeDocDialog">
       <div class="dialog-container" @click.stop>
 
         <div class="dialog-body">
+          <!-- 最終合約 -->
+          <div v-if="currentDocType === '最終合約'">
+            <div class="info-section">
+              <h4>最終合約</h4>
+              <div class="pdf-container">
+                <iframe
+                    :src="selectedMemberFinalContract.finalContractUrl"
+                    width="100%"
+                    height="800px"
+                    type="application/pdf"
+                ></iframe>
+              </div>
+            </div>
+          </div>
           <!-- 創業計劃書 -->
           <div v-if="currentDocType === '創業計劃書' && planDetail">
             <div class="info-section">
@@ -379,9 +424,8 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 籌備成本 -->
+            <!-- 籌備成本 -->
             <div class="info-section">
               <h4>籌備成本明細</h4>
               <div class="info-grid">
@@ -424,7 +468,7 @@
               </div>
             </div>
 
-          <!-- 營運成本 -->
+            <!-- 營運成本 -->
 
             <div class="info-section">
               <h4>營運成本百分比</h4>
@@ -435,7 +479,9 @@
                 </div>
                 <div class="info-item">
                   <label>首批物料成本：</label>
-                  <span>{{ planOperatingCost.firstMaterialCostsPercent }}% (NT$ {{ planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
+                  <span>{{
+                      planOperatingCost.firstMaterialCostsPercent
+                    }}% (NT$ {{ planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
                 </div>
                 <div class="info-item" v-if="planOperatingCost.firstMaterialCostsRemark">
                   <label>備註：</label>
@@ -443,19 +489,27 @@
                 </div>
                 <div class="info-item">
                   <label>人事成本：</label>
-                  <span>{{ planOperatingCost.personnelCostsPercent }}% (NT$ {{ planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
+                  <span>{{
+                      planOperatingCost.personnelCostsPercent
+                    }}% (NT$ {{ planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
                 </div>
                 <div class="info-item">
                   <label>租金成本：</label>
-                  <span>{{ planOperatingCost.rentalCostsPercent }}% (NT$ {{ planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
+                  <span>{{
+                      planOperatingCost.rentalCostsPercent
+                    }}% (NT$ {{ planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
                 </div>
                 <div class="info-item">
                   <label>營運成本：</label>
-                  <span>{{ planOperatingCost.peratingCostsPercent }}% (NT$ {{ planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
+                  <span>{{
+                      planOperatingCost.peratingCostsPercent
+                    }}% (NT$ {{ planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
                 </div>
                 <div class="info-item">
                   <label>其他成本：</label>
-                  <span>{{ planOperatingCost.otherCostsPercent }}% (NT$ {{ planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
+                  <span>{{
+                      planOperatingCost.otherCostsPercent
+                    }}% (NT$ {{ planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
                 </div>
                 <div class="info-item">
                   <label>獎勵門檻：</label>
@@ -472,7 +526,7 @@
               </div>
             </div>
 
-          <!-- 分潤條款 -->
+            <!-- 分潤條款 -->
             <div class="info-section">
               <h4>分潤條款</h4>
               <div class="info-grid">
@@ -490,7 +544,7 @@
                 </div>
               </div>
             </div>
-
+          </div>
         </div>
       </div>
     </div>
@@ -500,7 +554,7 @@
 </template>
 
 <script setup>
-import {reactive, computed, ref, onMounted,watch} from "vue";
+import {reactive, computed, ref, onMounted, watch} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
@@ -511,7 +565,8 @@ import {salesLevelApi} from "@/api/modules/salesLevel.js";
 import {salesCheckApi} from "@/api/modules/salesCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {cityApi} from "@/api/modules/city.js";
-const { isLoggedIn, currentSales } = useAuth();
+
+const {isLoggedIn, currentSales} = useAuth();
 
 import {useRoute, useRouter} from 'vue-router';
 import SharedUpload from "@/components/shared/Shared-Upload.vue";
@@ -522,15 +577,14 @@ const showModal = ref(false);
 const selectedMember = ref({});
 
 const columns = [
-  { key: "type", label: "身分" },
-  { key: "planDate", label: "時間" },
-  { key: "name", label: "會員名字" },
-  { key: "planName", label: "專案名稱" },
-  { key: "planStatus", label: "專案狀態" },
-  { key: "review", label: "操作" },
-  { key: "actions", label: "查看" },
+  {key: "type", label: "身分"},
+  {key: "planDate", label: "時間"},
+  {key: "name", label: "會員名字"},
+  {key: "planName", label: "專案名稱"},
+  {key: "planStatus", label: "專案狀態"},
+  {key: "review", label: "操作"},
+  {key: "actions", label: "查看"},
 ];
-
 
 
 const getActionType = (row) => {
@@ -607,9 +661,9 @@ const displayedMembers = computed(() => {
 
   if (filter.dateOrder) {
     list.sort((a, b) =>
-      filter.dateOrder === "asc"
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date)
+        filter.dateOrder === "asc"
+            ? new Date(a.date) - new Date(b.date)
+            : new Date(b.date) - new Date(a.date)
     );
   }
 
@@ -620,12 +674,14 @@ const displayedMembers = computed(() => {
 });
 
 const cities = ref([]);
+
 async function getCities() {
   const response = await cityApi.getCities();
   cities.value = response.data;
 }
 
 const SalesLevels = ref([]);
+
 async function getSalesLevel() {
   const response = await salesLevelApi.getSalesLevel();
   SalesLevels.value = response.data;
@@ -633,12 +689,14 @@ async function getSalesLevel() {
 }
 
 const planSteps = ref([]);
+
 async function getAllPlanStep() {
   const response = await stepApi.getAllPlanStep();
   planSteps.value = response.data;
 }
 
 const corePlanStep = ref([]);
+
 async function getAllCorePlanStep() {
   const response = await stepApi.getAllCorePlanStep();
   corePlanStep.value = response.data;
@@ -697,7 +755,7 @@ onMounted(async () => {
   }
 });
 const selectedMemberDetail = ref({});
-
+const selectedMemberFinalContract = ref({})
 // 自動打開會員詳情的函數
 async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = null) {
   // 優先從 query 參數獲取，否則從 members 中查找
@@ -708,16 +766,26 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
     type: typeFromQuery || member.type,
     planId: planIdFromQuery || (member ? member.planId : 0)
   }
-  console.log(formData)
 
   try {
     const response = await salesApi.getUserInfoBySales(formData);
     if (response.code === 0) {
       selectedMemberDetail.value = response.data;
-
+      if (selectedMemberDetail.value.founderPlan[0].currentStep === 14) {
+        const finalContractResponse = await salesApi.getPlanFinalContractBySales({
+          salesId: currentSales.value,
+          userId: parseInt(userId),
+          planId: formData.planId
+        });
+        if (finalContractResponse.code === 0) {
+          selectedMemberFinalContract.value = finalContractResponse.data;
+        } else {
+          alert('獲取最終合約失敗，無法查看詳情');
+        }
+      }
       // 設置 selectedMember
       if (member) {
-        selectedMember.value = { ...member };
+        selectedMember.value = {...member};
       } else {
         // 從 query 重建基本資訊
         selectedMember.value = {
@@ -725,7 +793,7 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
           name: response.data.userName || '未知用戶',
           type: formData.type === 1 ? '創業者' : '共創者',
           planId: formData.planId,
-          docs: ["創業計劃書", "合約", "公司資料", "公司帳戶"],
+          docs: ["創業計劃書", "合約", "公司資料", "公司帳戶", "最終合約"],
         };
       }
 
@@ -776,17 +844,35 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
 
 
 async function viewMember(row) {
-  selectedMember.value = { ...row };
+  selectedMember.value = {...row};
   showModal.value = true;
   await openMemberDetail(row.id, row.type, row.planId);
 }
 
 // 需要審核的步驟（創業者）
-const reviewStepsFounder = [1, 6,  8, 14, 16, 18, 20];
+const reviewStepsFounder = [1, 6, 8, 14, 16, 18, 20];
+const addressForm = reactive({
+  address: ''
+});
+const addressErrors = reactive({
+  address: ''
+});
 
+async function handleAddressSubmit() {
+  addressErrors.address = '';
+
+  if (!addressForm.address) {
+    addressErrors.address = '地址為必填項';
+  }
+
+  await handleApprove(currentProcessingRow.value, true, addressForm.address);
+}
+
+const showAddressDialog = ref(false);
 const showRemarkDialog = ref(false);
 const remark = ref('');
 const currentProcessingRow = ref(null);
+
 async function handleApproveClick(row, approved) {
   // 保存當前處理的 row
   currentProcessingRow.value = row;
@@ -794,6 +880,11 @@ async function handleApproveClick(row, approved) {
   if (row.planStatus === 6 && approved) {
     showContractDialog.value = true;
     return; // 等待合約上傳完成
+  }
+
+  if (row.planStatus === 18 && approved) {
+    showAddressDialog.value = true;
+    return; // 等待地址輸入完成
   }
 
   if (!approved) {
@@ -804,21 +895,23 @@ async function handleApproveClick(row, approved) {
   // 如果是通過且不需要上傳合約，直接處理
   await handleApprove(row, true);
 }
-const userSignCoreContractInfo = ref({});
-async function getUserSignCoreContractBySales(detail) {
-    const formData = {
-      salesId: currentSales.value,
-      userId: detail.userId,
-      participantPlanId: detail.participantPlanId,
-    }
 
-    const response = await salesApi.getUserSignCoreContractBySales(formData)
-    if (response.code === 0) {
-      userSignCoreContractInfo.value = response.data;
-      window.open(userSignCoreContractInfo.value.signCoreContractUrl, '_blank')
-    } else {
-      alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
-    }
+const userSignCoreContractInfo = ref({});
+
+async function getUserSignCoreContractBySales(detail) {
+  const formData = {
+    salesId: currentSales.value,
+    userId: detail.userId,
+    participantPlanId: detail.participantPlanId,
+  }
+
+  const response = await salesApi.getUserSignCoreContractBySales(formData)
+  if (response.code === 0) {
+    userSignCoreContractInfo.value = response.data;
+    window.open(userSignCoreContractInfo.value.signCoreContractUrl, '_blank')
+  } else {
+    alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
+  }
 }
 
 // 狀態管理
@@ -961,7 +1054,7 @@ async function handleContractSubmit() {
 
 const showCorePlanFinalContractDialog = ref(false);
 
-async function handleCorePlanFinalContractSubmit(){
+async function handleCorePlanFinalContractSubmit() {
   if (!contractForm.contractFileName) {
     contractErrors.contractFile = '請上傳合約文件';
     return;
@@ -981,95 +1074,99 @@ async function handleCorePlanFinalContractSubmit(){
   await submitCoreApproval(currentProcessingDetail.value, true);
   currentProcessingRow.value = null; // 清空
 }
-async function handleApprove(row, approved) {
+
+async function handleApprove(row, approved, address = '') {
   console.log(row)
-    const formData = {
-      salesId: currentSales.value,
-      planId: row.planId || 0,
-      approved: approved,
-      remark: remark.value || ''
-    }
-    let response;
-    switch (row.planStatus) {
-      case 1: // 創業計劃書審核
-        response = await salesCheckApi.checkPlanBySales(formData)
-          if (response.code === 0) {
-            alert('已處理創業計劃書審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-        break;
-      case 6: // 合約上傳
-        formData.contractId = contractForm.contractFileId;
-        response = await salesCheckApi.uploadContractBySales(formData)
-          if (response.code === 0) {
-            alert('已上傳合約');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-          break;
-      case 8:
-        response = await salesCheckApi.checkContractBySales(formData)
-          if (response.code === 0) {
-            alert('已處理合約審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-          break;
-      case 14:
-        response = await salesCheckApi.checkResourceBySales(formData)
-          if (response.code === 0) {
-            alert('已處理資源確認審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-        break;
+  const formData = {
+    salesId: currentSales.value,
+    planId: row.planId || 0,
+    approved: approved,
+    remark: remark.value || ''
+  }
+  let response;
+  switch (row.planStatus) {
+    case 1: // 創業計劃書審核
+      response = await salesCheckApi.checkPlanBySales(formData)
+      if (response.code === 0) {
+        alert('已處理創業計劃書審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
+    case 6: // 合約上傳
+      formData.contractId = contractForm.contractFileId;
+      response = await salesCheckApi.uploadContractBySales(formData)
+      if (response.code === 0) {
+        alert('已上傳合約');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
+    case 8:
+      response = await salesCheckApi.checkContractBySales(formData)
+      if (response.code === 0) {
+        alert('已處理合約審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
+    case 14:
+      response = await salesCheckApi.checkResourceBySales(formData)
+      if (response.code === 0) {
+        alert('已處理資源確認審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
 
-      case 16:
-        response = await salesCheckApi.checkFranchiseBySales(formData)
-          if (response.code === 0) {
-            alert('已處理加盟審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-        break;
+    case 16:
+      response = await salesCheckApi.checkFranchiseBySales(formData)
+      if (response.code === 0) {
+        alert('已處理加盟審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
 
-      case 18:
-        response = await salesCheckApi.checkAddressBySales(formData)
-          if (response.code === 0) {
-            alert('已處理營業地址審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-        break;
+    case 18:
+      formData.address = address;
+      response = await salesCheckApi.checkAddressBySales(formData)
+      if (response.code === 0) {
+        alert('已處理營業地址審核');
+        await getAllUserBySales();
+        showModal.value = false;
+        showAddressDialog.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
 
-      case 20:
-        response = await salesCheckApi.finishPlanBySales(formData)
-          if (response.code === 0) {
-            alert('已處理專案結案審核');
-            await getAllUserBySales();
-            showModal.value = false;
-          } else {
-            alert('操作失敗: ' + response.message);
-          }
-        break;
+    case 20:
+      response = await salesCheckApi.finishPlanBySales(formData)
+      if (response.code === 0) {
+        alert('已處理專案結案審核');
+        await getAllUserBySales();
+        showModal.value = false;
+      } else {
+        alert('操作失敗: ' + response.message);
+      }
+      break;
 
-      default:
-        alert('此步驟無法操作');
-        return;
-    }
+
+    default:
+      alert('此步驟無法操作');
+      return;
+  }
 }
 
 const showContractDialog = ref(false);
@@ -1134,6 +1231,7 @@ const calculateTotalPrepareCosts = () => {
       (costs.paySalaryBudget || 0) +
       (costs.otherPersonnelCosts || 0) +
       (costs.marketingExpenses || 0) +
+      (costs.cashFlow || 0) +
       (costs.otherCosts || 0)
   )
 }
@@ -1149,6 +1247,25 @@ const openDocDialog = (docType) => {
 const closeDocDialog = () => {
   showDocDialog.value = false
   currentDocType.value = ''
+}
+
+async function getPlanFinalContractBySales(detail) {
+  const formData = {
+    salesId: currentSales.value,
+    userId: detail.userId,
+    planId: detail.planId,
+  }
+
+  const response = await salesApi.getPlanFinalContractBySales(formData)
+  if (response.code === 0) {
+    if (response.data && response.data.finalContractUrl) {
+      window.open(response.data.finalContractUrl, '_blank')
+    } else {
+      alert('該計劃尚未上傳最終合約');
+    }
+  } else {
+    alert('獲取最終合約失敗，無法查看詳情');
+  }
 }
 
 </script>
@@ -1175,9 +1292,11 @@ const closeDocDialog = () => {
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .co-status {
     text-align: left;
   }
+
   .co-amount {
     text-align: left;
   }
@@ -1186,6 +1305,7 @@ const closeDocDialog = () => {
 .modal-section {
   gap: 5px;
   display: grid;
+
   .title {
     font-weight: 500;
     font-size: 15px;
@@ -1221,6 +1341,7 @@ const closeDocDialog = () => {
     }
   }
 }
+
 .btn-notify {
   padding: 4px 10px;
   border-radius: 4px;
@@ -1254,7 +1375,7 @@ const closeDocDialog = () => {
   background: white;
   border-radius: 8px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;
   max-height: 70vh;
   display: flex;
   flex-direction: column;
