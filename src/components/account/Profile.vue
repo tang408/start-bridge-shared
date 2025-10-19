@@ -10,7 +10,7 @@
 
   <div v-if="activeTab === 'founder'">
     <form @submit.prevent="handleRegister" class="form">
-      <div class="form-display">
+      <div class="form-display profile">
         <div class="form-group d-grid">
           <label class="mb-2">審核狀態</label>
           <span class="ps-2">未審核</span>
@@ -301,7 +301,7 @@
   </div>
   <div v-else>
     <form @submit.prevent="handleRegister" class="form">
-      <div class="form-display">
+      <div class="form-display profile">
         <div class="form-group d-grid">
           <label class="mb-2">審核狀態</label>
           <span class="ps-2">未審核</span>

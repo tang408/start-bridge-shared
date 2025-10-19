@@ -34,9 +34,12 @@
             >
           </header>
 
-          <div class="title">{{ p.title }}</div>
+          <div class="gap-1 d-grid">
+            <div class="title">{{ p.title }}</div>
+            <div class="content">{{ p.content }}</div>
+          </div>
 
-          <div class="progress-wrap" v-if="isRunning(p.status)">
+          <div class="progress-wrap">
             <div
               class="progress-bar"
               role="progressbar"
@@ -57,66 +60,6 @@
             </div>
           </div>
         </button>
-
-        <transition name="collapse">
-          <div
-            v-show="expandedId === p.id"
-            class="details"
-            :id="`details-${p.id}`"
-          >
-            <hr />
-            <div class="fund-box" v-if="p.showFundBox">
-              <div class="form-row">
-                <label class="label">共創金額</label>
-                <span>{{ fmtMoney(p.goal) }}</span>
-              </div>
-
-              <div class="form-row">
-                <input
-                  type="text"
-                  class="form-input"
-                  v-model="p.increaseAmountStr"
-                  @input="onAmountInput(p)"
-                  @blur="onAmountBlur(p)"
-                  inputmode="numeric"
-                />
-                <button
-                  type="button"
-                  class="btn-dollar"
-                  @click="handleIncrease(p)"
-                >
-                  增加金額
-                </button>
-              </div>
-            </div>
-
-            <div class="file-list" v-if="p.files?.length">
-              <div class="file-row" v-for="f in p.files" :key="f.id">
-                <span class="file-title">{{ f.title }}</span>
-                <div class="file-content">
-                  <span class="file-name">{{ f.fileName }}</span>
-                  <button
-                    type="button"
-                    class="file-icon"
-                    @click="downloadFile(f)"
-                  >
-                    <img src="@/assets/icon/dowload.png" alt="下載" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <SharedFabActions
-              :favorite="p.fav"
-              iconType="heart"
-              :showTrash="false"
-              @favorite-toggle="(v) => (p.fav = v)"
-              @remove="removeProject(p.id)"
-              :right="16"
-              :bottom="16"
-            />
-          </div>
-        </transition>
       </article>
     </div>
 
@@ -147,38 +90,44 @@
 
           <div class="title">{{ p.title }}</div>
           <div>
-            <transition name="collapse">
-              <div
-                v-show="expandedDetailsId === p.id"
-                class="detail-panel"
-                :id="`details-${p.id}`"
-              >
-                <div class="tx-list">
-                  <div
-                    v-for="(t, i) in p.transactions"
-                    :key="i"
-                    class="tx-row"
-                    :class="[
-                      txRowClass(t.statusKey),
-                      { 'is-disabled': t.statusKey === 'failed' },
-                    ]"
-                  >
-                    <div class="tx-date">{{ t.date }}</div>
-                    <div class="tx-label">共創金額</div>
-                    <div class="tx-status">
-                      {{ txStatusLabel(t.statusKey) }}
-                    </div>
-                    <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
+            <div class="detail-panel" :id="`details-${p.id}`">
+              <div class="tx-list">
+                <div v-for="(t, i) in p.transactions" :key="i" class="tx-row">
+                  <div class="tx-date">{{ t.date }}</div>
+                  <div class="tx-btn">
+                    <button>button</button>
                   </div>
+                  <div class="tx-label">{{ t.invest }}</div>
+                  <div class="tx-status">
+                    {{ txStatusLabel(t.statusKey) }}
+                  </div>
+                  <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
                 </div>
-                <hr />
               </div>
-            </transition>
+              <hr />
+            </div>
             <div class="details-dollar d-flex justify-content-end">
               <span>共創總額</span>
               <span class="details-dollar-content">{{
                 fmtMoney(p.dollar)
               }}</span>
+            </div>
+            <div class="form-row mt-5" v-if="p.status === 'running'">
+              <input
+                type="text"
+                class="form-input"
+                v-model="p.increaseAmountStr"
+                @input="onAmountInput(p)"
+                @blur="onAmountBlur(p)"
+                inputmode="numeric"
+              />
+              <button
+                type="button"
+                class="btn-dollar"
+                @click="handleIncrease(p)"
+              >
+                增加金額
+              </button>
             </div>
           </div>
         </button>
@@ -294,8 +243,10 @@
           >
         </header>
 
-        <div class="title">{{ p.title }}</div>
-
+        <div class="gap-1 d-grid">
+          <div class="title">{{ p.title }}</div>
+          <div class="content">{{ p.content }}</div>
+        </div>
         <div>
           <div class="progress-wrap" v-if="isRunning(p.status)">
             <div
@@ -366,7 +317,6 @@ import {
   txRowClass,
 } from "@/utils/status";
 
-const router = useRouter();
 const route = useRoute();
 
 const activeTab = ref("progress");
@@ -396,6 +346,7 @@ const projects = reactive([
     status: "running",
     lastUpdate: "12天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
     progress: 80,
     reached: 113456789,
     dollar: 123456789,
@@ -416,6 +367,7 @@ const projects = reactive([
     status: "running",
     lastUpdate: "2天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
     progress: 80,
     reached: 113456789,
     dollar: 123456789,
@@ -433,8 +385,17 @@ const projects = reactive([
   },
   {
     id: 3,
-    status: "success",
+    status: "match-success",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
+    progress: 110,
+    reached: 113456789,
+    dollar: 123456789,
+    remain: 86543211,
+    goal: 1200000,
+    increaseAmount: 0,
+    showFundBox: false,
+    fav: true,
     files: [
       { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
       { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
@@ -444,8 +405,17 @@ const projects = reactive([
   },
   {
     id: 4,
-    status: "failed",
+    status: "match-failed",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    content: "退款中",
+    progress: 110,
+    reached: 113456789,
+    dollar: 123456789,
+    remain: 86543211,
+    goal: 1200000,
+    increaseAmount: 0,
+    showFundBox: false,
+    fav: true,
     files: [
       { id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#" },
       { id: "f2", title: "市場規模", fileName: "market.pdf", url: "#" },
@@ -465,16 +435,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 1200000,
       },
       {
         date: "2024-12-03",
+        invest: "初次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "初次投入",
         statusKey: "failed",
         amount: 1200000,
       },
@@ -489,16 +462,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-01",
+        invest: "再次投入",
         statusKey: "success",
         amount: 300000,
       },
       {
         date: "2024-12-02",
+        invest: "再次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 180000,
       },
@@ -513,16 +489,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-01",
+        invest: "再次投入",
         statusKey: "success",
         amount: 300000,
       },
       {
         date: "2024-12-02",
+        invest: "再次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 180000,
       },
@@ -537,16 +516,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-01",
+        invest: "再次投入",
         statusKey: "success",
         amount: 300000,
       },
       {
         date: "2024-12-02",
+        invest: "再次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 180000,
       },
@@ -561,16 +543,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-01",
+        invest: "再次投入",
         statusKey: "success",
         amount: 300000,
       },
       {
         date: "2024-12-02",
+        invest: "再次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 180000,
       },
@@ -585,16 +570,19 @@ const details = reactive([
     transactions: [
       {
         date: "2024-12-01",
+        invest: "再次投入",
         statusKey: "success",
         amount: 300000,
       },
       {
         date: "2024-12-02",
+        invest: "再次投入",
         statusKey: "pending",
         amount: 200000,
       },
       {
         date: "2024-12-03",
+        invest: "再次投入",
         statusKey: "success",
         amount: 180000,
       },
@@ -633,8 +621,9 @@ const projectsData = reactive([
   {
     id: "x-1",
     status: "running",
-    lastUpdate: "剩餘2天 2小時 50分",
+    lastUpdate: "2天 2小時 50分",
     title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
+    content: "自訂專案狀態說明(EX:缺乏OO資訊)  給他們建立常用的狀態說明下拉",
     progress: 80,
     dollar: 113456789,
     remain: 86543211,
@@ -642,11 +631,6 @@ const projectsData = reactive([
     increaseAmount: 200000,
   },
 ]);
-
-function removeProject(id) {
-  const i = projects.findIndex((p) => p.id === id);
-  if (i !== -1) projects.splice(i, 1);
-}
 
 function fmtMoney(n) {
   if (n === null || n === undefined || isNaN(n)) return "—";
@@ -657,10 +641,6 @@ function handleIncrease(p) {
   if (!p.increaseAmount || p.increaseAmount <= 0) return;
   alert(`已為「${p.title}」增加 ${fmtMoney(p.increaseAmount)} 元`);
   p.increaseAmount = 0;
-}
-
-function downloadFile(f) {
-  alert(`下載：${f.name}`);
 }
 
 // 篩選狀態
@@ -760,14 +740,6 @@ function participate(p) {}
   }
 }
 
-.stack .article-card.expanded {
-  padding: 30px 30px 120px;
-  @media (max-width: 576px) {
-    gap: 0;
-    padding: 30px 20px 120px;
-  }
-}
-
 .details .article-card.expanded {
   padding: 30px;
   @media (max-width: 576px) {
@@ -816,19 +788,66 @@ function participate(p) {}
   font-weight: 400;
   font-size: $fs-14;
   line-height: 17px;
+  width: 120px;
+  text-align: center;
+  &.pending-start {
+    background: #dfdfdf;
+    border: 1px solid #dfdfdf;
+    color: #373a36;
+  }
+
+  &.applying {
+    background: #ff9966;
+    border: 1px solid #ff9966;
+    color: #ffffff;
+  }
+
+  &.reviewing {
+    border: 1px solid #ff6634;
+    color: #ff6634;
+    background: transparent;
+  }
+
+  &.review-failed {
+    border: 1px solid #ff6634;
+    color: #ff6634;
+    background: transparent;
+  }
+
+  &.review-passed {
+    border: 1px solid #ff6634;
+    background: #ff6634;
+    color: #fff;
+  }
+
   &.running {
-    background: $text-green;
-    color: $white;
+    border: 1px solid #45b665;
+    color: #45b665;
+    background: transparent;
   }
-  &.success,
+
   &.match-success {
-    background: $text-dark;
-    color: $white;
+    border: 1px solid #45b665;
+    background: #45b665;
+    color: #fff;
   }
-  &.failed,
+
+  &.joining {
+    background: #ffc919;
+    border: 1px solid #ffc919;
+    color: #262626;
+  }
+
+  &.joined-success {
+    border: 1px solid #555555;
+    background: #555555;
+    color: #fff;
+  }
+
   &.match-failed {
-    background: $brand-gray;
-    color: $text-dark;
+    border: 1px solid #dfdfdf;
+    background: #dfdfdf;
+    color: #555555;
   }
 }
 
@@ -837,6 +856,13 @@ function participate(p) {}
   font-weight: $fw-500;
   font-size: $fs-16;
   line-height: $lh-19;
+}
+
+.content {
+  font-weight: $fw-400;
+  font-size: $fs-15;
+  line-height: $lh-18;
+  color: #373a36;
 }
 
 .progress-wrap {
@@ -1019,6 +1045,7 @@ function participate(p) {}
   }
   .tx-row {
     display: flex;
+    justify-content: space-between;
     color: #555555;
     @media (max-width: 576px) {
       display: grid;
@@ -1035,9 +1062,21 @@ function participate(p) {}
       }
     }
 
-    .tx-label {
-      width: 65%;
+    .tx-btn {
+      width: 25%;
       text-align: end;
+      button {
+        border-radius: 50px;
+        border: none;
+        background-color: #ff6634;
+        color: #fff;
+        padding: 0 15px;
+      }
+    }
+
+    .tx-label {
+      width: 25%;
+      text-align: center;
       padding-right: 0.5rem;
       font-weight: 400;
       font-size: 16px;
@@ -1050,6 +1089,7 @@ function participate(p) {}
     }
 
     .tx-status {
+      text-align: end;
       width: 8%;
       color: $text-dark;
       font-weight: 400;
@@ -1058,6 +1098,7 @@ function participate(p) {}
       letter-spacing: 0.04em;
       @media (max-width: 576px) {
         width: 100%;
+        text-align: start;
       }
     }
 

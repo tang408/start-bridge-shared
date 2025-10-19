@@ -4,7 +4,11 @@
       <div class="profile">
         <div class="avatar-img">
           <img class="avatar" :src="avatar" alt="avatar" />
-          <img class="avatar-edit" src="@/assets/icon/avatar-edit.png" alt="avatar" />
+          <img
+            class="avatar-edit"
+            src="@/assets/icon/avatar-edit.png"
+            alt="avatar"
+          />
         </div>
         <div>
           <div class="roles">
@@ -22,18 +26,18 @@
           class="menu-item"
           :class="{ active: $route.name === item.key }"
           @click="$emit('select', item)"
+          @mouseenter="hoveredKey = item.key"
+          @mouseleave="hoveredKey = ''"
         >
           <div class="menu-item-content">
-            <span
-              class="icon-mask"
-              :style="{ '--icon-url': `url(${item.icon})` }"
-              :aria-label="item.label"
-            ></span>
+            <img class="icon" :src="getIcon(item)" :alt="item.label" />
             <span class="label"
               >{{ item.label }}
-              <span v-if="item.key === 'email' && item.count > 0" class="notice">{{
-                item.count
-              }}</span>
+              <span
+                v-if="item.key === 'email' && item.count > 0"
+                class="notice"
+                >{{ item.count }}</span
+              >
             </span>
           </div>
         </button>
@@ -47,35 +51,74 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
-import side1 from '@/assets/icon/side-1.png'
-import side2 from '@/assets/icon/side-2.png'
-import side3 from '@/assets/icon/side-3.png'
-import side4 from '@/assets/icon/side-4.png'
-import side5 from '@/assets/icon/side-5.png'
-import side6 from '@/assets/icon/side-6.png'
-import side7 from '@/assets/icon/side-7.png'
-import side8 from '@/assets/icon/side-8.png'
-import side9 from '@/assets/icon/side-9.png'
-import avatarImg from '@/assets/images/avatar.png'
+import { ref } from "vue";
+import { useRoute } from "vue-router";
+import side1 from "@/assets/icon/side-1.svg";
+import side2 from "@/assets/icon/side-2.svg";
+import side3 from "@/assets/icon/side-3.svg";
+import side4 from "@/assets/icon/side-4.svg";
+import side5 from "@/assets/icon/side-5.svg";
+import side6 from "@/assets/icon/side-6.svg";
+import side8 from "@/assets/icon/side-8.svg";
+import side9 from "@/assets/icon/side-9.svg";
+import side1Active from "@/assets/icon/side-1-active.svg";
+import side2Active from "@/assets/icon/side-2-active.svg";
+import side3Active from "@/assets/icon/side-3-active.svg";
+import side4Active from "@/assets/icon/side-4-active.svg";
+import side5Active from "@/assets/icon/side-5-active.svg";
+import side6Active from "@/assets/icon/side-6-active.svg";
+import side8Active from "@/assets/icon/side-8-active.svg";
+import side9Active from "@/assets/icon/side-9-active.svg";
+
+import avatarImg from "@/assets/images/avatar.png";
 
 defineProps({
-  displayName: { type: String, default: '帳號名稱帳號名稱' },
+  displayName: { type: String, default: "帳號名稱帳號名稱" },
   avatar: { type: String, default: avatarImg },
-})
-defineEmits(['select', 'logout'])
-useRoute()
+});
+defineEmits(["select", "logout"]);
+useRoute();
 
 const items = [
-  { key: 'profile', label: '基本資料', icon: side1 },
-  { key: 'email', label: '我的信箱', icon: side2, count: 1 },
-  { key: 'favorites', label: '我的收藏', icon: side3 },
-  { key: 'participation', label: '參與專案管理', icon: side4 },
-  { key: 'startup', label: '創業計劃管理', icon: side5 },
-  { key: 'contracts', label: '公版合約', icon: side6 },
-  { key: 'courses', label: '課程/講座報名', icon: side8 },
-  { key: 'faq', label: '幫助中心(FAQ)', icon: side9 },
-]
+  { key: "profile", label: "基本資料", icon: side1, iconActive: side1Active },
+  {
+    key: "email",
+    label: "我的信箱",
+    icon: side2,
+    iconActive: side2Active,
+    count: 1,
+  },
+  { key: "favorites", label: "我的收藏", icon: side3, iconActive: side3Active },
+  {
+    key: "participation",
+    label: "參與專案管理",
+    icon: side4,
+    iconActive: side4Active,
+  },
+  {
+    key: "startup",
+    label: "創業計劃管理",
+    icon: side5,
+    iconActive: side5Active,
+  },
+  { key: "contracts", label: "公版合約", icon: side6, iconActive: side6Active },
+  {
+    key: "courses",
+    label: "課程/講座報名",
+    icon: side8,
+    iconActive: side8Active,
+  },
+  { key: "faq", label: "幫助中心(FAQ)", icon: side9, iconActive: side9Active },
+];
+
+const route = useRoute();
+const hoveredKey = ref("");
+const getIcon = (item) => {
+  if (route.name === item.key || hoveredKey.value === item.key) {
+    return item.iconActive;
+  }
+  return item.icon;
+};
 </script>
 
 <style lang="scss" scoped>
@@ -173,10 +216,6 @@ const items = [
     line-height: $lh-19;
     letter-spacing: 0.04em;
     color: $text-dark;
-
-    &:hover {
-      color: $btn-orange;
-    }
   }
 }
 </style>

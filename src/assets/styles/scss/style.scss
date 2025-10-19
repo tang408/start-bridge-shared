@@ -369,6 +369,10 @@ span {
         flex-flow: column;
       }
 
+      .form-display.profile {
+        gap: 15px;
+      }
+
       .form-group {
         text-align: left;
 
@@ -409,6 +413,32 @@ span {
             text-decoration: underline;
           }
         }
+      }
+    }
+  }
+}
+
+.apply-form {
+  .form-group {
+    text-align: left;
+
+    label {
+      font-weight: 500;
+      font-size: 15px;
+      line-height: 22px;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      &.is-invalid {
+        border-color: #db3838;
       }
     }
   }
@@ -553,6 +583,7 @@ section {
       cursor: pointer;
       position: relative;
       padding-left: 28px;
+      font-weight: 400 !important;
       &::before {
         content: "";
         display: inline-block;

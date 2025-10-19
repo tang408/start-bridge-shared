@@ -67,6 +67,12 @@
           </div>
         </div>
       </div>
+
+      <div class="mt-5 text-center">
+        <button class="register-btn" @click="goToRegister">
+          <img class="me-3" src="@/assets/icon/btn-icon2.svg" />前往註冊
+        </button>
+      </div>
     </div>
   </div>
   <div class="qa-content">
@@ -106,6 +112,10 @@ watch(
   () => route.query.tab,
   () => syncFromRoute()
 );
+
+const goToRegister = () => {
+  router.push("/entSignUp");
+};
 
 const activeStartup = ref({ lane: "init", idx: 0 });
 const activeCoCreate = ref({ lane: "init", idx: 0 });
@@ -332,6 +342,19 @@ const accordionItems = [
       }
     }
   }
+}
+
+.register-btn {
+  background-color: $btn-orange;
+  color: $white;
+  border: none;
+  border-radius: 50px;
+  width: 400px;
+  height: 70px;
+  font-weight: $fw-500;
+  font-size: $fs-22;
+  line-height: $lh-26;
+  letter-spacing: $ls-2;
 }
 
 .qa-content {

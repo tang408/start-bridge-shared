@@ -452,6 +452,10 @@ const handleLogout = async () => {
   padding-right: 1rem;
 }
 
+.member-icon {
+  padding: 0 20px;
+}
+
 .member-icon-img {
   width: 24px;
   height: 24px;
