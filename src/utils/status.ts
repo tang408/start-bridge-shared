@@ -1,20 +1,46 @@
 export type ProjectStatus =
-  | "running"
-  | "success"
-  | "failed"
-  | "match-success"
-  | "match-failed";
+  | "pending-start" // 待啟動
+  | "applying" // 申請中
+  | "reviewing" // 平台審核中
+  | "review-failed" // 審核不通過
+  | "review-passed" // 審核通過
+  | "running" // 媒合中
+  | "match-success" // 媒合成功
+  | "joining" // 進入加盟流程
+  | "joined-success" // 媒合成功 (深灰)
+  | "match-failed"; // 媒合不成立
 
 export const STATUS_MAP: Record<
   ProjectStatus,
   { label: string; pillClass: string; isRunning: boolean }
 > = {
+  "pending-start": {
+    label: "待啟動",
+    pillClass: "pending-start",
+    isRunning: false,
+  },
+  applying: { label: "申請中", pillClass: "applying", isRunning: true },
+  reviewing: { label: "平台審核中", pillClass: "reviewing", isRunning: true },
+  "review-failed": {
+    label: "審核不通過",
+    pillClass: "review-failed",
+    isRunning: false,
+  },
+  "review-passed": {
+    label: "審核通過",
+    pillClass: "review-passed",
+    isRunning: false,
+  },
   running: { label: "媒合中", pillClass: "running", isRunning: true },
-  success: { label: "募資結束", pillClass: "success", isRunning: false },
-  failed: { label: "募資失敗", pillClass: "failed", isRunning: false },
   "match-success": {
     label: "媒合成功",
     pillClass: "match-success",
+    isRunning: false,
+  },
+  joining: { label: "進入加盟流程", pillClass: "joining", isRunning: true },
+  "joined-success": {
+    label: "媒合成功",
+    pillClass: "joined-success",
     isRunning: false,
   },
   "match-failed": {
