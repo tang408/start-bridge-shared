@@ -381,7 +381,7 @@
 </template>
 
 <script setup>
-import { useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
