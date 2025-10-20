@@ -252,21 +252,10 @@ async function goToStartup() {
       // 檢查 founderInfoData 是否存在且完整
       if (userData.value.founderInfoData) {
         const founderInfo = userData.value.founderInfoData;
-        const hasEmptyOrNull = Object.values(founderInfo).some(value => {
-          return value === null || value === undefined || value === '' || value === 0;
-        });
         if (founderInfo.status === 0) {
           alert("資料審核中，待審核通過後再進行申請。");
           return;
         }
-        if (hasEmptyOrNull) {
-          alert("請填寫完整資料");
-          router.push({path: "/account/profile"});
-          return;
-        }
-      } else {
-        alert("請填寫完整資料");
-        return;
       }
     }
   }
