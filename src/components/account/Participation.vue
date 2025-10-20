@@ -32,9 +32,6 @@
             <span class="time" v-if="isRunning(p.status)"
             >剩餘 {{ p.lastUpdate }}</span
             >
-            <span class="extend-text" v-if="p.status === 'running'">
-              延長募資
-            </span>
           </header>
 
           <div class="gap-1 d-grid">
@@ -63,78 +60,6 @@
             </div>
           </div>
         </button>
-        <transition name="collapse" v-if="p.status == 'match-success'">
-          <div
-              v-show="expandedId === p.id"
-              class="details"
-              :id="`details-${p.id}`"
-          >
-            <hr/>
-            <div class="project-detail">
-              <div class="detail-row">
-                <span class="label">品牌名稱</span>
-                <span>{{ p.brandName || "品牌名稱" }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">創業預算</span>
-                <span>{{ fmtMoney(p.startupBudget) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">專案簡介</span>
-                <span>{{ p.description }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">本次募資金額</span>
-                <span>{{ fmtMoney(p.goal) }}</span>
-              </div>
-
-              <div class="form-row">
-                <input
-                    type="text"
-                    class="form-input"
-                    v-model="increaseAmount"
-                    @input="onAmountInput(p)"
-                    @blur="onAmountBlur(p)"
-                    inputmode="numeric"
-                />
-                <button
-                    type="button"
-                    class="btn-dollar"
-                    @click="handleIncrease(p.id, increaseAmount)"
-                >
-                  增加金額
-                </button>
-              <div class="detail-row">
-                <span class="label">募資起訖日</span>
-                <span>{{ p.startDate }} ~ {{ p.endDate }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">總部位置</span>
-                <span>{{ fmtMoney(p.locationBudget) }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">股東人數</span>
-                <span>{{ p.shareholders }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">預計開業時間</span>
-                <span>{{ p.businessPeriod }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">店面位置</span>
-                <span>{{ p.storeLocation }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">品牌主圖</span>
-                <span>{{ p.mainImage }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="label">介紹圖</span>
-                <span>{{ p.introImages }}</span>
-              </div>
-            </div>
-          </div>
-        </transition>
       </article>
     </div>
 
@@ -347,7 +272,6 @@
           <div class="content">{{ p.content }}</div>
         </div>
         <div>
-          <!-- <div class="progress-wrap" v-if="isRunning(p.status)"> -->
           <div
             class="progress-wrap"
             v-if="p.status !== 'applying' && !p.progress"
@@ -457,17 +381,15 @@
 </template>
 
 <script setup>
-import {useRouter, useRoute} from "vue-router";
+import { useRoute} from "vue-router";
 import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
-import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import {
   statusLabel,
   statusClass,
   isRunning,
   txStatusLabel,
-  txRowClass,
 } from "@/utils/status";
 import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
@@ -560,24 +482,6 @@ const projects = reactive([
     increaseAmount: 0,
     showFundBox: false,
     fav: true,
-    description: "專案簡介專案簡介專案簡介專案簡介專案簡介",
-    brandName: "品牌名稱",
-    startupBudget: 200000,
-    goal: 1200000,
-    startDate: "2024-12-01",
-    endDate: "2025-05-31",
-    locationBudget: 200000,
-    shareholders: 8,
-    businessPeriod: "一年",
-    storeLocation: "尚未找到店面",
-    mainImage: "主圖.jpg",
-    introImages: "介紹圖1.jpg, 介紹圖2.jpg, 介紹圖3.jpg",
-    files: [
-      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
-      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
-      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
-      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
-    ],
   },
   {
     id: 4,
