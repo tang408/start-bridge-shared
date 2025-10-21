@@ -77,22 +77,21 @@
       <form class="apply-form" @submit.prevent="onSubmit">
         <!-- 方案選擇 -->
         <SharedCheckline
-          v-model="plan"
-          label="選擇方案"
-          :options="[
-            { key: 'basic', text: '一般一年', withInput: false },
-            { key: 'vip', text: 'VIP一年', withInput: false },
-            { key: 'supervip', text: '超級VIP一年', withInput: false },
-          ]"
-          :single="true"
-          inline
+            v-model="selectedPlan"
+            label="選擇方案"
+            :options="planOptions"
+            :single="true"
+            inline
+            :error="errors.plan"
         />
 
         <!-- 營業類型 -->
         <SharedSelect
           v-model="form.type"
           label="營業類型"
-          :options="[{ text: '123', value: '1' }]"
+          :options="industryTypesData.map(type => ({ text: type.name, value: type.id }))"
+         id=""
+          :error="errors.industryType"
         />
 
         <!-- 品牌名稱 -->
@@ -101,6 +100,7 @@
           label="品牌名稱"
           v-model="form.brand"
           placeholder="請輸入品牌名稱"
+          :error="errors.brand"
         />
 
         <!-- 預算 -->
@@ -110,6 +110,7 @@
           v-model="form.budget"
           type="number"
           placeholder="請輸入預算"
+          :error="errors.budget"
         />
 
         <!-- 聯絡姓名 -->
@@ -127,6 +128,7 @@
           label="連絡電話"
           v-model="form.phone"
           placeholder="請輸入電話號碼"
+          :error="errors.phone"
         />
 
         <!-- 電子信箱 -->
@@ -136,6 +138,7 @@
           type="email"
           v-model="form.email"
           placeholder="example@email.com"
+          :error="errors.email"
         />
 
         <!-- 總部地區 -->
@@ -143,29 +146,17 @@
           id="region"
           label="總部地區"
           v-model="form.region"
-          :options="[
-            { text: '台北市', value: 'taipei' },
-            { text: '新北市', value: 'newTaipei' },
-            { text: '台中市', value: 'taichung' },
-            { text: '高雄市', value: 'kaohsiung' },
-          ]"
+          :options="citiesData.map(city => ({ text: city.name, value: city.id }))"
+          :error="errors.region"
         />
 
         <!-- 聯絡時間 -->
         <SharedCheckline
           v-model="contactTime"
           label="聯絡時間"
-          :options="[
-            { key: 'morning1', text: '08:00-10:00', withInput: false },
-            { key: 'morning2', text: '10:00-12:00', withInput: false },
-            { key: 'noon', text: '12:00-13:00', withInput: false },
-            { key: 'afternoon1', text: '13:00-14:00', withInput: false },
-            { key: 'afternoon2', text: '14:00-16:00', withInput: false },
-            { key: 'evening1', text: '16:00-18:00', withInput: false },
-            { key: 'evening2', text: '18:00-20:00', withInput: false },
-            { key: 'anytime', text: '任何時間皆可', withInput: false },
-          ]"
+          :options="contactTimeOptions"
           inline
+          :error="errors.contactTime"
         />
 
         <!-- 同意條款 -->
@@ -191,14 +182,14 @@
           </label>
         </div>
 
-        <button type="submit" class="btn-submit">付費刊登</button>
+        <button type="submit" class="btn-submit" @click="createBrandForm">付費刊登</button>
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import Swiper from "./Swiper.vue";
 import Tabs from "./Tabs.vue";
 
@@ -210,8 +201,13 @@ import SharedFlow from "@/components/shared/Shared-Flow.vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedSelect from "@/components/shared/Shared-Select.vue";
 import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
+import {brandFormApi} from "@/api/modules/brandForm.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
+import {cityApi} from "@/api/modules/city.js";
 
-const plan = ref({});
+// 選中的方案 ID
+const selectedPlan = ref({});
+
 const contactTime = ref({});
 const agree = ref(false);
 const form = ref({
@@ -225,14 +221,57 @@ const form = ref({
 });
 
 const errors = ref({
+  plan: "",
+  industryType: "",
+  brand: "",
   name: "",
+  budget: "",
+  phone: "",
+  email: "",
+  region: "",
+  contactTime: "",
 });
 
-function onSubmit() {
+async function onSubmit() {
   errors.value.name = "";
+  errors.value.plan = "";
+  errors.value.industryType = "";
+  errors.value.brand = "";
+  errors.value.budget = "";
+  errors.value.phone = "";
+  errors.value.email = "";
+  errors.value.region = "";
+  errors.value.contactTime = "";
 
   if (!form.value.name) {
     errors.value.name = "請輸入聯絡姓名";
+  }
+
+  if (!selectedPlanId.value) {
+    errors.value.plan = "請選擇方案";
+  }
+  if (!form.value.type) {
+    errors.value.industryType = "請選擇營業類型";
+  }
+  if (!form.value.brand) {
+    errors.value.brand = "請輸入品牌名稱";
+  }
+  if (!form.value.budget) {
+    errors.value.budget = "請輸入創業預算";
+  }
+  if (!form.value.region) {
+    errors.value.region = "請選擇總部地區";
+  }
+  if (!Object.keys(contactTime.value).some(
+      key => contactTime.value[key]?.checked === true
+  )) {
+    errors.value.contactTime = "請選擇聯絡時間";
+  }
+
+  if(!form.value.email) {
+    errors.value.email = "請輸入電子信箱";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) {
+    errors.value.email = "請輸入有效的電子信箱格式";
   }
 
   if (errors.value.name) {
@@ -244,7 +283,34 @@ function onSubmit() {
     return;
   }
 
-  alert("表單已送出！");
+  const formData = {
+    option: selectedPlanId.value,
+    industryType: form.value.type,
+    name: form.value.brand,
+    franchiseFee: form.value.budget,
+    contactPerson: form.value.name,
+    contactNumber: form.value.phone,
+    email: form.value.email,
+    city: form.value.region,
+    contactTime: selectedContactTimeText.value,
+  }
+
+  const result = await brandFormApi.createBrandForm(formData);
+  if (result.code === 0) {
+    alert('表單提交成功！');
+    // 重置表單
+    form.value = {
+      type: "",
+      brand: "",
+      budget: "",
+      name: "",
+      phone: "",
+      email: "",
+      region: "",
+    };
+  } else {
+    alert('表單提交失敗，請稍後再試。');
+  }
 }
 const accordionItems = [
   {
@@ -289,6 +355,85 @@ const sections = [
     ],
   },
 ];
+
+const brandFormOptions = ref([]);
+const planOptions = ref([]);
+async function getBrandFormOptions() {
+  try {
+    const res = await brandFormApi.getBrandFormOptions();
+    if (res.code === 0) {
+      brandFormOptions.value = res.data;
+      planOptions.value = res.data.map((item) => ({
+        key: item.id,
+        text: item.name,
+        withInput: false
+      }))
+    }
+  } catch (error) {
+    console.error("獲取品牌表單選項失敗:", error);
+  }
+}
+
+const industryTypesData = ref([]);
+async function getIndustryTypes() {
+  const res = await industryTypeApi.getIndustryTypes()
+  if (res.code === 0) {
+    industryTypesData.value = res.data;
+  }
+}
+
+const citiesData = ref([]);
+async function getCities() {
+  const res = await cityApi.getCities()
+  if (res.code === 0) {
+    citiesData.value = res.data;
+  }
+}
+
+const contactTimeOptions = [
+  { key: 'morning1', text: '08:00-10:00', withInput: false },
+  { key: 'morning2', text: '10:00-12:00', withInput: false },
+  { key: 'noon', text: '12:00-13:00', withInput: false },
+  { key: 'afternoon1', text: '13:00-14:00', withInput: false },
+  { key: 'afternoon2', text: '14:00-16:00', withInput: false },
+  { key: 'evening1', text: '16:00-18:00', withInput: false },
+  { key: 'evening2', text: '18:00-20:00', withInput: false },
+  { key: 'anytime', text: '任何時間皆可', withInput: false },
+]
+
+// ⚠️ 取得選中的時間文字 (用逗號分隔)
+const selectedContactTimeText = computed(() => {
+  // 找出所有 checked 為 true 的 key
+  const checkedKeys = Object.keys(contactTime.value).filter(
+      key => contactTime.value[key]?.checked === true
+  )
+
+  // 根據 key 找到對應的 text
+  const selectedTexts = checkedKeys
+      .map(key => {
+        const option = contactTimeOptions.find(opt => opt.key === key)
+        return option?.text
+      })
+      .filter(Boolean) // 過濾掉 undefined
+
+  // 用逗號連接
+  return selectedTexts.join(',')
+})
+
+
+
+const selectedPlanId = computed(() => {
+  const checkedKey = Object.keys(selectedPlan.value).find(
+      key => selectedPlan.value[key]?.checked === true
+  );
+
+  return checkedKey ? parseInt(checkedKey) : null;
+});
+onMounted(() => {
+  getBrandFormOptions();
+  getIndustryTypes();
+  getCities();
+});
 </script>
 
 <style lang="scss" scoped>
