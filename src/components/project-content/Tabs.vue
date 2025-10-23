@@ -145,11 +145,35 @@
         </div>
 
         <div v-else-if="t.key === 'terms'" class="d-flex-block">
-          <div class="col-md-6 p-3">
-            <img src="@/assets/images/project-tabs-img1.png" class="w-100" />
-          </div>
-          <div class="col-md-6 p-3">
-            <img src="@/assets/images/project-tabs-img2.png" class="w-100" />
+          <!-- 檢查 franchiseInfo 是否存在 -->
+          <template v-if="planData?.franchiseInfo">
+            <div class="franchise-section">
+              <!-- 顯示 info（HTML 內容）-->
+              <div
+                  v-if="planData.franchiseInfo.info"
+                  class="franchise-info-content"
+                  v-html="planData.franchiseInfo.info"
+              ></div>
+
+              <!-- 顯示 images（直接遍歷陣列）-->
+              <div v-if="planData.franchiseInfo.images?.length">
+                <h4 class="images-title">相關圖片</h4>
+                <div class="franchise-images">
+                  <img
+                      v-for="(image, index) in planData.franchiseInfo.images"
+                      :key="index"
+                      :src="image"
+                      :alt="`加盟圖片 ${index + 1}`"
+                      class="franchise-image"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- 沒有資料時顯示 -->
+          <div v-else class="no-franchise-info">
+            <p>暫無加盟條件資訊</p>
           </div>
         </div>
 
@@ -250,7 +274,8 @@ const joinInfoData = computed(() => {
   if (!props.brandData) return [];
 
   const data = props.brandData;
-  const extraFields = data.extraFields || {};
+  const extraFields = data.customFields || {};
+
 
   return [
     { label: "加盟金", value: `${data.franchiseFee}萬元` },
@@ -258,21 +283,21 @@ const joinInfoData = computed(() => {
     { label: "加盟主門檻要求", value: `${data.threshold}萬元` },
     {
       label: "開幕準備項目表列",
-      list: extraFields.startup_projects?.map(item => `${item.displayName}：${item.value}`) || [],
+      list: extraFields.startup_projects?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
     },
     {
       label: "加盟主門檻要求",
-      list: extraFields.franchise_requirements?.map(item => `${item.displayName}：${item.value}`) || [],
+      list: extraFields.franchise_requirements?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
     },
     { label: "目前開放加盟區域", value: data.location },
     { label: "店面條件", value: `${data.storeCondition}坪以上` },
     {
       label: "裝潢期程",
-      list: extraFields.manufacturing_schedule?.map(item => `${item.displayName}：${item.value}天`) || [],
+      list: extraFields.manufacturing_schedule?.map(item => `${item.fieldName}：${item.fieldValue}天`) || [],
     },
     {
       label: "其他成本",
-      list: extraFields.others?.map(item => `${item.displayName}：${item.value}`) || [],
+      list: extraFields.others?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
     },
   ];
 });
@@ -280,6 +305,82 @@ const joinInfoData = computed(() => {
 </script>
 
 <style scoped lang="scss">
+.franchise-info-content {
+  margin-bottom: 30px;
+  line-height: 1.8;
+  color: #373a36;
+
+  :deep(h1), :deep(h2), :deep(h3) {
+    margin: 20px 0 10px;
+    color: #373a36;
+  }
+
+  :deep(p) {
+    margin: 10px 0;
+    color: #555;
+  }
+
+  :deep(ul), :deep(ol) {
+    margin: 12px 0;
+    padding-left: 24px;
+  }
+
+  :deep(li) {
+    margin: 6px 0;
+  }
+}
+
+.franchise-images {
+  display: flex;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.franchise-image {
+  display: flex;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: transform 0.3s;
+
+}
+
+.no-franchise-info {
+  padding: 60px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+}
+
+.image-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f5f5f5;
+  color: #999;
+  font-size: 14px;
+
+  .el-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .franchise-images {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .franchise-image {
+    height: 150px;
+  }
+}
 .nav-pills .nav-link {
   border: 2px solid #ff6634;
   color: #ff6634;

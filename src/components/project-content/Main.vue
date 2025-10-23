@@ -65,7 +65,6 @@ const planData = ref();
 const brandData = ref();
 const brandImages = ref([])
 async function getPlan() {
-  console.log('getPlan')
   const formData = {
     userId: isLoggedIn.value ? currentUser.value : "",
     planId: Number(route.params.id)
