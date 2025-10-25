@@ -16,8 +16,8 @@
       <div class="service-card">
         <img src="@/assets/images/service-card.png" class="w-100 mobile-none" />
         <img
-          src="@/assets/images/service-card-mobile.png"
-          class="w-100 desktop-none"
+            src="@/assets/images/service-card-mobile.png"
+            class="w-100 desktop-none"
         />
       </div>
       <div>
@@ -27,31 +27,33 @@
   </div>
   <div class="service-progress">
     <img
-      src="@/assets/images/shape1.svg"
-      class="service-progress-shape1 mobile-none"
+        src="@/assets/images/shape1.svg"
+        class="service-progress-shape1 mobile-none"
     />
     <img
-      src="@/assets/images/shape1-mobile.svg"
-      class="service-progress-shape1 desktop-none"
+        src="@/assets/images/shape1-mobile.svg"
+        class="service-progress-shape1 desktop-none"
     />
     <img
-      src="@/assets/images/shape2.svg"
-      class="service-progress-shape2 mobile-none"
+        src="@/assets/images/shape2.svg"
+        class="service-progress-shape2 mobile-none"
     />
     <div class="container p-0">
       <SharedSwiper
-        :cards="progressCards"
-        prevElClass="progress-prev-1"
-        nextElClass="progress-next-1"
+          :cards="progressCards"
+          :loading="loading"
+          prevElClass="progress-prev-1"
+          nextElClass="progress-next-1"
       />
     </div>
   </div>
   <div class="service-project">
     <div class="container p-0">
       <SharedSwiper
-        :cards="progressCards"
-        prevElClass="progress-prev-2"
-        nextElClass="progress-next-2"
+          :cards="projectCards"
+          :loading="loading"
+          prevElClass="progress-prev-2"
+          nextElClass="progress-next-2"
       />
       <button class="service-project-btn mt-5" @click="goMoreProjects">
         更多專案
@@ -68,11 +70,11 @@
         <div class="process-step">
           <div class="process-step-tracker">
             <div
-              class="process-step-tracker-item"
-              v-for="(step, index) in processSteps"
-              :key="index"
-              :class="{ active: index === activeIndex }"
-              @click="setActive(index)"
+                class="process-step-tracker-item"
+                v-for="(step, index) in processSteps"
+                :key="index"
+                :class="{ active: index === activeIndex }"
+                @click="setActive(index)"
             >
               {{ index + 1 }}
             </div>
@@ -81,10 +83,10 @@
 
         <div class="process-cards desktop-block mobile-none">
           <div
-            class="process-cards-item"
-            v-for="(step, index) in processCardSteps"
-            :key="index"
-            :class="{ active: index === activeIndex }"
+              class="process-cards-item"
+              v-for="(step, index) in processCardSteps"
+              :key="index"
+              :class="{ active: index === activeIndex }"
           >
             <img :src="step.img" class="process-image" />
             <div class="btn-tooltip-wrapper">
@@ -96,9 +98,9 @@
 
         <div class="mobile-block desktop-none">
           <Swiper
-            ref="swiperRef"
-            :slides-per-view="1"
-            @slideChange="onSlideChange"
+              ref="swiperRef"
+              :slides-per-view="1"
+              @slideChange="onSlideChange"
           >
             <SwiperSlide v-for="(step, index) in processCardSteps" :key="index">
               <img :src="step.img" class="mobile-image w-100" />
@@ -117,12 +119,12 @@
 
   <div class="service-item">
     <img
-      src="@/assets/images/service-item-banner.jpg"
-      class="mobile-none service-item-img"
+        src="@/assets/images/service-item-banner.jpg"
+        class="mobile-none service-item-img"
     />
     <img
-      src="@/assets/images/service-item-banner-mobile.jpg"
-      class="desktop-none service-item-img"
+        src="@/assets/images/service-item-banner-mobile.jpg"
+        class="desktop-none service-item-img"
     />
     <div class="service-item-card">
       <span>
@@ -141,17 +143,26 @@
 import Icon from "./Icon.vue";
 import SharedSwiper from "./Swiper.vue";
 import SharedParner from "@/components/shared/Shared-Parner.vue";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { Swiper, SwiperSlide } from "swiper/vue";
 import SwiperCore from "swiper";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
+import { useRouter } from "vue-router";
+import { planApi as PlanApi } from "@/api/modules/plan.js";
 
 SwiperCore.use([Pagination]);
+const router = useRouter();
 
 const activeIndex = ref(0);
 const swiperRef = ref();
+const loading = ref(false);
+
+// 用於進度卡片的數據
+const progressCards = ref([]);
+// 用於專案卡片的數據
+const projectCards = ref([]);
 
 const Icons = [
   {
@@ -178,59 +189,6 @@ const Icons = [
     img: new URL("@/assets/images/service-icon5.svg", import.meta.url).href,
     title: "實戰進修輔導",
     description: "輔導課程、專業講座、業師培訓一應俱全。",
-  },
-];
-
-const progressCards = [
-  {
-    id: 1,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    // tags: ["預購商品", "支援配送"],
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    progress: 88,
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    to: { name: "ProjectDetail", params: { id: 1 } },
-  },
-  {
-    id: 2,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    // tags: ["預購商品", "支援配送"],
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    progress: 72,
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    to: { name: "ProjectDetail", params: { id: 2 } },
-  },
-  {
-    id: 3,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    // tags: ["預購商品", "支援配送"],
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    progress: 55,
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    to: { name: "ProjectDetail", params: { id: 3 } },
-  },
-  {
-    id: 4,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    // tags: ["預購商品", "支援配送"],
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    progress: 91,
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    to: { name: "ProjectDetail", params: { id: 4 } },
-  },
-  {
-    id: 5,
-    img: new URL("@/assets/images/card-box.png", import.meta.url).href,
-    // tags: ["預購商品", "支援配送"],
-    title: "專案名稱專案名稱區域專案名稱專案名稱區域專案名稱",
-    progress: 64,
-    price: "99天",
-    supporters: "9999 人瀏覽",
-    to: { name: "ProjectDetail", params: { id: 5 } },
   },
 ];
 
@@ -269,6 +227,90 @@ function setActive(index) {
 function onSlideChange(swiper) {
   activeIndex.value = swiper.activeIndex;
 }
+
+function goMoreProjects() {
+  router.push({ name: "Project" });
+}
+
+// 將 API 資料轉換為組件需要的格式
+function transformApiDataToCards(apiData) {
+  if (!apiData || !Array.isArray(apiData)) {
+    return [];
+  }
+
+  console.log('API 資料:', apiData)
+  return apiData.map(item => ({
+    id: item.id,
+    img: item.imageUrl || new URL("@/assets/images/card-box.png", import.meta.url).href,
+    title: item.title || "專案名稱",
+    price: item.daysLeft ? `${item.daysLeft}天` : "99天",
+    supporters: item.views ? `${item.views} 人瀏覽` : "0 人瀏覽",
+    progress: item.progress,
+    to: { name: "ProjectDetail", params: { id: item.id } },
+  }));
+}
+
+// 獲取進度區塊的計畫（熱門或推薦）
+async function getProgressPlans() {
+  try {
+    loading.value = true;
+
+    const formData = {
+      daysLeftOrder: 0, // 可根據需求調整排序
+      industryType: 0,
+      feature: 0,
+    };
+
+    const planRes = await PlanApi.getAllPlan(formData);
+
+    if (planRes && planRes.data) {
+      // 取前 5 個作為進度展示
+      const topPlans = planRes.data.slice(0, 20);
+      progressCards.value = transformApiDataToCards(topPlans);
+    } else {
+      progressCards.value = [];
+    }
+  } catch (error) {
+    console.error('獲取進度計畫資料失敗:', error);
+    progressCards.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 獲取專案區塊的計畫（可以是不同的篩選條件）
+async function getProjectPlans() {
+  try {
+    loading.value = true;
+
+    const formData = {
+      daysLeftOrder: 1, // 按剩餘天數排序
+      industryType: 0,
+      feature: 0,
+    };
+
+    const planRes = await PlanApi.getAllPlan(formData);
+
+    if (planRes && planRes.data) {
+      // 取前 5 個作為專案展示
+      const topProjects = planRes.data.slice(0, 20);
+      projectCards.value = transformApiDataToCards(topProjects);
+    } else {
+      projectCards.value = [];
+    }
+  } catch (error) {
+    console.error('獲取專案計畫資料失敗:', error);
+    projectCards.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+// 初始化時載入數據
+onMounted(() => {
+  getProgressPlans();
+  getProjectPlans();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -393,7 +435,7 @@ function onSlideChange(swiper) {
     cursor: pointer;
     font-weight: bold;
     background: linear-gradient(0deg, #262626, #262626),
-      linear-gradient(126.86deg, #665f51 -8.87%, #b86a54 112.15%);
+    linear-gradient(126.86deg, #665f51 -8.87%, #b86a54 112.15%);
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
     border-radius: 50px;
     border: none;
@@ -411,9 +453,9 @@ function onSlideChange(swiper) {
 .service-process {
   padding: 4rem 0;
   background: linear-gradient(
-    90deg,
-    rgba(236, 236, 236, 0.5) 0%,
-    rgba(213, 213, 213, 1) 100%
+          90deg,
+          rgba(236, 236, 236, 0.5) 0%,
+          rgba(213, 213, 213, 1) 100%
   );
 
   .process-cards {

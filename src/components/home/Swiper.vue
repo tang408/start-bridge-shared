@@ -4,7 +4,7 @@
       :slides-per-view="slidesPerView"
       :centered-slides="centeredSlides"
       :space-between="spaceBetween"
-      :initial-slide="1"
+      :initial-slide="0"
       :watch-slides-visibility="true"
       :loop-additional-slides="2"
       :loop="loop"
