@@ -8,13 +8,14 @@
             :id="id"
             :type="computedType"
             v-model="model"
+            :placeholder="placeholder"
             :autocomplete="autocomplete"
             :required="required"
             :readonly="readonly"
             :class="{ 'is-invalid': error }"
             v-bind="$attrs"
         />
-        <!-- ⭐ 新增：密碼顯示/隱藏按鈕 -->
+        <!-- 密碼顯示/隱藏按鈕 -->
         <button
             v-if="type === 'password'"
             type="button"
@@ -53,13 +54,14 @@
             :id="id"
             :type="computedType"
             v-model="model"
-            :autocomplete="autocomplete"
-            :required="required"
-            :readonly="readonly"
-            :class="{ 'is-invalid': error }"
-            v-bind="$attrs"
+            :placeholder="placeholder"
+        :autocomplete="autocomplete"
+        :required="required"
+        :readonly="readonly"
+        :class="{ 'is-invalid': error }"
+        v-bind="$attrs"
         />
-        <!-- ⭐ 新增：密碼顯示/隱藏按鈕 -->
+        <!-- 密碼顯示/隱藏按鈕 -->
         <button
             v-if="type === 'password'"
             type="button"
@@ -110,30 +112,28 @@ defineOptions({ inheritAttrs: false });
 const model = defineModel({ type: [String, Number], default: "" });
 
 const props = defineProps({
-  id: { type: String, required: true },
-  label: { type: String, default: "" },
-  type: { type: String, default: "text" },
-  placeholder: { type: String, default: "" },
-  autocomplete: { type: String, default: "off" },
-  required: { type: Boolean, default: false },
-  error: { type: String, default: "" },
-  buttonText: { type: String, default: "" },
-  sent: { type: Boolean, default: false },
-  countdown: { type: Number, default: 0 },
-  resendText: { type: String, default: "重新寄送" },
-  enableWhenFilled: { type: Boolean, default: false },
-  pattern: { type: String, default: "" },
-  enableIf: { type: Function, default: null },
-  readonly: { type: Boolean, default: false },
-  buttonReadonly: { type: Boolean, default: false },
+  id: {type: String, required: true},
+  label: {type: String, default: ""},
+  type: {type: String, default: "text"},
+  placeholder: {type: String, default: ""},
+  autocomplete: {type: String, default: "off"},
+  required: {type: Boolean, default: false},
+  error: {type: String, default: ""},
+  buttonText: {type: String, default: ""},
+  sent: {type: Boolean, default: false},
+  countdown: {type: Number, default: 0},
+  resendText: {type: String, default: "重新寄送"},
+  enableWhenFilled: {type: Boolean, default: false},
+  pattern: {type: String, default: ""},
+  enableIf: {type: Function, default: null},
+  readonly: {type: Boolean, default: false},
+  buttonReadonly: {type: Boolean, default: false},
 });
 
 const emit = defineEmits(["button-click", "resend"]);
 
-// ⭐ 新增：控制密碼顯示/隱藏
 const showPassword = ref(false);
 
-// ⭐ 新增：計算實際的 input type
 const computedType = computed(() => {
   if (props.type === 'password' && showPassword.value) {
     return 'text';
@@ -141,7 +141,6 @@ const computedType = computed(() => {
   return props.type;
 });
 
-// ⭐ 新增：切換密碼顯示/隱藏
 function togglePasswordVisibility() {
   showPassword.value = !showPassword.value;
 }
@@ -160,7 +159,8 @@ const canClick = computed(() => {
       try {
         const re = new RegExp(props.pattern);
         if (!re.test(val)) return false;
-      } catch (e) {}
+      } catch (e) {
+      }
     }
   }
   return true;
@@ -173,7 +173,7 @@ function onButtonClick() {
 </script>
 
 <style lang="scss" scoped>
-/* ⭐ 新增：input 包裹容器 */
+/* input 包裹容器 */
 .input-wrapper-with-eye {
   position: relative;
   flex: 1;
@@ -181,13 +181,13 @@ function onButtonClick() {
   align-items: center;
 }
 
-/* ⭐ 修改：當是密碼輸入框時，給右側留出空間 */
+/* 當是密碼輸入框時，給右側留出空間 */
 .input-wrapper-with-eye input[type="password"],
 .input-wrapper-with-eye input[type="text"] {
   padding-right: 40px;
 }
 
-/* ⭐ 新增：密碼顯示/隱藏按鈕 */
+/* 密碼顯示/隱藏按鈕 */
 .toggle-password {
   position: absolute;
   right: 10px;

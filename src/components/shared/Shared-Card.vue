@@ -61,6 +61,9 @@
 
   <div v-else-if="mode === 'store'" class="store-section-card" @click="$emit('card-click', card)">
     <img :src="card.photo" class="store-section-card-image w-100 mb-2" />
+    <slot name="store-name">
+      <div>門市名稱 | {{ storeName }}</div>
+    </slot>
     <slot name="store-address">
       <div>門市地址 | {{ storeAddress }}</div>
     </slot>
@@ -81,6 +84,7 @@ const props = defineProps({
   mode: { type: String, default: "progress" },
   showProgress: { type: Boolean, default: true },
   showInfo: { type: Boolean, default: true },
+  storeName : { type: String, default: "—" },
   storeAddress: { type: String, default: "—" },
   storePhone: { type: String, default: "—" },
   showFavorite: { type: Boolean, default: true },

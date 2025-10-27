@@ -1,27 +1,27 @@
 <template>
   <ul class="nav nav-tabs justify-content-center" id="myTab" role="tablist">
     <li
-      class="nav-item"
-      role="presentation"
-      v-for="(item, index) in options"
-      :key="index"
+        class="nav-item"
+        role="presentation"
+        v-for="(item, index) in options"
+        :key="index"
     >
       <button
-        class="nav-link"
-        :class="{ active: activeTab === index }"
-        :id="`tab-${index}`"
-        data-bs-toggle="tab"
-        :data-bs-target="`#pane-${index}`"
-        type="button"
-        role="tab"
-        :aria-controls="`pane-${index}`"
-        :aria-selected="activeTab === index"
-        @click="activeTab = index"
+          class="nav-link"
+          :class="{ active: activeTab === index }"
+          :id="`tab-${index}`"
+          data-bs-toggle="tab"
+          :data-bs-target="`#pane-${index}`"
+          type="button"
+          role="tab"
+          :aria-controls="`pane-${index}`"
+          :aria-selected="activeTab === index"
+          @click="activeTab = index"
       >
         <img
-          :src="activeTab === index ? activeIcon : inactiveIcon"
-          alt=""
-          class="tab-icon"
+            :src="activeTab === index ? activeIcon : inactiveIcon"
+            alt=""
+            class="tab-icon"
         />
         {{ item.name }}
       </button>
@@ -30,18 +30,21 @@
 
   <div class="tab-content" id="myTabContent">
     <div
-      v-for="(item, index) in options"
-      :key="'pane-' + index"
-      class="tab-pane fade"
-      :class="{ 'show active': activeTab === index }"
-      :id="`pane-${index}`"
-      role="tabpanel"
-      :aria-labelledby="`tab-${index}`"
+        v-for="(item, index) in options"
+        :key="'pane-' + index"
+        class="tab-pane fade"
+        :class="{ 'show active': activeTab === index }"
+        :id="`pane-${index}`"
+        role="tabpanel"
+        :aria-labelledby="`tab-${index}`"
     >
       <div class="tab-card">
         <div class="tab-card-content">
           <h5 class="title">{{ item.title }}</h5>
-          <p>{{ item.content }}</p>
+          <p v-html="item.content"></p>
+        </div>
+        <div class="tab-card-image" v-if="item.photo">
+          <img :src="item.photo" :alt="item.name" />
         </div>
       </div>
     </div>
@@ -55,26 +58,26 @@ import {optionApi} from "@/api/modules/option.js";
 const activeTab = ref(0);
 const activeIcon = new URL("@/assets/icon/btn-icon.svg", import.meta.url).href;
 const inactiveIcon = new URL("@/assets/icon/btn-icon2.svg", import.meta.url)
-  .href;
+    .href;
 
 const plans = ref([
   {
     name: "方案A",
     title: "Lorem ipsum is placeholder",
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+        "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
   },
   {
     name: "方案B",
     title: "Lorem ipsum is placeholder",
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+        "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
   },
   {
     name: "方案C",
     title: "Lorem ipsum is placeholder",
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+        "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
   },
 ]);
 const options = ref([]);
@@ -148,8 +151,14 @@ onMounted(async () => {
   color: #333;
   height: 562px;
   display: flex;
-  flex-flow: column;
-  justify-content: end;
+  flex-flow: row;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+  }
+
   .title {
     color: #ff5722;
     font-weight: bold;
@@ -159,9 +168,29 @@ onMounted(async () => {
   &-content {
     width: 600px;
     padding: 30px;
+    flex-shrink: 0;
     @media (max-width: 576px) {
       width: 100%;
       padding: 0;
+    }
+  }
+
+  &-image {
+    flex-shrink: 0;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @media (max-width: 768px) {
+      max-width: 100%;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 20px;
+      object-fit: cover;
     }
   }
 }

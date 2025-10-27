@@ -92,8 +92,10 @@ import SharedFlow from "@/components/shared/Shared-Flow.vue";
 import icon from "@/assets/icon/btn-icon2.svg";
 import iconActive from "@/assets/icon/btn-icon.svg";
 import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
+import {useAuth} from "@/composables/useAuth.js";
 const route = useRoute();
 const router = useRouter();
+const { isLoggedIn, currentSales } = useAuth();
 
 const activeTab = ref("startup");
 const syncFromRoute = () => {
@@ -114,7 +116,11 @@ watch(
 );
 
 const goToRegister = () => {
-  router.push("/entSignUp");
+  if (isLoggedIn.value) {
+    alert("：您已完成註冊。");
+  } else{
+    router.push("/entSignUp");
+  }
 };
 
 const activeStartup = ref({ lane: "init", idx: 0 });

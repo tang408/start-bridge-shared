@@ -80,7 +80,27 @@ function onToggle(key, checked) {
     }
     model.value = newModel;
   } else {
-    model.value = { ...model.value, [key]: { ...model.value[key], checked } };
+    // 特殊邏輯：處理 'anytime' 的互斥
+    if (key === 'anytime' && checked) {
+      // 選擇 anytime 時，清除其他所有選項
+      const newModel = {};
+      props.options.forEach((opt) => {
+        newModel[opt.key] = { checked: false, value: "" };
+      });
+      newModel.anytime = { checked: true, value: "" };
+      model.value = newModel;
+    } else if (key !== 'anytime' && checked) {
+      // 選擇其他選項時，清除 anytime
+      const newModel = { ...model.value };
+      if (newModel.anytime) {
+        newModel.anytime = { checked: false, value: "" };
+      }
+      newModel[key] = { ...model.value[key], checked };
+      model.value = newModel;
+    } else {
+      // 取消勾選的情況
+      model.value = { ...model.value, [key]: { ...model.value[key], checked } };
+    }
   }
 }
 

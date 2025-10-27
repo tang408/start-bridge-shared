@@ -7,19 +7,19 @@
         </router-link>
         <div class="d-flex">
           <button
-            class="navbar-toggler"
-            type="button"
-            @click.stop="isMenuOpen = !isMenuOpen"
+              class="navbar-toggler"
+              type="button"
+              @click.stop="isMenuOpen = !isMenuOpen"
           >
             <span class="navbar-toggler-icon"></span>
           </button>
 
           <button
-            v-if="isAccountPage"
-            class="user-toggler d-lg-none"
-            type="button"
-            aria-label="open account user page"
-            @click.stop="toggleMobileAccountSidebar()"
+              v-if="isAccountPage"
+              class="user-toggler d-lg-none"
+              type="button"
+              aria-label="open account user page"
+              @click.stop="toggleMobileAccountSidebar()"
           >
             <img src="@/assets/icon/user.png" alt="user" />
           </button>
@@ -28,19 +28,19 @@
         <div :class="['navbar-collapse', { open: isMenuOpen }]" id="navbarNav">
           <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
             <li
-              class="nav-item"
-              :class="{
+                class="nav-item"
+                :class="{
                 'has-children': item.children,
                 active: isActive(item),
               }"
-              v-for="(item, index) in navItems"
-              :key="index"
+                v-for="(item, index) in navItems"
+                :key="index"
             >
               <router-link
-                v-if="!item.children"
-                class="nav-link d-flex align-items-center justify-content-between"
-                :to="item.link"
-                @click="handleLinkClick"
+                  v-if="!item.children"
+                  class="nav-link d-flex align-items-center justify-content-between"
+                  :to="item.link"
+                  @click="handleLinkClick"
               >
                 <div class="d-flex align-items-center gap-1">
                   <img src="@/assets/icon/menu-icon.svg" />
@@ -49,14 +49,14 @@
               </router-link>
 
               <div
-                v-else
-                class="d-flex align-items-center justify-content-between"
+                  v-else
+                  class="d-flex align-items-center justify-content-between"
               >
                 <router-link
-                  v-if="item.link"
-                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
-                  :to="item.link"
-                  @click="handleLinkClick"
+                    v-if="item.link"
+                    class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                    :to="item.link"
+                    @click="handleLinkClick"
                 >
                   <div class="d-flex align-items-center gap-1">
                     <img src="@/assets/icon/menu-icon.svg" />
@@ -65,10 +65,10 @@
                 </router-link>
 
                 <button
-                  v-else
-                  type="button"
-                  class="nav-link d-flex align-items-center justify-content-between flex-grow"
-                  @click.stop="toggleSubMenu(index)"
+                    v-else
+                    type="button"
+                    class="nav-link d-flex align-items-center justify-content-between flex-grow"
+                    @click.stop="toggleSubMenu(index)"
                 >
                   <div class="d-flex align-items-center gap-1">
                     <img src="@/assets/icon/menu-icon.svg" />
@@ -76,59 +76,65 @@
                   </div>
                 </button>
                 <button
-                  class="ms-2 nav-arrow"
-                  type="button"
-                  @click.stop="toggleSubMenu(index)"
-                  aria-label="toggle submenu"
+                    class="ms-2 nav-arrow"
+                    type="button"
+                    @click.stop="toggleSubMenu(index)"
+                    aria-label="toggle submenu"
                 >
                   &#9660;
                 </button>
               </div>
 
               <ul
-                v-if="item.children"
-                class="dropdown-menu"
-                :class="{ show: openIndex === index }"
-                @click.stop
+                  v-if="item.children"
+                  class="dropdown-menu"
+                  :class="{ show: openIndex === index }"
+                  @click.stop
               >
                 <li v-for="(child, cIdx) in item.children" :key="cIdx">
                   <router-link
-                    class="dropdown-item"
-                    :to="child.link"
-                    @click="handleLinkClick"
+                      class="dropdown-item"
+                      :to="child.link"
+                      @click="handleLinkClick"
                   >
                     {{ child.label }}
                   </router-link>
                 </li>
               </ul>
             </li>
-            <!-- 會員 icon -->
-            <li class="member-icon">
-              <router-link class="nav-link d-flex align-items-center" to="">
-                <img
-                  src="@/assets/icon/user.png"
-                  alt="會員"
-                  class="member-icon-img"
-                  @click="handleProfileClick"
-                />
-              </router-link>
-            </li>
-            <li class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
-              <router-link
-                class="nav-link"
-                to="/login"
-                @click="handleLinkClick"
-              >
-                <img src="@/assets/icon/menu-icon.svg" />
-                登入
-              </router-link>
-            </li>
 
-            <li class="nav-item bc-1 br-1 logIn" v-else>
-              <button class="nav-link" type="button" @click="handleLogout">
-                <img src="@/assets/icon/menu-icon.svg" />
-                登出
-              </button>
+            <!-- ⭐ 新增：會員和登入/登出的容器 -->
+            <li class="user-login-wrapper">
+              <!-- 會員 icon -->
+              <div class="member-icon">
+                <router-link class="nav-link d-flex align-items-center" to="">
+                  <img
+                      src="@/assets/icon/user.png"
+                      alt="會員"
+                      class="member-icon-img"
+                      @click="handleProfileClick"
+                  />
+                </router-link>
+              </div>
+
+              <!-- 登入/登出按鈕 -->
+              <div class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
+                <router-link
+                    class="nav-link"
+                    to="/login"
+                    @click="handleLinkClick"
+                >
+                  <img src="@/assets/icon/menu-icon.svg" />
+                  登入
+                </router-link>
+              </div>
+
+              <div class="nav-item bc-1 br-1 logIn" v-else>
+                <button class="nav-link" type="button" @click="handleLogout">
+                  <img src="@/assets/icon/menu-icon.svg" />
+                  <a style="justify-content: center">登出</a>
+                </button>
+              </div>
             </li>
           </ul>
         </div>
@@ -250,7 +256,6 @@ const handleLogout = async () => {
   router.push("/");
 };
 </script>
-
 <style lang="scss" scoped>
 .w-100 {
   z-index: 99;
@@ -382,9 +387,9 @@ const handleLogout = async () => {
         min-width: 108px;
         border-radius: 20px;
         background: linear-gradient(
-          95.14deg,
-          rgba(255, 113, 74, 0.8) 36.47%,
-          rgba(255, 95, 49, 0.8) 64.66%
+                95.14deg,
+                rgba(255, 113, 74, 0.8) 36.47%,
+                rgba(255, 95, 49, 0.8) 64.66%
         );
         backdrop-filter: blur(2px);
       }
@@ -462,13 +467,64 @@ const handleLogout = async () => {
   padding-right: 1rem;
 }
 
+/* ⭐ 新增：會員和登入/登出的容器樣式 */
+.user-login-wrapper {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  list-style: none;
+
+  // 桌面版：保持原樣（垂直排列）
+  @media (min-width: 992px) {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  // 響應式：並排顯示
+  @media (max-width: 991px) {
+    flex-direction: row;
+    justify-content: start;
+    padding: 10px 20px;
+    margin-top: 10px;
+  }
+}
+
+
 .member-icon {
-  padding: 0 20px;
+  padding: 0;
+
+  @media (min-width: 992px) {
+    padding: 0 20px;
+  }
+
+  @media (max-width: 991px) {
+    padding: 0;
+  }
 }
 
 .member-icon-img {
   width: 24px;
   height: 24px;
   filter: brightness(0) invert(1);
+}
+
+// ⭐ 修改：響應式時登入/登出按鈕的樣式
+.user-login-wrapper .logIn {
+  @media (max-width: 991px) {
+    margin: 0;
+
+    .nav-link {
+      padding: 8px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 50px;
+      background-color: rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+  }
 }
 </style>

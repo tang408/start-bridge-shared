@@ -32,13 +32,7 @@ import {partnerInterviewApi} from "@/api/modules/partnerInterview.js";
 
 const router = useRouter();
 const sampleImages = [img1, img2, img3, img4];
-const items = ref(
-  Array.from({ length: 80 }).map((_, i) => ({
-    id: i + 1,
-    title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
-    cover: sampleImages[i % 4],
-  }))
-);
+const items = ref([]);
 
 async function getPartnerInterviewPhotos() {
 const response = await partnerInterviewApi.getPartnerInterviewPhotos()

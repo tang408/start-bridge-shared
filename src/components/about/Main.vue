@@ -6,15 +6,13 @@
           <h4 class="color-1 lh-24">
             {{ aboutMes[0]?.title }}
           </h4>
-          <span class="lh-36">
-            {{ aboutMes[0]?.content }}
-          </span>
+          <span class="lh-36" v-html="aboutMes[0]?.content"></span>
           <img src="@/assets/images/about-sign.png" height="38" />
         </div>
         <div class="pic-content-1 col-md-6 col-12">
           <img src="@/assets/images/star1.png" class="icon-1" />
           <img src="@/assets/images/about-color-bc-1.png" class="w-100" />
-          <img :src="aboutMes[0]?.photo || '@/assets/images/about-sign.png'" class="pic-1" />
+          <img :src="aboutMes[0]?.photo || 'src/assets/images/about-pic1.png'" class="pic-1" />
         </div>
       </div>
     </div>
@@ -29,16 +27,14 @@
           <img src="@/assets/images/star1.png" class="icon-2" />
           <div class="about-pic-2">
           <img src="@/assets/images/about-color-bc-2.png" class="w-100" />
-          <img :src="aboutMes[1]?.photo || '@/assets/images/about-pic2.png'" class="pic-2" />
+          <img :src="aboutMes[1]?.photo || 'src/assets/images/about-pic2.png'" class="pic-2" />
         </div>
           </div>
         <div class="col-md-6 col-12 block-text">
           <h4 class="color-1 lh-24">
             {{ aboutMes[1]?.title }}
           </h4>
-          <span class="lh-36">
-            {{ aboutMes[1]?.content }}
-          </span>
+          <span class="lh-36" v-html="aboutMes[1]?.content"></span>
           <button>啟動／參與</button>
         </div>
       </div>

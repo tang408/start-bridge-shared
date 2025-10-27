@@ -59,6 +59,7 @@
           :card="item"
           :show-progress="mode === 'progress'"
           :show-info="mode === 'progress'"
+          :store-name="mode === 'store' ? item.name : undefined"
           :store-address="mode === 'store' ? item.address : undefined"
           :store-phone="mode === 'store' ? item.contactNumber : undefined"
           @card-click="handleCardClick"

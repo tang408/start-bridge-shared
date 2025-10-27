@@ -7,7 +7,7 @@
           <SharedInput
             id="username"
             label="帳號*"
-            placeholder="請輸入帳號"
+            placeholder="請輸入手機號碼"
             autocomplete="username"
             v-model="username"
             :error="errors.username"
