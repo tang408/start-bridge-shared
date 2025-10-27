@@ -1,12 +1,15 @@
 <template>
   <Swiper />
   <SharedNews
-    :items="transformedItems"
-    :page-size="16"
-    :categories="industryTypeNames"
-    :with-all-tab="true"
-    @card-click="openDetail"
-    @favorite-change="onFavoriteChange"
+      :items="transformedItems"
+      :page-size="16"
+      :categories="industryTypesData"
+      :sub-categories="industrySubTypesData"
+      :with-all-tab="true"
+      @card-click="openDetail"
+      @update:category="handleCategoryChange"
+      @update:subCategory="handleSubCategoryChange"
+      @favorite-change="onFavoriteChange"
   />
   <div class="qa-content">
     <div class="qa-content-text">
@@ -38,19 +41,6 @@ import {industrySubTypeApi} from "@/api/modules/industrySubType.js";
 const router = useRouter();
 const {isLoggedIn, currentUser} = useAuth();
 
-const cat = ["餐飲", "生活服務", "商人項目", "海外貿易"];
-const sampleImages = [img1, img2, img3, img4];
-
-const items = ref(
-  Array.from({ length: 80 }).map((_, i) => ({
-    id: i + 1,
-    title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
-    cover: sampleImages[i % 4],
-    category: cat[i % cat.length],
-    favorite: false,
-  }))
-);
-
 function openDetail(card) {
   if (card.mode === 'url' && card.redirectUrl) {
     window.open(card.redirectUrl, '_blank');
@@ -59,6 +49,7 @@ function openDetail(card) {
     router.push({ name: "CooperativeBrandDetail", params: { id: card.id } });
   }
 }
+
 async function getUserFavoritePlan() {
   if (!isLoggedIn.value) {
     return;
@@ -71,12 +62,10 @@ async function getUserFavoritePlan() {
   try {
     const response = await userFavoritePlanApi.getUserFavoritePlans(formData)
     if (response.code === 0) {
-      // 提取收藏的官方合作夥伴 ID 列表
       const favoritePartnerIds = response.data.founderFavoritePlans.map(
           partner => partner.officialPartnerId
       );
 
-      // 更新每個合作夥伴的收藏狀態
       officialPartnersData.value.forEach(partner => {
         partner.favorite = favoritePartnerIds.includes(partner.id);
       });
@@ -87,26 +76,22 @@ async function getUserFavoritePlan() {
 }
 
 async function onFavoriteChange({ id, value }) {
-  // 找到對應的項目並更新收藏狀態
   const target = officialPartnersData.value.find((partner) => partner.id === id);
   if (target) {
     target.favorite = value;
   }
 
-  // 如果用戶已登入，同步到後端
   if (isLoggedIn.value) {
     try {
       const formData = {
         userId: currentUser.value,
         planId: id,
-        planType: 2 // 2 表示合作夥伴
+        planType: 2
       }
 
       if (value) {
-        // 添加收藏
         await userFavoritePlanApi.createUserFavoritePlan(formData);
       } else {
-        // 取消收藏
         await userFavoritePlanApi.deleteUserFavoritePlan({
           userId: currentUser.value,
           planId: id,
@@ -115,7 +100,6 @@ async function onFavoriteChange({ id, value }) {
       }
     } catch (error) {
       console.error('更新收藏狀態失敗:', error);
-      // 如果後端操作失敗，回復前端狀態
       if (target) {
         target.favorite = !value;
       }
@@ -124,35 +108,41 @@ async function onFavoriteChange({ id, value }) {
 }
 
 const loading = ref(false);
-
 const officialPartnersData = ref([]);
 const industryTypesData = ref([]);
 const industrySubTypesData = ref([]);
-const selectedIndustryType = ref('全部');
+const selectedIndustryType = ref(null); // ⭐ 改為存儲物件或 null
+const selectedIndustrySubType = ref(null); // ⭐ 新增：選中的子類型
 
-const industryTypeNames = computed(() => {
-  return industryTypesData.value.map(item => item.name);
-});
+// ⭐ 修改：處理主類型變化
+async function handleCategoryChange(category) {
+  console.log('選擇的類型:', category);
 
-// 根據分類名稱找到對應的 ID
-const selectedCategoryId = computed(() => {
-  if (selectedIndustryType.value === '全部') {
-    return 0; // 全部分類傳 0
+  selectedIndustryType.value = category;
+  selectedIndustrySubType.value = null; // 清空子類型選擇
+
+  // 如果是「全部」，獲取所有資料
+  if (category === '全部') {
+    await getOfficialPartners(0);
+    industrySubTypesData.value = []; // 清空子類型
+    return;
   }
 
-  const industryType = industryTypesData.value.find(item => item.name === selectedIndustryType.value);
-  return industryType ? industryType.id : 0; // 找不到也傳 0
-});
+  // 獲取選中類型的 ID
+  const categoryId = typeof category === 'object' ? category.id : category;
 
-function getIndustryTypeName(industryTypeId) {
-  const industryType = industryTypesData.value.find(item => item.id === industryTypeId);
-  return industryType ? industryType.name : '未分類';
+  // 獲取該類型下的所有合作夥伴
+  await getOfficialPartners(categoryId);
+
+  // 獲取該類型下的所有子類型
+  await getIndustrySubTypes(categoryId);
 }
 
-function handleCategoryChange(industryTypeName) {
-  selectedIndustryType.value = industryTypeName;
-  const industryTypeId = selectedCategoryId.value;
-  getOfficialPartners(industryTypeId);
+// ⭐ 新增：處理子類型變化
+function handleSubCategoryChange(subCategory) {
+  console.log('選擇的子類型:', subCategory);
+  selectedIndustrySubType.value = subCategory;
+  // 不需要重新 fetch 資料，因為過濾會在 transformedItems 中自動處理
 }
 
 // 獲取行業類型
@@ -161,7 +151,6 @@ async function getIndustryTypes() {
   try {
     const response = await industryTypeApi.getIndustryTypes();
     if (response.code === 0) {
-      // 保存完整的資料（包含 id 和 name）
       industryTypesData.value = response.data;
       console.log('獲取的行業類型:', response.data);
     } else {
@@ -174,7 +163,13 @@ async function getIndustryTypes() {
   }
 }
 
+// ⭐ 修改：獲取子類型
 async function getIndustrySubTypes(industryTypeId) {
+  if (!industryTypeId || industryTypeId === 0) {
+    industrySubTypesData.value = [];
+    return;
+  }
+
   loading.value = true;
   try {
     const formData = {
@@ -182,13 +177,14 @@ async function getIndustrySubTypes(industryTypeId) {
     }
     const response = await industrySubTypeApi.getIndustrySubTypes(formData);
     if (response.code === 0) {
-      industrySubTypesData.value = response.data;
+      industrySubTypesData.value = response.data || [];
+      console.log('獲取的子類型:', response.data);
     } else {
       throw new Error('API 響應格式錯誤');
     }
   } catch (error) {
     console.error('獲取子類型失敗:', error);
-    return [];
+    industrySubTypesData.value = [];
   } finally {
     loading.value = false;
   }
@@ -202,44 +198,60 @@ async function getOfficialPartners(industryType = 0) {
     }
     const response = await officialPartnerApi.getOfficialPartners(formData);
     if (response.code === 0) {
-      officialPartnersData.value = response.data;
+      officialPartnersData.value = response.data || [];
+      console.log('獲取的合作夥伴:', response.data);
     } else {
       throw new Error('API 響應格式錯誤');
     }
   } catch (error) {
     console.error('獲取內容失敗:', error);
+    officialPartnersData.value = [];
   } finally {
     loading.value = false;
   }
 }
 
+// ⭐ 修改：轉換並過濾資料
 const transformedItems = computed(() => {
   if (!officialPartnersData.value || !Array.isArray(officialPartnersData.value)) {
     return [];
   }
 
-  return officialPartnersData.value.map(partner => ({
+  let filtered = officialPartnersData.value;
+
+  // 如果選擇了子類型，進行過濾
+  if (selectedIndustrySubType.value) {
+    const subTypeId = selectedIndustrySubType.value.id;
+    filtered = filtered.filter(partner => {
+      // 如果 industrySubType 是 0，表示該合作夥伴沒有子類型
+      // 應該只在選擇「無」(id=0) 時顯示
+      if (partner.industrySubType === 0) {
+        return subTypeId === 0;
+      }
+      return partner.industrySubType === subTypeId;
+    });
+  }
+
+  return filtered.map(partner => ({
     id: partner.id,
     title: partner.name,
-    cover: partner.photo || '@/assets/images/default-cover.png', // 使用 API 圖片或預設圖片
-    category: getIndustryTypeName(partner.industryType), // 根據 industryType 轉換為分類名稱
+    cover: partner.photo || '@/assets/images/default-cover.png',
+    industryType: partner.industryType, // ⭐ 保留 ID 用於過濾
+    industrySubType: partner.industrySubType, // ⭐ 保留 ID 用於過濾
     description: partner.description,
-    mode: partner.mode, // 保留模式資訊
-    redirectUrl: partner.redirectUrl, // 保留跳轉 URL
+    mode: partner.mode,
+    redirectUrl: partner.redirectUrl,
     favorite: partner.favorite || false,
-    rawData: partner // 保留完整的原始資料
+    rawData: partner
   }));
 });
-
 
 // 組件掛載時獲取數據
 onMounted(async () => {
   await Promise.all([
     getIndustryTypes(),
-    getIndustrySubTypes(),
-    getOfficialPartners(0),
+    getOfficialPartners(0), // 初始載入所有資料
     getUserFavoritePlan(),
-
   ]);
 });
 
@@ -248,7 +260,7 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .qa-content {
   background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
-    url("@/assets/images/brand-bc-5.png");
+  url("@/assets/images/brand-bc-5.png");
   height: 550px;
   position: relative;
   &-text {
