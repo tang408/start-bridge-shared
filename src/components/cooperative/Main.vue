@@ -33,6 +33,7 @@ import {computed, onMounted, ref} from "vue";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 import {useAuth} from "@/composables/useAuth.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
+import {industrySubTypeApi} from "@/api/modules/industrySubType.js";
 
 const router = useRouter();
 const {isLoggedIn, currentUser} = useAuth();
@@ -126,6 +127,7 @@ const loading = ref(false);
 
 const officialPartnersData = ref([]);
 const industryTypesData = ref([]);
+const industrySubTypesData = ref([]);
 const selectedIndustryType = ref('全部');
 
 const industryTypeNames = computed(() => {
@@ -167,6 +169,26 @@ async function getIndustryTypes() {
     }
   } catch (error) {
     console.error('獲取行業類型失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function getIndustrySubTypes(industryTypeId) {
+  loading.value = true;
+  try {
+    const formData = {
+      industryTypeId: industryTypeId
+    }
+    const response = await industrySubTypeApi.getIndustrySubTypes(formData);
+    if (response.code === 0) {
+      industrySubTypesData.value = response.data;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取子類型失敗:', error);
+    return [];
   } finally {
     loading.value = false;
   }
@@ -214,6 +236,7 @@ const transformedItems = computed(() => {
 onMounted(async () => {
   await Promise.all([
     getIndustryTypes(),
+    getIndustrySubTypes(),
     getOfficialPartners(0),
     getUserFavoritePlan(),
 

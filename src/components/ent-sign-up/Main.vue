@@ -58,6 +58,7 @@
               label="姓名*"
               v-model="form.name"
               :error="errors.name"
+              @input="handleNameInput"
           />
 
           <SharedRadio
@@ -100,11 +101,10 @@
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree" />
               <label for="agree">我已閱讀並同意</label>
-              <RouterLink to="/terms/platform" class="agree-link">平台合約</RouterLink>
-              <RouterLink to="/terms/service" class="agree-link">服務條款</RouterLink>
+              <RouterLink to="/terms/platform" target="_blank" class="agree-link">平台合約</RouterLink>
+              <RouterLink to="/terms/service" target="_blank" class="agree-link">服務條款</RouterLink>
               及
-              <RouterLink to="/privacy" class="agree-link">隱私權政策</RouterLink>
-            </div>
+              <RouterLink to="/privacy" target="_blank" class="agree-link">隱私權政策</RouterLink>            </div>
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
         </div>
@@ -171,10 +171,32 @@ const loading = ref(false);
 
 const phoneEnableIf = (v) => /^09\d{8}$/.test(v);
 
-// 移除自動驗證密碼的 watch
-// watch([() => state.passwordOk, () => form.password], ([ok]) => {
-//   errors.password = ok ? "" : "請輸入至少8碼，並包含大小寫、數字與符號。";
-// });
+
+watch(
+  () => form.confirmPassword,
+  (newVal) => {
+    if (form.password && newVal !== form.password) {
+      errors.confirmPassword = "兩次輸入的密碼不一致";
+    } else {
+      errors.confirmPassword = "";
+    }
+  }
+);
+
+function handleNameInput(event) {
+  const value = event.target.value;
+  // 只保留中文、英文和空格
+  const filtered = value.replace(/[^\u4e00-\u9fa5a-zA-Z\s]/g, '');
+
+  // 如果輸入了非法字符，顯示提示
+  if (value !== filtered) {
+    errors.name = '姓名只能包含中文或英文';
+  } else {
+    errors.name = '';
+  }
+
+  form.name = filtered;
+}
 
 function startTimer(state, total = 100) {
   if (state.timer) clearInterval(state.timer);
@@ -349,7 +371,7 @@ async function handleRegister() {
       router.push('/login');
     } else {
       console.error('註冊失敗:', response);
-      alert('註冊失敗，請稍後再試');
+      alert(response.message || '註冊失敗，請稍後再試');
     }
 
   } catch (error) {
@@ -368,12 +390,14 @@ async function sendPhoneOTP() {
   }
 
   errors.phone = "";
-  startTimer(phoneOtp, 100);
+
 
   try {
     const response = await userApi.sendVerificationCode({ phone: form.phone });
     if (response.code !== 0) {
       alert(response.message || '發送手機驗證碼失敗，請稍後再試');
+    } else {
+      startTimer(phoneOtp, 100);
     }
   } catch (error) {
     console.error('發送手機驗證碼過程發生錯誤:', error);
