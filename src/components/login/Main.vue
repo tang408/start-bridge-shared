@@ -15,14 +15,14 @@
           />
 
           <SharedInput
-            id="password"
-            type="password"
-            label="密碼*"
-            placeholder="請輸入密碼"
-            autocomplete="current-password"
-            v-model="password"
-            :error="errors.password"
-            required
+              id="password"
+              type="password"
+              label="密碼*"
+              placeholder="請輸入密碼"
+              autocomplete="current-password"
+              v-model="password"
+              :error="errors.password"
+              required
           />
         </div>
 

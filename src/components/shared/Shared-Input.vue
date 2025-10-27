@@ -3,16 +3,39 @@
     <label v-if="label" :for="id">{{ label }}</label>
 
     <div class="row-inline" v-if="buttonText">
-      <input
-          :id="id"
-          :type="type"
-          v-model="model"
-          :autocomplete="autocomplete"
-          :required="required"
-          :readonly="readonly"
-          :class="{ 'is-invalid': error }"
-          v-bind="$attrs"
-      />
+      <div class="input-wrapper-with-eye">
+        <input
+            :id="id"
+            :type="computedType"
+            v-model="model"
+            :autocomplete="autocomplete"
+            :required="required"
+            :readonly="readonly"
+            :class="{ 'is-invalid': error }"
+            v-bind="$attrs"
+        />
+        <!-- ⭐ 新增：密碼顯示/隱藏按鈕 -->
+        <button
+            v-if="type === 'password'"
+            type="button"
+            class="toggle-password"
+            @click="togglePasswordVisibility"
+            tabindex="-1"
+        >
+          <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20">
+            <path
+                fill="currentColor"
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+            />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" width="20" height="20">
+            <path
+                fill="currentColor"
+                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+            />
+          </svg>
+        </button>
+      </div>
       <button
           type="button"
           class="btn-secondary"
@@ -25,16 +48,39 @@
     </div>
 
     <template v-else>
-      <input
-          :id="id"
-          :type="type"
-          v-model="model"
-          :autocomplete="autocomplete"
-          :required="required"
-          :readonly="readonly"
-          :class="{ 'is-invalid': error }"
-          v-bind="$attrs"
-      />
+      <div class="input-wrapper-with-eye">
+        <input
+            :id="id"
+            :type="computedType"
+            v-model="model"
+            :autocomplete="autocomplete"
+            :required="required"
+            :readonly="readonly"
+            :class="{ 'is-invalid': error }"
+            v-bind="$attrs"
+        />
+        <!-- ⭐ 新增：密碼顯示/隱藏按鈕 -->
+        <button
+            v-if="type === 'password'"
+            type="button"
+            class="toggle-password"
+            @click="togglePasswordVisibility"
+            tabindex="-1"
+        >
+          <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20">
+            <path
+                fill="currentColor"
+                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+            />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" width="20" height="20">
+            <path
+                fill="currentColor"
+                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"
+            />
+          </svg>
+        </button>
+      </div>
     </template>
 
     <!-- OTP 提示 -->
@@ -57,7 +103,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -81,7 +127,24 @@ const props = defineProps({
   readonly: { type: Boolean, default: false },
   buttonReadonly: { type: Boolean, default: false },
 });
+
 const emit = defineEmits(["button-click", "resend"]);
+
+// ⭐ 新增：控制密碼顯示/隱藏
+const showPassword = ref(false);
+
+// ⭐ 新增：計算實際的 input type
+const computedType = computed(() => {
+  if (props.type === 'password' && showPassword.value) {
+    return 'text';
+  }
+  return props.type;
+});
+
+// ⭐ 新增：切換密碼顯示/隱藏
+function togglePasswordVisibility() {
+  showPassword.value = !showPassword.value;
+}
 
 const canClick = computed(() => {
   if (props.buttonReadonly) return false;
@@ -110,10 +173,53 @@ function onButtonClick() {
 </script>
 
 <style lang="scss" scoped>
+/* ⭐ 新增：input 包裹容器 */
+.input-wrapper-with-eye {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* ⭐ 修改：當是密碼輸入框時，給右側留出空間 */
+.input-wrapper-with-eye input[type="password"],
+.input-wrapper-with-eye input[type="text"] {
+  padding-right: 40px;
+}
+
+/* ⭐ 新增：密碼顯示/隱藏按鈕 */
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #909399;
+  transition: color 0.2s;
+  z-index: 1;
+}
+
+.toggle-password:hover {
+  color: #ff6634;
+}
+
+.toggle-password:focus {
+  outline: none;
+}
+
+.toggle-password svg {
+  display: block;
+}
+
 .row-inline {
   display: flex;
   gap: 5px;
-  button {
+
+  button.btn-secondary {
     font-weight: 500;
     font-size: 16px;
     line-height: 19px;
@@ -123,6 +229,8 @@ function onButtonClick() {
     border-radius: 8px;
     color: #fff;
     border: none;
+    flex-shrink: 0;
+
     &:disabled {
       opacity: 0.7;
     }
@@ -133,5 +241,11 @@ function onButtonClick() {
   border: none;
   background-color: transparent;
   color: #ff6634;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 </style>
