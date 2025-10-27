@@ -61,6 +61,7 @@ const cards = [
   },
 ];
 
+const emit = defineEmits(['data-loaded']);
 const planData = ref();
 const brandData = ref();
 const brandImages = ref([])
@@ -72,6 +73,7 @@ async function getPlan() {
   const response = await PlanApi.getPlan(formData);
   if (response.code === 0) {
     planData.value = response.data;
+
     await getOfficialPartner();
   }
 }
@@ -84,6 +86,8 @@ async function getOfficialPartner() {
   const response = await officialPartnerApi.getOfficialPartner(formData)
   if (response.code === 0) {
     brandData.value = response.data;
+    emit('data-loaded', response.data);
+
 // 將 JSON 字串轉換成陣列
     if (response.data.brandImage) {
       try {

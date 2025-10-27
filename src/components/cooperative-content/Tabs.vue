@@ -22,13 +22,28 @@
           {{ t.label }}
         </button>
       </li>
+
       <li class="nav-item">
-        <a class="nav-link btn-yellow" role="button">媒合中專案</a>
+        <a
+            class="nav-link btn-yellow"
+            role="button"
+            :class="{ 'disabled': !hasActivePlan }"
+            :style="{
+      cursor: hasActivePlan ? 'pointer' : 'not-allowed',
+      opacity: hasActivePlan ? 1 : 0.5
+    }"
+            @click="handleMatchingProjectClick"
+        >
+          媒合中專案
+        </a>
       </li>
       <li class="nav-item">
         <a class="nav-link btn-yellow" role="button" @click="goToStartup">
           申請創業
         </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link btn-yellow" role="button" @click="handleUserFavoritePlan">收藏</a>
       </li>
     </ul>
 
@@ -125,6 +140,7 @@ import Tab from "bootstrap/js/dist/tab";
 import {useRouter} from "vue-router";
 import {useAuth} from "@/composables/useAuth.js";
 import {userApi} from "@/api/modules/user.js";
+import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 
 const {isLoggedIn, currentUser} = useAuth();
 const router = useRouter();
@@ -139,6 +155,35 @@ const props = defineProps({
     default: false
   }
 });
+
+// 判斷是否有活躍專案
+const hasActivePlan = computed(() => {
+  return props.projectData?.activePlanData?.hasActivePlan || false
+})
+
+// 獲取第一個專案 ID
+const firstPlanId = computed(() => {
+  const planData = props.projectData?.activePlanData?.planData
+  if (planData && planData.length > 0) {
+    return planData[0].id
+  }
+  return null
+})
+
+// 點擊處理
+function handleMatchingProjectClick() {
+  if (!hasActivePlan.value) {
+    return // 如果沒有活躍專案，不執行任何操作
+  }
+
+  if (firstPlanId.value) {
+    // 跳轉到專案詳情頁（根據你的路由調整）
+    router.push({
+      name: 'ProjectDetail', // 或者你的路由名稱
+      params: { id: firstPlanId.value }
+    })
+  }
+}
 
 // 處理營運項目圖片
 const productImages = computed(() => {
@@ -254,6 +299,7 @@ async function goToStartup() {
         const founderInfo = userData.value.founderInfoData;
         if (founderInfo.status === 0) {
           alert("資料審核中，待審核通過後再進行申請。");
+          await router.push({path: "/account/profile"});
           return;
         }
       }
@@ -267,6 +313,26 @@ async function goToStartup() {
       brand: props.projectData?.id || ""
     },
   });
+}
+
+async function handleUserFavoritePlan() {
+  if (!isLoggedIn.value) {
+    alert("請先登入會員");
+    await router.push({path: "/login"});
+    return;
+  }
+  const formData = {
+    userId: currentUser.value,
+    planId: props.projectData?.id,
+    planType: 2
+  }
+  const response = await userFavoritePlanApi.createUserFavoritePlan(formData);
+  if (response.code === 0) {
+    alert("已加入收藏");
+  } else {
+    alert(response.message || "操作失敗，請稍後再試");
+  }
+
 }
 </script>
 

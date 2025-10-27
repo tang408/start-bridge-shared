@@ -121,6 +121,7 @@ const projectData = ref(null);
 const loading = ref(false);
 
 // 從 API 獲取專案詳細資料
+const emit = defineEmits(['data-loaded']);
 async function getProjectDetail(id) {
   loading.value = true;
   try {
@@ -154,6 +155,7 @@ async function getProjectDetail(id) {
       response = await officialPartnerApi.getOfficialPartner(formData);
       if (response.code === 0) {
         projectData.value = response.data;
+        emit('data-loaded', response.data);
       } else {
         throw new Error('API 響應格式錯誤');
       }

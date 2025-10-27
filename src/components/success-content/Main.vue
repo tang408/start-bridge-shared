@@ -80,6 +80,7 @@ import {onMounted, ref} from "vue";
 import {useRoute} from "vue-router";
 import {successPlanApi} from "@/api/modules/successPlan.js";
 const route = useRoute();
+const emit = defineEmits(['data-loaded']);
 
 const successPlanData = ref({});
 const matchTime = ref('');
@@ -98,6 +99,7 @@ async function getSuccessPlan(successPlanId) {
     successPlanData.value = response.data
     matchTime.value = formatTime(successPlanData.value.matchDays || 0);
     fundraisingTime.value = formatTime(successPlanData.value.fundraisingDays || 0);
+    emit('data-loaded', response.data);
   } else {
     console.error("Failed to fetch success plan data:", response.message)
   }

@@ -105,7 +105,7 @@ import {useRoute} from "vue-router";
 import {partnerInterviewApi} from "@/api/modules/partnerInterview.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 const route = useRoute();
-
+const emit = defineEmits(['data-loaded']);
 const partnerInterviewData = ref({})
 const industryTypesData = ref([]);
 async function getIndustryTypes() {
@@ -126,6 +126,7 @@ async function getPartnerInterview(partnerInterviewId) {
   const response = await partnerInterviewApi.getPartnerInterview(formData)
   if (response.code === 0) {
     partnerInterviewData.value = response.data
+    emit('data-loaded', response.data);
   } else {
     console.error("Failed to fetch partner interview:", response.message)
   }
