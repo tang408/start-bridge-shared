@@ -28,8 +28,12 @@
         </SharedCard>
       </swiper-slide>
     </swiper>
-    <div :class="prevElClass">‹</div>
-    <div :class="nextElClass">›</div>
+    <div :class="prevElClass">
+      <img src="@/assets/icon/left-arrow-white.svg" />
+    </div>
+    <div :class="nextElClass">
+      <img src="@/assets/icon/right-arrow-white.svg" />
+    </div>
   </div>
 </template>
 
@@ -116,9 +120,8 @@ function handleCardClick(card) {
       color: white;
       width: 50px;
       height: 50px;
-      font-size: 50px;
-      line-height: 40px;
-      text-align: center;
+      display: flex;
+      justify-content: center;
       align-items: center;
       border-radius: 50%;
       cursor: pointer;

@@ -24,7 +24,7 @@
       <div class="tab-content">
         <div v-if="activeTab === 'startup'" class="row">
           <div class="d-flex-block align-items-center">
-            <div class="col-md-6">
+            <div class="col-md-6 p-5">
               <img src="@/assets/images/star-img.png" class="w-100" />
             </div>
             <div class="col-md-6 tab-content-md">
@@ -59,7 +59,7 @@
             </div>
           </div>
           <div class="tab-content-text">
-            <h1>創業者流程</h1>
+            <h1>創業夥伴流程</h1>
             <SharedFlow
               :sections="sectionsCoCreate"
               v-model:active="activeCoCreate"
@@ -120,14 +120,109 @@ const goToRegister = () => {
 const activeStartup = ref({ lane: "init", idx: 0 });
 const activeCoCreate = ref({ lane: "init", idx: 0 });
 
+// const sectionsStartup = [
+//   {
+//     key: "init",
+//     cols: 4,
+//     steps: [
+//       { num: 1, title: "註冊會員", desc: "填寫資料<br/>提交審核文件" },
+//       {
+//         num: 2,
+//         title: "申請創業",
+//         desc: "填寫加盟申請表單<br/>(自備款、預算...)",
+//       },
+//       { num: 3, title: "平台審核", desc: "" },
+//       {
+//         num: 4,
+//         title: "簽約立案",
+//         desc: "支付意向金<br/>簽署線上合約<br/>等待專案媒合進度",
+//       },
+//     ],
+//   },
+//   {
+//     key: "success",
+//     label: "案件成立",
+//     variant: "success",
+//     cols: 4,
+//     steps: [
+//       { num: 5, title: "媒合雙方", desc: "填寫資料<br/>提交審核文件" },
+//       {
+//         num: 6,
+//         title: "申請創業",
+//         desc: "以自備款成立籌備戶驗資<br/>公司成立並轉為正式戶<br/>申請增資並確認資金到位",
+//       },
+//       { num: 7, title: "平台審核", desc: "進入品牌方加盟流程" },
+//       { num: 8, title: "開業結案", desc: "每日回報營業數據" },
+//     ],
+//   },
+//   {
+//     key: "fail",
+//     label: "案件不成立",
+//     variant: "fail",
+//     cols: 2,
+//     steps: [
+//       { num: 5, title: "退還意向金", desc: "" },
+//       { num: 6, title: "結案", desc: "" },
+//     ],
+//   },
+// ];
+
+// const sectionsCoCreate = [
+//   {
+//     key: "init",
+//     cols: 3,
+//     steps: [
+//       { title: "註冊會員", desc: "填寫必填資料<br/>成為創業夥伴" },
+//       { title: "選擇方案", desc: "選取有興趣的創業<br/>方案參與" },
+//       {
+//         title: "簽約立案",
+//         desc: "支付意向金<br/>簽署線上合約<br/>等待專案媒合進度",
+//       },
+//     ],
+//   },
+//   {
+//     key: "success",
+//     label: "案件成立",
+//     variant: "success",
+//     cols: 4,
+//     startAt: 3,
+//     steps: [
+//       {
+//         title: "媒合雙方",
+//         desc: "線上或線下簽約<br/>*第二自然人由專員主動<br/>連繫、告知準備文件",
+//       },
+//       { title: "投入參與資源", desc: "" },
+//       {
+//         title: "加盟進度跟進",
+//         desc: "連繫、告知準備文件<br/>等候開業前置程序<br/>*自主關注或連繫專員",
+//       },
+//       { title: "開業結案", desc: "定期查看營運數據" },
+//     ],
+//   },
+//   {
+//     key: "fail",
+//     label: "案件不成立",
+//     variant: "fail",
+//     cols: 2,
+//     steps: [
+//       { num: 5, title: "退還意象金", desc: "" },
+//       { num: 6, title: "結案", desc: "" },
+//     ],
+//   },
+// ];
+
 const sectionsStartup = [
   {
     key: "init",
     cols: 4,
     steps: [
-      { num: 1, title: "線上註冊", desc: "填寫資料<br/>提交審核文件" },
-      { num: 2, title: "申請創業", desc: "填寫加盟申請表單(自備款、預算...)" },
-      { num: 3, title: "平台審核", desc: "" },
+      { num: 1, title: "註冊會員", desc: "串聯社群、Email<br/>一鍵輕鬆登入" },
+      {
+        num: 2,
+        title: "申請創業",
+        desc: "填寫個人資訊、<br/>創業計劃書",
+      },
+      { num: 3, title: "平台審核", desc: "提交身分驗證文件" },
       {
         num: 4,
         title: "簽約立案",
@@ -141,14 +236,14 @@ const sectionsStartup = [
     variant: "success",
     cols: 4,
     steps: [
-      { num: 5, title: "媒合夥方", desc: "填寫資料<br/>提交審核文件" },
+      { num: 5, title: "媒合雙方", desc: "線上或線下簽約" },
       {
         num: 6,
-        title: "申請創業",
+        title: "前置準備",
         desc: "以自備款成立籌備戶驗資<br/>公司成立並轉為正式戶<br/>申請增資並確認資金到位",
       },
-      { num: 7, title: "平台審核", desc: "進入品牌方加盟流程" },
-      { num: 8, title: "簽約立案", desc: "每日回報營業數據" },
+      { num: 7, title: "品牌加盟", desc: "進入品牌方加盟流程" },
+      { num: 8, title: "開業結案", desc: "每日回報營業數據" },
     ],
   },
   {
@@ -157,7 +252,7 @@ const sectionsStartup = [
     variant: "fail",
     cols: 2,
     steps: [
-      { num: 5, title: "退還意象金", desc: "" },
+      { num: 5, title: "退還意向金", desc: "" },
       { num: 6, title: "結案", desc: "" },
     ],
   },
@@ -166,10 +261,11 @@ const sectionsStartup = [
 const sectionsCoCreate = [
   {
     key: "init",
-    cols: 3,
+    cols: 4,
     steps: [
-      { title: "註冊會員", desc: "填寫必填資料<br/>成為創業夥伴" },
-      { title: "選擇方案", desc: "選取有興趣的創業<br/>方案參與" },
+      { title: "註冊會員", desc: "串聯社群、Email<br/>一鍵輕鬆登入" },
+      { title: "申請參與", desc: "選取有興趣的<br/>創業專案參與" },
+      { title: "平台審核", desc: "提交身分驗證文件" },
       {
         title: "簽約立案",
         desc: "支付意向金<br/>簽署線上合約<br/>等待專案媒合進度",
@@ -181,16 +277,16 @@ const sectionsCoCreate = [
     label: "案件成立",
     variant: "success",
     cols: 4,
-    startAt: 3,
+    startAt: 4,
     steps: [
       {
         title: "媒合雙方",
-        desc: "線上或線下簽約<br/>*第二自然人由專員主動<br/>連繫、告知準備文件",
+        desc: "線上或線下簽約<br/>*第二自然人<br/>由專員主動連繫、<br/>告知準備文件",
       },
       { title: "投入參與資源", desc: "" },
       {
         title: "加盟進度跟進",
-        desc: "連繫、告知準備文件<br/>等候開業前置程序<br/>*自主關注或連擊專員",
+        desc: "等候開業前置程序<br/>*自主關注或連繫專員",
       },
       { title: "開業結案", desc: "定期查看營運數據" },
     ],
@@ -201,7 +297,7 @@ const sectionsCoCreate = [
     variant: "fail",
     cols: 2,
     steps: [
-      { num: 5, title: "退還意象金", desc: "" },
+      { num: 5, title: "退還意向金", desc: "" },
       { num: 6, title: "結案", desc: "" },
     ],
   },

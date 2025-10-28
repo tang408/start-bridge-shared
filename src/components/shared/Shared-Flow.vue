@@ -175,11 +175,10 @@ const displayNum = (step, sec, i) => {
     color: #fff;
     padding: 30px 0 20px;
     width: 218px;
-
     border: none;
-    font-weight: 700;
-    font-size: 24px;
-    line-height: 29px;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 26px;
     letter-spacing: 0.1em;
 
     cursor: pointer;

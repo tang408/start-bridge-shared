@@ -103,32 +103,34 @@
               </ul>
             </li>
             <!-- 會員 icon -->
-            <li class="member-icon">
-              <router-link class="nav-link d-flex align-items-center" to="">
-                <img
-                  src="@/assets/icon/user.png"
-                  alt="會員"
-                  class="member-icon-img"
-                />
-              </router-link>
-            </li>
-            <li class="nav-item bc-1 br-1 logIn" v-if="!isLoggedIn">
-              <router-link
-                class="nav-link"
-                to="/login"
-                @click="handleLinkClick"
-              >
-                <img src="@/assets/icon/menu-icon.svg" />
-                登入
-              </router-link>
-            </li>
+            <div class="d-flex-block">
+              <li class="member-icon">
+                <router-link class="nav-link d-flex align-items-center" to="">
+                  <img
+                    src="@/assets/icon/user.png"
+                    alt="會員"
+                    class="member-icon-img"
+                  />
+                </router-link>
+              </li>
+              <li class="bc-1 br-1 logIn" v-if="!isLoggedIn">
+                <router-link
+                  class="nav-link"
+                  to="/login"
+                  @click="handleLinkClick"
+                >
+                  <img src="@/assets/icon/menu-icon.svg" />
+                  登入
+                </router-link>
+              </li>
 
-            <li class="nav-item bc-1 br-1 logIn" v-else>
-              <button class="nav-link" type="button" @click="handleLogout">
-                <img src="@/assets/icon/menu-icon.svg" />
-                登出
-              </button>
-            </li>
+              <li class="nav-item bc-1 br-1 logIn" v-else>
+                <button class="nav-link" type="button" @click="handleLogout">
+                  <img src="@/assets/icon/menu-icon.svg" />
+                  登出
+                </button>
+              </li>
+            </div>
           </ul>
         </div>
       </nav>
@@ -206,16 +208,7 @@ const navItems = [
     ],
   },
   { label: "專案一覽", link: "/project" },
-  {
-    label: "啟動/參與",
-    children: [
-      { label: "啟動", link: { path: "/activity", query: { tab: "startup" } } },
-      {
-        label: "參與",
-        link: { path: "/activity", query: { tab: "coCreate" } },
-      },
-    ],
-  },
+  { label: "啟動/參與", link: "/activity" },
   {
     label: "創媒之星",
     children: [
@@ -321,6 +314,7 @@ const handleLogout = async () => {
 
   .nav-item {
     position: relative;
+    border: 2px solid transparent;
     &:hover {
       border-radius: 50px;
       padding: 0;
@@ -334,14 +328,6 @@ const handleLogout = async () => {
       @media (min-width: 768px) {
         border: 2px solid #ffcc66;
         border-radius: 50px;
-      }
-    }
-
-    &.logIn:hover {
-      border-radius: 50px;
-      @media (min-width: 768px) {
-        background-color: #373838;
-        border: none;
       }
     }
 
