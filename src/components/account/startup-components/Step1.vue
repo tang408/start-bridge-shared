@@ -79,15 +79,6 @@
         readonly
     />
 
-    <SharedDatePicker
-        id="expireDate"
-        label="專案到期日"
-        v-model="local.expireDate"
-        :error="props.errors.expireDate"
-        :required="true"
-        :readonly="readonly"
-    />
-
     <!-- 按鈕區塊 -->
     <div class="button-group mt-4">
       <!-- 預覽模式:跳到 step3 -->
@@ -192,7 +183,7 @@ function submit() {
   if (!local.minAmount) props.errors.minAmount = "請輸入單筆最低額度";
   if (!local.amountRange) props.errors.amountRange = "請輸入額度級距";
   if (!local.partnerLimit) props.errors.partnerLimit = "請輸入夥伴人數上限";
-  if (!local.expireDate) props.errors.expireDate = "請選擇專案到期日";
+
 
   const hasError = Object.values(props.errors).some((e) => e);
   if (!hasError) {

@@ -106,7 +106,11 @@
             <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
+                <!-- 純文本值 -->
                 <template v-if="row.value">{{ row.value }}</template>
+                <!-- HTML 內容 -->
+                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <!-- 列表內容 -->
                 <ul v-else-if="row.list?.length" class="ji-list">
                   <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
                 </ul>
@@ -121,7 +125,11 @@
             <div v-for="(row, i) in supportData" :key="i" class="ji-row">
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
+                <!-- 純文本值 -->
                 <template v-if="row.value">{{ row.value }}</template>
+                <!-- HTML 內容 -->
+                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <!-- 列表內容 -->
                 <ul v-else-if="row.list?.length" class="ji-list">
                   <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
                 </ul>
@@ -208,7 +216,7 @@ const joinInfoData = computed(() => {
   return [
     {label: "加盟金", value: `${data.franchiseFee}萬元`},
     {label: "保證金", value: `${data.deposit}萬元`},
-    {label: "加盟主門檻要求", value: `${data.threshold}萬元`},
+    {label: "加盟主門檻要求", html: `${data.threshold}`},
     {
       label: "開幕準備項目表列",
       list: extraFields.startup_projects?.map(item => `${item.displayName}：${item.value}`) || [],
@@ -218,7 +226,7 @@ const joinInfoData = computed(() => {
       list: extraFields.franchise_requirements?.map(item => `${item.displayName}：${item.value}`) || [],
     },
     {label: "目前開放加盟區域", value: data.location},
-    {label: "店面條件", value: `${data.storeCondition}坪以上`},
+    {label: "店面條件", html: `${data.storeCondition}`},
     {
       label: "裝潢期程",
       list: extraFields.manufacturing_schedule?.map(item => `${item.displayName}：${item.value}天`) || [],
@@ -245,7 +253,7 @@ const supportData = computed(() => {
       label: "加盟主培訓資訊",
       list: extraFields.franchise_training?.map(item => `${item.displayName}：${item.value}`) || [],
     },
-    {label: "加盟主門檻要求", value: `${props.projectData.threshold}萬元`},
+    {label: "加盟主門檻要求", html: `${props.projectData.threshold}`},
     {
       label: "總部支援綱要",
       list: extraFields.support_services?.map(item => `${item.displayName}：${item.value}`) || [],

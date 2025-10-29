@@ -165,6 +165,7 @@
         v-model="formData[docStep]"
         :errors="formErrors[docStep]"
         :readonly="true"
+        :step1Budget="formData.step1.budget"
         @next="goNext"
     />
   </section>
@@ -178,6 +179,7 @@
       v-model="formData[docStep]"
       :errors="formErrors[docStep]"
       @next="goNext"
+      :step1Budget="formData.step1.budget"
       @submit="createPlan"
     />
   </section>
@@ -386,7 +388,6 @@ async function loadPlanData(planId) {
         minAmount: String(planData.minimumAmount || ''),
         amountRange: String(planData.amountRange || ''),
         partnerLimit: String(planData.limitPartner || ''),
-        expireDate: planData.endTime || '',
       });
 
       // Step3 - 創業經驗
@@ -827,7 +828,6 @@ const formData = reactive({
     minAmount: "",
     amountRange: 10,
     partnerLimit: "",
-    expireDate: "",
   },
   step2: { file: null },
   step3: {
@@ -940,7 +940,6 @@ const formErrors = reactive({
     minAmount: "",
     amountRange: "",
     partnerLimit: "",
-    expireDate: "",
   },
   step2: { file: "" },
   step3: { hasStartupExp: "" },
@@ -1362,7 +1361,6 @@ function convertFormData(formData, userId) {
     amountRange: parseInt(step1.amountRange) || 0,
     limitPartner: parseInt(step1.partnerLimit) || 0,
     brand: parseInt(step1.brand) || 0,
-    endTime: step1.expireDate,
 
     // 創業經驗 (Step3)
     hasExperience: stringToBool(step3.hasStartupExp),
@@ -1438,6 +1436,7 @@ async function createPlan() {
   const response = await planApi.createPlan(data)
   if (response.code === 0) {
     alert("創業計劃書提交成功！")
+    router.push("/account/startup")
   } else {
     alert("創業計劃書提交失敗，請稍後再試。")
     return;

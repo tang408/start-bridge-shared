@@ -59,6 +59,9 @@
                     />
                     為標準預期所需比例之佔比：
                   </div>
+                  <p v-if="errors.targetRevenue" class="error-msg">
+                    {{ errors.targetRevenue }}
+                  </p>
                 </th>
               </tr>
               <tr>
@@ -189,7 +192,9 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
   readonly: { type: Boolean, default: false },
+  step1Budget: { type: [String, Number], default: '' } // 新增這個
 });
+
 const emit = defineEmits(["update:modelValue", "next"]);
 
 const local = reactive({ ...props.modelValue });
@@ -201,9 +206,10 @@ watch(
     () => [local.prepBudget],
     () => {
       const total = local.prepBudget
-        .slice(0, local.prepBudget.length - 1)
-        .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+          .slice(0, local.prepBudget.length - 1)
+          .reduce((sum, row) => sum + Number(row.amount || 0), 0);
       local.prepBudget[local.prepBudget.length - 1].amount = total;
+
     },
     { deep: true }
 )
@@ -235,21 +241,24 @@ watch(
 function submitStep() {
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
-  if (!local.prepBudget.every((row) => row.amount && row.amount !== "")) {
-    props.errors.prepBudget = "請填寫所有開辦費預算";
-  }
-
   if (!local.targetRevenue) {
     props.errors.targetRevenue = "請輸入營業額目標";
   }
 
-  if (
-    !local.costStruct.every(
-      (row) =>
-        row.percent && row.amount && row.percent !== "" && row.amount !== ""
-    )
-  ) {
-    props.errors.costStruct = "請完整填寫成本結構（% 與金額）";
+  // 比對
+  const step1BudgetNum = Number(props.step1Budget)  * 10000 || 0;
+  const prepBudgetTotal = local.prepBudget
+    .slice(0, local.prepBudget.length - 1)
+    .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+  if (prepBudgetTotal !== step1BudgetNum) {
+    props.errors.prepBudget = `開辦費預算總額須與加盟總預算一致（${step1BudgetNum.toLocaleString()} 元）`;
+  }
+
+  const costStructTotalAmount = local.costStruct.find(
+    (row) => row.item === "總計"
+  )?.amount;
+  if (costStructTotalAmount !== local.targetRevenue) {
+    props.errors.costStruct = "成本結構總計金額須等於營業額目標金額";
   }
 
   if (!local.fundNote) {
