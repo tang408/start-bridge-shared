@@ -222,16 +222,7 @@ const navItems = [
     ],
   },
   { label: "專案一覽", link: "/project" },
-  {
-    label: "啟動/參與",
-    children: [
-      { label: "啟動", link: { path: "/activity", query: { tab: "startup" } } },
-      {
-        label: "參與",
-        link: { path: "/activity", query: { tab: "coCreate" } },
-      },
-    ],
-  },
+  { label: "啟動/參與", link: "/activity" },
   {
     label: "創媒之星",
     children: [
@@ -336,6 +327,7 @@ const handleLogout = async () => {
 
   .nav-item {
     position: relative;
+    border: 2px solid transparent;
     &:hover {
       border-radius: 50px;
       padding: 0;
@@ -349,14 +341,6 @@ const handleLogout = async () => {
       @media (min-width: 768px) {
         border: 2px solid #ffcc66;
         border-radius: 50px;
-      }
-    }
-
-    &.logIn:hover {
-      border-radius: 50px;
-      @media (min-width: 768px) {
-        background-color: #373838;
-        border: none;
       }
     }
 

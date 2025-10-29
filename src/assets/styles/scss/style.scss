@@ -111,9 +111,25 @@ input {
   margin: 0 15px;
   text-align: center;
   align-content: center;
+  @media (max-width: 576px) {
+    margin: 0;
+  }
 
   a {
-    padding: 10px 20px !important;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 16px;
+    color: #fff;
+    line-height: 19px;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    gap: 5px;
+    &:hover {
+      color: #fff;
+    }
   }
 }
 
