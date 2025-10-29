@@ -30,6 +30,11 @@
           <button class="btn-orange w-45" @click="save">儲存</button>
           <button class="btn-yellow w-45" @click="close">關閉</button>
         </template>
+
+        <template v-else-if="mode === 'long'">
+          <button class="btn-orange w-45" @click="confirm">確定</button>
+          <button class="btn-gray w-45" @click="close">取消</button>
+        </template>
       </div>
     </div>
   </div>
