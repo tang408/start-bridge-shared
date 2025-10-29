@@ -52,6 +52,7 @@ const props = defineProps({
   inline: { type: Boolean, default: false },
   single: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
+  type: { type: String, default: "" },
 });
 
 const uid = computed(() => `cli-${Math.random().toString(36).slice(2, 9)}`);

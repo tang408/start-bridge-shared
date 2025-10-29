@@ -36,6 +36,16 @@
     >
       <span class="icon icon-trash" />
     </button>
+
+    <!-- 跳轉 -->
+    <button
+        v-if="showPush"
+        class="circle-btn push"
+        :title="removeTitle"
+        @click="onPush"
+    >
+      <span class="icon icon-eye" />
+    </button>
   </div>
 </template>
 
@@ -50,6 +60,7 @@ const props = defineProps({
   size: { type: String, default: "md" },
   iconType: { type: String, default: "star" },
   showTrash: { type: Boolean, default: true },
+  showPush: { type: Boolean, default: false },
   top: { type: Number, default: null },
   right: { type: Number, default: 16 },
   bottom: { type: Number, default: null },
@@ -57,10 +68,14 @@ const props = defineProps({
   iconSize: { type: Number, default: 30 },
   circleSize: { type: Number, default: 56 },
 });
-const emit = defineEmits(["favorite-toggle", "remove"]);
+const emit = defineEmits(["favorite-toggle", "remove", "push"]);
 
 function onRemove() {
   if (!props.confirmOnRemove || confirm(props.confirmText)) emit("remove");
+}
+
+function onPush() {
+  emit("push");
 }
 </script>
 
@@ -123,6 +138,9 @@ function onRemove() {
   }
   .icon-heart {
     mask-image: url("@/assets/icon/back-heart.png");
+  }
+  .icon-eye {
+    mask-image: url("@/assets/icon/eye.png");
   }
 }
 </style>

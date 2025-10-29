@@ -132,7 +132,7 @@
               <div class="nav-item bc-1 br-1 logIn" v-else>
                 <button class="nav-link" type="button" @click="handleLogout">
                   <img src="@/assets/icon/menu-icon.svg" />
-                  <a style="justify-content: center">登出</a>
+                  登出
                 </button>
               </div>
             </li>

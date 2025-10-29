@@ -1,8 +1,8 @@
 <template>
   <div class="form-group">
     <label class="fg-label"> {{ label }}</label>
-    <div class="checks">
-      <label class="fg-label"> 招聘管道：</label>
+    <div class="checks" >
+      <label class="fg-label" v-if="type === 'recruit'"> 招聘管道：</label>
 
       <div
         class="option"
@@ -44,6 +44,7 @@ const props = defineProps({
   label: { type: String, default: "" },
   options: { type: Array, default: () => [] },
   error: { type: String, default: "" },
+  type: { type: String, default: "" },
 });
 
 const uid = computed(() => `rc-${Math.random().toString(36).slice(2, 9)}`);

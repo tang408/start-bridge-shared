@@ -1,15 +1,15 @@
 <template>
   <div class="fs-24">基本資料</div>
   <SharedTabs
-    v-model="activeTab"
-    :tabs="[
+      v-model="activeTab"
+      :tabs="[
       { label: '創業者資料', value: 'founder' },
       { label: '共創者資料', value: 'cofounder' },
     ]"
   />
 
   <div v-if="activeTab === 'founder'">
-    <form @submit.prevent="handleRegister" class="form">
+    <form @submit.prevent="submitForFounderAndCompany" class="form">
       <div class="form-display profile">
         <div class="form-group d-grid">
           <label class="mb-2">審核狀態</label>
@@ -18,22 +18,23 @@
 
         <!-- 連絡電話 -->
         <SharedInput
-          id="phone"
-          type="tel"
-          label="聯絡電話*"
-          autocomplete="tel"
-          v-model="formFounder.phone"
-          :error="errFounder.phone"
-          required
-          inputmode="numeric"
-          maxlength="10"
-          :readonly="ro('phone')"
+            id="phone"
+            type="tel"
+            label="聯絡電話*"
+            autocomplete="tel"
+            v-model="formFounder.phone"
+            :error="errFounder.phone"
+            required
+            inputmode="numeric"
+            maxlength="10"
+            :readonly="ro('phone')"
         />
 
         <!-- 密碼 + 修改 -->
         <SharedInput
             id="password"
             type="password"
+            :showEye="false"
             label="密碼*"
             autocomplete="new-password"
             v-model="formFounder.password"
@@ -47,311 +48,296 @@
 
         <!-- 姓名 -->
         <SharedInput
-          id="fullname"
-          label="姓名*"
-          v-model="formFounder.fullname"
-          :error="errFounder.fullname"
-          :readonly="ro('fullname')"
-          required
+            id="fullname"
+            label="姓名*"
+            v-model="formFounder.fullname"
+            :error="errFounder.fullname"
+            :readonly="ro('fullname')"
+            required
         />
 
         <!-- 性別* -->
         <SharedRadio
             id="gender"
-          label="性別*"
-          v-model="formFounder.gender"
-          :options="[
+            label="性別*"
+            v-model="formFounder.gender"
+            :options="[
             { value: 1, text: '男性' },
             { value: 2, text: '女性' },
           ]"
-          :disabled="ro('gender')"
-          :error="errFounder.gender"
-          required
+            :disabled="ro('gender')"
+            :error="errFounder.gender"
+            required
         />
 
         <!-- 出生年月日* -->
         <SharedBirthday
-          id="birthday"
-          label="出生年月日*"
-          v-model="formFounder.birthday"
-          :error="errFounder.birthday"
-          :required="true"
-          :max="new Date().toISOString().slice(0, 10)"
-          :readonly="ro('birthday')"
+            id="birthday"
+            label="出生年月日*"
+            v-model="formFounder.birthday"
+            :error="errFounder.birthday"
+            :required="true"
+            :max="new Date().toISOString().slice(0, 10)"
+            :readonly="ro('birthday')"
         />
 
         <!-- 電子郵件* -->
         <SharedInput
-          id="email-display"
-          type="email"
-          label="電子郵件*"
-          autocomplete="email"
-          v-model="formFounder.email"
-          :error="errFounder.email"
-          required
-          :readonly="ro('email')"
+            id="email-display"
+            type="email"
+            label="電子郵件*"
+            autocomplete="email"
+            v-model="formFounder.email"
+            :error="errFounder.email"
+            required
+            :readonly="ro('email')"
         />
 
         <!-- Line* -->
         <SharedInput
-          id="line"
-          label="Line*"
-          v-model="formFounder.line"
-          :error="errFounder.line"
-          required
-          :readonly="ro('line')"
+            id="line"
+            label="Line*"
+            v-model="formFounder.line"
+            :error="errFounder.line"
+            required
+            :readonly="ro('line')"
         />
 
         <!-- 創業預算*(自備款2成)* -->
         <SharedInput
-          id="budget"
-          label="創業預算*(自備款2成)*"
-          v-model="formFounder.budget"
-          :error="errFounder.budget"
-          required
-          :readonly="ro('budget')"
+            id="budget"
+            label="創業預算*(自備款2成)*"
+            v-model="formFounder.budget"
+            :error="errFounder.budget"
+            required
+            :readonly="ro('budget')"
         />
 
         <!-- 所在區域* -->
         <SharedSelect
-          id="region"
-          label="所在區域*"
-          v-model="formFounder.region"
-          :error="errFounder.region"
-          :options="cities.map(city => ({ value: city.id, text: city.name }))"
-          required
-          :disabled="ro('region')"
+            id="region"
+            label="所在區域*"
+            v-model="formFounder.region"
+            :error="errFounder.region"
+            :options="cities.map(city => ({ value: city.id, text: city.name }))"
+            required
+            :disabled="ro('region')"
         />
 
         <!-- 工作狀況* -->
         <SharedInput
-          id="work"
-          label="工作狀況*"
-          v-model="formFounder.work"
-          :error="errFounder.work"
-          required
-          :readonly="ro('work')"
-
+            id="work"
+            label="工作狀況*"
+            v-model="formFounder.work"
+            :error="errFounder.work"
+            required
+            :readonly="ro('work')"
         />
 
         <!-- 預計加盟產業/品牌* -->
         <SharedSelect
-          id="brand"
-          label="預計加盟產業/品牌*"
-          v-model="formFounder.brand"
-          :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
-          :error="errFounder.brand"
-          required
-          :disabled="ro('brand')"
-
+            id="brand"
+            label="預計加盟產業/品牌*"
+            v-model="formFounder.brand"
+            :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
+            :error="errFounder.brand"
+            required
+            :disabled="ro('brand')"
         />
 
         <!-- 資產證明上傳* -->
         <SharedUpload
-          id="assetProof"
-          label="資產證明上傳*"
-          v-model="formFounder.assetProof"
-          :error="errFounder.assetProof"
-          :required="true"
-          accept=".pdf,.jpg,.jpeg,.png"
-          button-text="重新上傳"
-          :account="formFounder.fullname"
-          :name="'assetProof'"
-          @upload-success="(result) => handleUploadSuccess('assetProof', result)"
-          :disabled="ro('assetProof')"
-
+            id="assetProof"
+            label="資產證明上傳*"
+            v-model="formFounder.assetProof"
+            :error="errFounder.assetProof"
+            :required="true"
+            accept=".pdf,.jpg,.jpeg,.png"
+            button-text="重新上傳"
+            :account="formFounder.fullname"
+            :name="'assetProof'"
+            @upload-success="(result) => handleUploadSuccess('assetProof', result)"
+            :disabled="ro('assetProof')"
         />
 
         <!-- 良民證上傳* -->
         <SharedUpload
-          id="policeRecord"
-          label="良民證上傳*"
-          v-model="formFounder.policeRecord"
-          :error="errFounder.policeRecord"
-          :required="true"
-          accept=".pdf,.jpg,.jpeg,.png"
-          button-text="重新上傳"
-          :account="formFounder.fullname"
-          :name="'policeRecord'"
-          @upload-success="(result) => handleUploadSuccess('policeRecord', result)"
-          :disabled="ro('policeRecord')"
+            id="policeRecord"
+            label="良民證上傳*"
+            v-model="formFounder.policeRecord"
+            :error="errFounder.policeRecord"
+            :required="true"
+            accept=".pdf,.jpg,.jpeg,.png"
+            button-text="重新上傳"
+            :account="formFounder.fullname"
+            :name="'policeRecord'"
+            @upload-success="(result) => handleUploadSuccess('policeRecord', result)"
+            :disabled="ro('policeRecord')"
         />
 
         <!-- 最高學歷/專長背景 -->
         <SharedInput
-          id="edu"
-          label="最高學歷/專長背景"
-          v-model="formFounder.edu"
-          :error="errFounder.edu"
-          :readonly="ro('edu')"
-
+            id="edu"
+            label="最高學歷/專長背景"
+            v-model="formFounder.edu"
+            :error="errFounder.edu"
+            :readonly="ro('edu')"
         />
 
         <!-- 工作經驗描述 -->
         <SharedTextarea
-          id="expDesc"
-          label="工作經驗描述"
-          v-model="formFounder.expDesc"
-          :error="errFounder.expDesc"
-          rows="4"
-          :readonly="ro('expDesc')"
-
+            id="expDesc"
+            label="工作經驗描述"
+            v-model="formFounder.expDesc"
+            :error="errFounder.expDesc"
+            rows="4"
+            :readonly="ro('expDesc')"
         />
 
         <!-- 推薦碼 -->
         <SharedInput
-          id="refCode"
-          label="推薦碼"
-          v-model="formFounder.refCode"
-          :error="errFounder.refCode"
-          :readonly="ro('refCode')"
+            id="refCode"
+            label="推薦碼"
+            v-model="formFounder.refCode"
+            :error="errFounder.refCode"
+            :readonly="ro('refCode')"
         />
 
         <!-- 公司名稱 -->
         <SharedInput
-          id="companyName"
-          label="公司名稱*"
-          v-model="formFounder.companyName"
-          :error="errFounder.companyName"
-          required
-          :readonly="ro('companyName')"
-
+            id="companyName"
+            label="公司名稱*"
+            v-model="formFounder.companyName"
+            :error="errFounder.companyName"
+            required
+            :readonly="ro('companyName')"
         />
 
-        <!-- 公司名稱 -->
+        <!-- 公司名稱英文 -->
         <SharedInput
-          id="companyNameEn"
-          label="公司名稱"
-          v-model="formFounder.companyNameEn"
-          :error="errFounder.companyNameEn"
-          :readonly="ro('companyNameEn')"
-
+            id="companyNameEn"
+            label="公司名稱(英文)"
+            v-model="formFounder.companyNameEn"
+            :error="errFounder.companyNameEn"
+            :readonly="ro('companyNameEn')"
         />
 
         <!-- 統一編號 -->
         <SharedInput
-          id="taxId"
-          label="統一編號"
-          v-model="formFounder.taxId"
-          :error="errFounder.taxId"
-          inputmode="numeric"
-          maxlength="8"
-          pattern="^\d{8}$"
-          :readonly="ro('taxId')"
-
+            id="taxId"
+            label="統一編號"
+            v-model="formFounder.taxId"
+            :error="errFounder.taxId"
+            inputmode="numeric"
+            maxlength="8"
+            pattern="^\d{8}$"
+            :readonly="ro('taxId')"
         />
 
         <!-- 公司 Logo 上傳 -->
         <SharedUpload
-          id="companyLogo"
-          label="公司Logo"
-          v-model="formFounder.companyLogo"
-          :error="errFounder.companyLogo"
-          accept=".jpg,.jpeg,.png,.gif,.pdf"
-          :max-size="10 * 1024 * 1024"
-          button-text="重新上傳"
-          :account="formFounder.fullname"
-          :name="'companyLogo'"
-          @upload-success="(result) => handleUploadSuccess('companyLogo', result)"
-          :disabled="ro('companyLogo')"
-
+            id="companyLogo"
+            label="公司Logo"
+            v-model="formFounder.companyLogo"
+            :error="errFounder.companyLogo"
+            accept=".jpg,.jpeg,.png,.gif,.pdf"
+            :max-size="10 * 1024 * 1024"
+            button-text="重新上傳"
+            :account="formFounder.fullname"
+            :name="'companyLogo'"
+            @upload-success="(result) => handleUploadSuccess('companyLogo', result)"
+            :disabled="ro('companyLogo')"
         />
 
         <!-- 公司標語* -->
         <SharedInput
-          id="slogan"
-          label="公司標語*"
-          v-model="formFounder.slogan"
-          :error="errFounder.slogan"
-          maxlength="60"
-          required
-          :readonly="ro('slogan')"
-
+            id="slogan"
+            label="公司標語*"
+            v-model="formFounder.slogan"
+            :error="errFounder.slogan"
+            maxlength="60"
+            required
+            :readonly="ro('slogan')"
         />
 
         <!-- 公司簡述* -->
         <SharedInput
-          id="companyBrief"
-          label="公司簡述*"
-          v-model="formFounder.companyBrief"
-          :error="errFounder.companyBrief"
-          required
-          :readonly="ro('companyBrief')"
-
+            id="companyBrief"
+            label="公司簡述*"
+            v-model="formFounder.companyBrief"
+            :error="errFounder.companyBrief"
+            required
+            :readonly="ro('companyBrief')"
         />
 
         <!-- 銀行戶名* -->
         <SharedInput
-          id="bankName"
-          label="銀行戶名*"
-          v-model="formFounder.bankName"
-          :error="errFounder.bankName"
-          required
-          :readonly="ro('bankName')"
-
+            id="bankName"
+            label="銀行戶名*"
+            v-model="formFounder.bankName"
+            :error="errFounder.bankName"
+            required
+            :readonly="ro('bankName')"
         />
 
         <!-- 銀行帳號* -->
         <SharedInput
-          id="bankAccount"
-          label="銀行帳號*"
-          v-model="formFounder.bankAccount"
-          :error="errFounder.bankAccount"
-          required
-          inputmode="numeric"
-          pattern="^[0-9-]{6,20}$"
-          :readonly="ro('bankAccount')"
-
+            id="bankAccount"
+            label="銀行帳號*"
+            v-model="formFounder.bankAccount"
+            :error="errFounder.bankAccount"
+            required
+            inputmode="numeric"
+            pattern="^[0-9-]{6,20}$"
+            :readonly="ro('bankAccount')"
         />
 
         <!-- 公司詳細介紹 -->
         <SharedTextarea
-          id="companyIntro"
-          label="公司詳細介紹"
-          v-model="formFounder.companyIntro"
-          :error="errFounder.companyIntro"
-          rows="4"
-          :readonly="ro('companyIntro')"
-
+            id="companyIntro"
+            label="公司詳細介紹"
+            v-model="formFounder.companyIntro"
+            :error="errFounder.companyIntro"
+            rows="4"
+            :readonly="ro('companyIntro')"
         />
 
         <!-- 官方連結 / Facebook / Instagram（選填，若填需是有效網址） -->
         <SharedInput
-          id="website"
-          label="官網連結"
-          v-model="formFounder.website"
-          :error="errFounder.website"
-          inputmode="url"
-          :readonly="ro('website')"
-
+            id="website"
+            label="官網連結"
+            v-model="formFounder.website"
+            :error="errFounder.website"
+            inputmode="url"
+            :readonly="ro('website')"
         />
         <SharedInput
-          id="facebook"
-          label="Facebook"
-          v-model="formFounder.facebook"
-          :error="errFounder.facebook"
-          inputmode="url"
-          :readonly="ro('facebook')"
-
+            id="facebook"
+            label="Facebook"
+            v-model="formFounder.facebook"
+            :error="errFounder.facebook"
+            inputmode="url"
+            :readonly="ro('facebook')"
         />
         <SharedInput
-          id="instagram"
-          label="Instagram"
-          v-model="formFounder.instagram"
-          :error="errFounder.instagram"
-          inputmode="url"
-          :readonly="ro('instagram')"
-
+            id="instagram"
+            label="Instagram"
+            v-model="formFounder.instagram"
+            :error="errFounder.instagram"
+            inputmode="url"
+            :readonly="ro('instagram')"
         />
+
         <div class="actions two">
-          <button v-if="!isEditing" type="button" class="btn-orange" @click="enableEdit">
-            修改以上資料
+          <button
+              v-if="hasChanges"
+              type="submit"
+              class="btn-yellow"
+          >
+            確認修改
           </button>
-            <button v-if="isEditing" type="sumbit" class="btn-yellow" @click="submitForFounderAndCompany">
-              送出審核
-            </button>
-          </div>
         </div>
+      </div>
     </form>
 
     <!-- 修改密碼 Dialog -->
@@ -394,10 +380,10 @@
         </form>
       </div>
     </dialog>
-
   </div>
+
   <div v-else>
-    <form @submit.prevent="handleRegister" class="form">
+    <form @submit.prevent="submitForCoreFounder" class="form">
       <div class="form-display profile">
         <div class="form-group d-grid">
           <label class="mb-2">審核狀態</label>
@@ -406,16 +392,16 @@
 
         <!-- 連絡電話 -->
         <SharedInput
-          id="phone"
-          type="tel"
-          label="聯絡電話*"
-          autocomplete="tel"
-          v-model="formCo.phone"
-          :error="errCo.phone"
-          required
-          inputmode="numeric"
-          maxlength="10"
-          :readonly="ro('phone')"
+            id="phone"
+            type="tel"
+            label="聯絡電話*"
+            autocomplete="tel"
+            v-model="formCo.phone"
+            :error="errCo.phone"
+            required
+            inputmode="numeric"
+            maxlength="10"
+            :readonly="ro('phone')"
         />
 
         <!-- 密碼 + 修改 -->
@@ -435,140 +421,136 @@
 
         <!-- 姓名 -->
         <SharedInput
-          id="fullname"
-          label="姓名*"
-          v-model="formCo.fullname"
-          :error="errCo.fullname"
-          required
-          :readonly="ro('fullname')"
+            id="fullname"
+            label="姓名*"
+            v-model="formCo.fullname"
+            :error="errCo.fullname"
+            required
+            :readonly="ro('fullname')"
         />
 
         <!-- 性別* -->
         <SharedRadio
             id="gender"
-          label="性別*"
-          v-model="formCo.gender"
-          :options="[
+            label="性別*"
+            v-model="formCo.gender"
+            :options="[
             { value: 1, text: '男性' },
             { value: 2, text: '女性' },
           ]"
-          :error="errCo.gender"
-          required
-          :disabled="ro('gender')"
-
+            :error="errCo.gender"
+            required
+            :disabled="ro('gender')"
         />
 
         <!-- 身分證明*（持證件自拍） -->
         <SharedUpload
-          id="idProof"
-          label="身分證明*（持證件自拍）"
-          v-model="formCo.idProof"
-          :error="errCo.idProof"
-          :required="true"
-          accept=".jpg,.jpeg,.png"
-          placeholder="檔案名稱.jpg"
-          :account="formCo.fullname"
-          :name="'idProof'"
-          @upload-success="(result) => handleUploadSuccess('idProof', result)"
-          button-text="上傳"
-          @invalid="(msg) => (errCo.idProof = msg)"
-          :disabled="ro('idProof')"
-
+            id="idProof"
+            label="身分證明*（持證件自拍）"
+            v-model="formCo.idProof"
+            :error="errCo.idProof"
+            :required="true"
+            accept=".jpg,.jpeg,.png"
+            placeholder="檔案名稱.jpg"
+            :account="formCo.fullname"
+            :name="'idProof'"
+            @upload-success="(result) => handleUploadSuccess('idProof', result)"
+            button-text="上傳"
+            @invalid="(msg) => (errCo.idProof = msg)"
+            :disabled="ro('idProof')"
         />
 
         <!-- 第二證件＊（必填） -->
         <SharedUpload
-          id="idProofSecond"
-          label="第二證件*"
-          v-model="formCo.idProofSecond"
-          :error="errCo.idProofSecond"
-          :required="true"
-          accept=".jpg,.jpeg,.png,.pdf"
-          placeholder="檔案名稱.jpg"
-          button-text="上傳"
-          :account="formCo.fullname"
-          :name="'idProofSecond'"
-          @upload-success="(result) => handleUploadSuccess('idProofSecond', result)"
-          @invalid="(msg) => (errCo.idProofSecond = msg)"
-          :disabled="ro('idProofSecond')"
-
-
+            id="idProofSecond"
+            label="第二證件*"
+            v-model="formCo.idProofSecond"
+            :error="errCo.idProofSecond"
+            :required="true"
+            accept=".jpg,.jpeg,.png,.pdf"
+            placeholder="檔案名稱.jpg"
+            button-text="上傳"
+            :account="formCo.fullname"
+            :name="'idProofSecond'"
+            @upload-success="(result) => handleUploadSuccess('idProofSecond', result)"
+            @invalid="(msg) => (errCo.idProofSecond = msg)"
+            :disabled="ro('idProofSecond')"
         />
 
         <!-- 出生年月日* -->
         <SharedBirthday
-          id="birthday"
-          label="出生年月日*"
-          v-model="formCo.birthday"
-          :error="errCo.birthday"
-          :required="true"
-          :max="new Date().toISOString().slice(0, 10)"
-          :readonly="ro('birthday')"
+            id="birthday"
+            label="出生年月日*"
+            v-model="formCo.birthday"
+            :error="errCo.birthday"
+            :required="true"
+            :max="new Date().toISOString().slice(0, 10)"
+            :readonly="ro('birthday')"
         />
 
         <!-- 電子郵件* -->
         <SharedInput
-          id="email"
-          type="email"
-          label="電子郵件*"
-          autocomplete="email"
-          v-model="formCo.email"
-          :error="errCo.email"
-          required
-          :readonly="ro('email')"
+            id="email"
+            type="email"
+            label="電子郵件*"
+            autocomplete="email"
+            v-model="formCo.email"
+            :error="errCo.email"
+            required
+            :readonly="ro('email')"
         />
 
         <!-- Line* -->
         <SharedInput
-          id="line-display"
-          label="Line*"
-          v-model="formCo.line"
-          :error="errCo.line"
-          required
-          :readonly="ro('line')"
+            id="line-display"
+            label="Line*"
+            v-model="formCo.line"
+            :error="errCo.line"
+            required
+            :readonly="ro('line')"
         />
 
         <!-- 創業預算*(自備款2成)* -->
         <SharedInput
-          id="asset"
-          label="創業預算*(自備款2成)"
-          v-model="formCo.asset"
-          :error="errCo.asset"
-          required
-          :readonly="ro('asset')"
+            id="asset"
+            label="創業預算*(自備款2成)"
+            v-model="formCo.asset"
+            :error="errCo.asset"
+            required
+            :readonly="ro('asset')"
         />
 
         <!-- 推薦碼 -->
         <SharedInput
-          id="refCode"
-          label="推薦碼"
-          v-model="formCo.refCode"
-          :error="errCo.refCode"
-          :readonly="ro('refCode')"
+            id="refCode"
+            label="推薦碼"
+            v-model="formCo.refCode"
+            :error="errCo.refCode"
+            :readonly="ro('refCode')"
         />
 
         <!-- 工作狀況* -->
         <SharedInput
-          id="work"
-          label="工作狀況*"
-          v-model="formCo.work"
-          :error="errCo.work"
-          required
-          :readonly="ro('work')"
+            id="work"
+            label="工作狀況*"
+            v-model="formCo.work"
+            :error="errCo.work"
+            required
+            :readonly="ro('work')"
         />
 
         <!-- 最低 & 最高可投入資產 -->
         <SharedInput
-          id="asset"
-          label="最低可投入資產*"
-          v-model="formCo.minBudget"
-          :error="errCo.minBudget"
-          required
-          :readonly="ro('minBudget')"
+            id="minBudget"
+            label="最低可投入資產*"
+            v-model="formCo.minBudget"
+            :error="errCo.minBudget"
+            required
+            :readonly="ro('minBudget')"
         />
 
         <SharedInput
-            id="asset"
+            id="maxBudget"
             label="最高可投入資產*"
             v-model="formCo.maxBudget"
             :error="errCo.maxBudget"
@@ -578,65 +560,65 @@
 
         <!-- 預計參與產業 -->
         <SharedSelect
-          id="industry"
-          label="預計參與產業*"
-          v-model="formCo.industryType"
-          :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
-          :error="errCo.industryType"
-          required
-          :disabled="ro('industryType')"
+            id="industry"
+            label="預計參與產業*"
+            v-model="formCo.industryType"
+            :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
+            :error="errCo.industryType"
+            required
+            :disabled="ro('industryType')"
         />
 
         <!-- 可接受投入參與年限 -->
         <SharedSelect
-          id="yearLimit"
-          label="可接受投入參與年限*"
-          v-model="formCo.yearLimit"
-          v-model:public="formCo.yearLimitIsShow"
-          :options="[
+            id="yearLimit"
+            label="可接受投入參與年限*"
+            v-model="formCo.yearLimit"
+            v-model:public="formCo.yearLimitIsShow"
+            :options="[
             { value: 1, text: '一年' },
             { value: 2, text: '二年' },
             { value: 3, text: '三年' },
             { value: 4, text: '四年' },
             { value: 5, text: '五年' },
           ]"
-          :error="errCo.yearLimit"
-          required
-          publicable
-          :disabled="ro('yearLimit')"
+            :error="errCo.yearLimit"
+            required
+            publicable
+            :disabled="ro('yearLimit')"
         />
 
         <!-- 創業經驗及工作履歷 -->
         <SharedTextarea
-          id="experience"
-          label="創業經驗及工作履歷"
-          v-model="formCo.experience"
-          v-model:public="formCo.experienceIsShow"
-          :error="errCo.experience"
-          rows="4"
-          publicable
-          :readonly="ro('experience')"
+            id="experience"
+            label="創業經驗及工作履歷"
+            v-model="formCo.experience"
+            v-model:public="formCo.experienceIsShow"
+            :error="errCo.experience"
+            rows="4"
+            publicable
+            :readonly="ro('experience')"
         />
 
         <!-- 自我介紹與營運理念 -->
         <SharedTextarea
-          id="intro"
-          label="自我介紹與營運理念"
-          v-model="formCo.intro"
-          v-model:public="formCo.introIsShow"
-          :error="errCo.intro"
-          rows="4"
-          publicable
-          :readonly="ro('intro')"
-
+            id="intro"
+            label="自我介紹與營運理念"
+            v-model="formCo.intro"
+            v-model:public="formCo.introIsShow"
+            :error="errCo.intro"
+            rows="4"
+            publicable
+            :readonly="ro('intro')"
         />
 
         <div class="actions two">
-          <button v-if="!isEditing" type="button" class="btn-orange" @click="enableEdit">
-            修改以上資料
-          </button>
-          <button v-if="isEditing" type="sumbit" class="btn-yellow" @click="submitForCoreFounder">
-            送出審核
+          <button
+              v-if="hasChanges"
+              type="submit"
+              class="btn-yellow"
+          >
+            確認修改
           </button>
         </div>
       </div>
@@ -686,7 +668,8 @@
 </template>
 
 <script setup>
-import {ref, reactive, onMounted, watch} from "vue";
+import { ref, reactive, onMounted, watch, onBeforeUnmount } from "vue";
+import { onBeforeRouteLeave } from 'vue-router';
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
@@ -694,20 +677,23 @@ import SharedUpload from "@/components/shared/Shared-Upload.vue";
 import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
 import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedSelect from "@/components/shared/Shared-Select.vue";
-import {userApi} from "@/api/modules/user.js";
-
-
+import { userApi } from "@/api/modules/user.js";
 import { useAuth } from "@/composables/useAuth";
-import {fileApi} from "@/api/modules/file.js";
-import {industryTypeApi} from "@/api/modules/industryType.js";
-import {cityApi} from "@/api/modules/city.js";
+import { fileApi } from "@/api/modules/file.js";
+import { industryTypeApi } from "@/api/modules/industryType.js";
+import { cityApi } from "@/api/modules/city.js";
+
 const { isLoggedIn, currentUser } = useAuth();
 
-const isEditing = ref(false);
-const editableFields = ref(new Set())
+// 追蹤表單變更
+const hasChanges = ref(false);
+const originalData = ref(null);
+
+// 唯讀欄位
+const alwaysReadOnly = new Set(['phone', 'email', 'refCode', 'password', 'status']);
+
 function ro(name) {
-  if (!isEditing.value) return true;
-  return !editableFields.value.has(name);
+  return alwaysReadOnly.has(name);
 }
 
 function handleUploadSuccess(fileType, result) {
@@ -719,7 +705,6 @@ function handleUploadSuccess(fileType, result) {
   if (fileId) {
     if (fileType === 'idProof') {
       formCo.idProofId = fileId;
-      // 如果需要更新 v-model，也要更新這個
       formCo.idProof = {
         name: fileName,
         id: fileId,
@@ -812,70 +797,25 @@ const formCo = reactive({
   asset: 0,
   industryType: "",
   yearLimit: "",
+  yearLimitIsShow: false,
   experience: "",
+  experienceIsShow: false,
   intro: "",
+  introIsShow: false,
   status: 0,
 });
-// const formFounder = reactive({
-//   phone: "0987456123",
-//   password: "Abc12345!",
-//   fullname: "王小明",
-//   gender: "M",
-//   birthday: "1992-06-18",
-//   email: "demo-founder@example.com",
-//   line: "line_demo_001",
-//   budget: "800,000",
-//   region: "台北市",
-//   work: "在職",
-//   brand: "顏太煮奶茶",
-//   assetProof: "asset-proof-demo.pdf",
-//   policeRecord: "police-record-demo.pdf",
-//   edu: "國立台灣大學 資工系",
-//   expDesc: "曾任前端工程師三年，熟 Vue/Angular/WordPress。",
-//   refCode: "INVITE2025",
-//   companyName: "星橋創媒股份有限公司",
-//   companyNameEn: "Star Bridge Media Co., Ltd.",
-//   taxId: "12345678",
-//   companyLogo: "logo-demo.png",
-//   slogan: "讓創業更輕鬆，讓品牌更靠近。",
-//   companyBrief: "我們致力於媒合創業者與品牌方，共創共贏。",
-//   bankName: "台灣銀行",
-//   bankAccount: "0123-456-789",
-//   companyIntro: "公司成立於 2022 年，專注於創業媒合、品牌孵化與經營顧問服務。",
-//   website: "https://www.star-bridge.tw",
-//   facebook: "https://www.facebook.com/starbridge",
-//   instagram: "https://www.instagram.com/starbridge",
-// });
 
 const errFounder = reactive(
-  Object.fromEntries(Object.keys(formFounder).map((k) => [k, ""]))
+    Object.fromEntries(Object.keys(formFounder).map((k) => [k, ""]))
 );
 
-/** ------- 共創者（cofounder） state ------- */
-// const formCo = reactive({
-//   phone: "0987654321",
-//   password: "XyZ98765!",
-//   fullname: "陳小美",
-//   gender: "F",
-//   birthday: "1995-03-05",
-//   email: "demo-co@example.com",
-//   line: "line_demo_888",
-//   budgetRange: "400000",
-//   refCode: "CO2025",
-//   work: "自由接案",
-//   asset: "最低 30 萬；最高 120 萬",
-//   industryCategory: "科技業",
-//   yearLimit: "三年",
-//   resume: "參與三間新創，主要負責 BD 與營運。",
-//   philosophy: "以資料驅動決策，長期主義經營品牌。",
-// });
 const errCo = reactive(
-  Object.fromEntries(Object.keys(formCo).map((k) => [k, ""]))
+    Object.fromEntries(Object.keys(formCo).map((k) => [k, ""]))
 );
+
 const userProfile = ref(null);
-
-
 const loading = ref(false);
+
 async function getUserInfo() {
   loading.value = true;
   const formData = {
@@ -943,6 +883,56 @@ async function getCities() {
   }
 }
 
+// 深度比較兩個物件是否相等
+function isEqual(obj1, obj2) {
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+
+  if (keys1.length !== keys2.length) return false;
+
+  for (let key of keys1) {
+    const val1 = obj1[key];
+    const val2 = obj2[key];
+
+    // 處理 null/undefined
+    if (val1 == null && val2 == null) continue;
+    if (val1 == null || val2 == null) return false;
+
+    // 處理物件
+    if (typeof val1 === 'object' && typeof val2 === 'object') {
+      if (!isEqual(val1, val2)) return false;
+    } else if (val1 !== val2) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// 檢查是否有變更
+function checkChanges() {
+  if (!originalData.value) return;
+
+  const currentForm = activeTab.value === 'founder' ? formFounder : formCo;
+  const originalForm = originalData.value[activeTab.value];
+
+  hasChanges.value = !isEqual(currentForm, originalForm);
+}
+
+// 儲存原始資料
+function saveOriginalData() {
+  originalData.value = {
+    founder: JSON.parse(JSON.stringify(formFounder)),
+    cofounder: JSON.parse(JSON.stringify(formCo))
+  };
+}
+
+// 監聽表單變更
+watch([formFounder, formCo], () => {
+  checkChanges();
+}, { deep: true });
+
+
 
 // 組件掛載時獲取數據
 onMounted(async () => {
@@ -952,8 +942,18 @@ onMounted(async () => {
     getIndustryTypes(),
     getCities()
   ]);
+
+  // 資料載入完成後,儲存原始資料
+  saveOriginalData();
+
+  // 監聽瀏覽器關閉/重新整理
+  window.addEventListener('beforeunload', handleBeforeUnload);
 });
 
+// 組件卸載時移除監聽
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
 
 watch(userProfile, (newValue) => {
   if (newValue) {
@@ -967,14 +967,13 @@ watch(userProfile, (newValue) => {
     formFounder.budget = newValue.userInfoData?.budget || "";
     formFounder.refCode = newValue.userInfoData?.referralCode || "";
 
-    // 從 founderInfoData 獲取其他資料
     formFounder.status = newValue.founderInfoData?.status || "";
     formFounder.work = newValue.founderInfoData?.workStatus || "";
     formFounder.edu = newValue.founderInfoData?.education || "";
     formFounder.expDesc = newValue.founderInfoData?.workExperience || "";
     formFounder.brand = newValue.founderInfoData?.expectIndustryType || "";
     formFounder.region = newValue.founderInfoData?.city || "";
-    // 從 companyInfoData 獲取公司資料
+
     formFounder.companyName = newValue.companyInfoData?.name || "";
     formFounder.companyNameEn = newValue.companyInfoData?.nameEn || "";
     formFounder.taxId = newValue.companyInfoData?.businessId || "";
@@ -989,7 +988,6 @@ watch(userProfile, (newValue) => {
     formFounder.facebook = newValue.companyInfoData?.facebookUrl || "";
     formFounder.instagram = newValue.companyInfoData?.instagramUrl || "";
 
-    // coFounderData
     formCo.status = newValue.coFounderData?.status || "";
     formCo.phone = newValue.userInfoData?.account || "";
     formCo.password = newValue.userInfoData?.password;
@@ -1014,11 +1012,8 @@ watch(userProfile, (newValue) => {
   }
 }, { immediate: true });
 
-
-
 watch(proofFiles, (newValue) => {
   if (newValue) {
-    // 根據實際的資料結構來對應
     formFounder.assetProof = newValue.assetsCertification.displayName || "";
     formFounder.assetProofId = newValue.assetsCertification.id || "";
     formFounder.policeRecord = newValue.pcrCertification.displayName || "";
@@ -1032,109 +1027,13 @@ watch(proofFiles, (newValue) => {
 }, { immediate: true });
 
 const activeTab = ref("founder");
-const getActiveForm = () =>
-  activeTab.value === "founder" ? formFounder : formCo;
-const getActiveErrors = () =>
-  activeTab.value === "founder" ? errFounder : errCo;
-
-function handleRegister() {
-  const form = getActiveForm();
-  const errors = getActiveErrors();
-
-  clearFieldErrors(Object.keys(errors));
-
-  if (Object.values(errors).some(Boolean)) return;
-
-  // 提交表單邏輯
-  Object.keys(errors).forEach((k) => (errors[k] = ""));
-
-  if (!form.companyName) errors.companyName = "此欄位為必填";
-  if (form.taxId && !/^\d{8}$/.test(form.taxId))
-    errors.taxId = "統一編號需為 8 碼數字";
-
-  if (Object.values(errors).some(Boolean)) return;
-}
-
-function normalizeUrl(v) {
-  if (!v) return "";
-  const trimmed = String(v).trim();
-  if (!trimmed) return "";
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
-}
-function isValidUrl(v) {
-  if (!v) return true;
-  try {
-    const u = new URL(normalizeUrl(v));
-    return !!u.host;
-  } catch {
-    return false;
-  }
-}
-
-function clearFieldErrors(keys) {
-  const errors = getActiveErrors();
-  keys.forEach((k) => (errors[k] = ""));
-}
-
-// 或者根據不同的業務需求定義
-const alwaysRO = new Set([
-  // 身份相關（需要重新驗證才能修改）
-  "phone",
-  "email",
-
-  // 系統相關（系統生成或管理）
-  "refCode",
-
-  // 安全相關
-  "password"
-]);
-
-// 啟用編輯模式
-function enableEdit() {
-  isEditing.value = true;
-
-  const allFields = Object.keys(getActiveForm());
-  const editableFieldsList = allFields.filter(field => !alwaysRO.has(field));
-  editableFields.value = new Set(editableFieldsList);
-}
-
-function submitForReview() {
-  const form = getActiveForm();
-  const errors = getActiveErrors();
-
-  const keys = [
-    "companyBrief",
-    "bankName",
-    "bankAccount",
-    "companyIntro",
-    "website",
-    "facebook",
-    "instagram",
-  ].filter((k) => k in form && k in errors);
-  keys.forEach((k) => (errors[k] = ""));
-
-  if (
-    "bankAccount" in form &&
-    form.bankAccount &&
-    !/^[0-9-]{6,20}$/.test(form.bankAccount)
-  ) {
-    errors.bankAccount = "請輸入正確帳號（僅數字與 -）";
-  }
-
-  ["website", "facebook", "instagram"].forEach((k) => {
-    if (k in form && form[k]) {
-      const normalized = normalizeUrl(form[k]);
-      if (!isValidUrl(normalized)) errors[k] = "網址格式不正確";
-      else form[k] = normalized;
-    }
-  });
-
-  if (Object.values(errors).some(Boolean)) return;
-}
-
-
 
 async function submitForFounderAndCompany() {
+  if (!hasChanges.value) {
+    alert('沒有需要儲存的變更');
+    return;
+  }
+
   const formData = {
     userId: currentUser.value,
     name: formFounder.fullname,
@@ -1163,16 +1062,22 @@ async function submitForFounderAndCompany() {
     facebookUrl: formFounder.facebook,
     instagramUrl: formFounder.instagram,
     status: 0
-  }
-  console.log(formData)
+  };
+
   const response = await userApi.updateFounderAndCompany(formData);
   if (response.code === 0) {
     alert('送出審核成功');
-    isEditing.value = false;
+    hasChanges.value = false;
+    saveOriginalData();
   }
 }
 
 async function submitForCoreFounder() {
+  if (!hasChanges.value) {
+    alert('沒有需要儲存的變更');
+    return;
+  }
+
   const formData = {
     userId: currentUser.value,
     name: formCo.fullname,
@@ -1189,22 +1094,22 @@ async function submitForCoreFounder() {
     investLimitYear: formCo.yearLimit,
     investLimitYearIsShow: formCo.yearLimitIsShow,
     experience: formCo.experience,
-    experienceIsShow: formCo.experienceIsShow ,
+    experienceIsShow: formCo.experienceIsShow,
     introduce: formCo.intro,
     introduceIsShow: formCo.introIsShow,
     identityCertification: formCo.idProofId,
     secondaryCertification: formCo.idProofSecondId,
     status: 0,
-  }
+  };
+
   const response = await userApi.updateCoreFounder(formData);
   if (response.code === 0) {
     alert('送出審核成功');
-    isEditing.value = false;
-    editableFields.value.clear();
+    hasChanges.value = false;
+    saveOriginalData();
   } else {
     alert(response.message);
   }
-
 }
 
 // 狀態轉換函數
@@ -1223,8 +1128,37 @@ function getStatusText(status) {
   }
 }
 
+// 處理頁面離開
+async function handleBeforeUnload(e) {
+  if (hasChanges.value) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+}
 
+// 路由守衛
+onBeforeRouteLeave(async (to, from, next) => {
+  if (hasChanges.value) {
+    const confirmed = confirm('資料已編輯,是否確認儲存修改?');
 
+    if (confirmed) {
+      if (activeTab.value === 'founder') {
+        await submitForFounderAndCompany();
+      } else {
+        await submitForCoreFounder();
+      }
+      next();
+    } else {
+      hasChanges.value = false;
+      next();
+    }
+  } else {
+    next();
+  }
+});
+
+// 修改密碼相關
 const passwordDialog = ref(null)
 const isUpdating = ref(false)
 
@@ -1235,11 +1169,9 @@ const newPasswordForm = reactive({
 })
 
 function onChangePassword() {
-  // 清空表單
   newPasswordForm.newPassword = ''
   newPasswordForm.confirmPassword = ''
   newPasswordForm.error = ''
-  // 打開 dialog
   passwordDialog.value.showModal()
 }
 
@@ -1249,7 +1181,6 @@ function closeDialog() {
 
 async function handleUpdatePassword() {
   try {
-    // 驗證密碼
     if (newPasswordForm.newPassword !== newPasswordForm.confirmPassword) {
       newPasswordForm.error = '密碼確認不一致'
       return
@@ -1263,16 +1194,12 @@ async function handleUpdatePassword() {
     isUpdating.value = true
     newPasswordForm.error = ''
 
-    // 發送 API 請求
     await userApi.updateUserPassword({
       userId: currentUser.value,
       newPassword: newPasswordForm.newPassword
     })
 
-    // 成功後關閉 dialog
     closeDialog()
-
-    // 可以顯示成功訊息
     alert('密碼修改成功')
 
   } catch (error) {
@@ -1281,7 +1208,6 @@ async function handleUpdatePassword() {
     isUpdating.value = false
   }
 }
-
 </script>
 
 <style lang="scss" scoped>

@@ -135,7 +135,7 @@
                 :disabled="!local.rewardEnabled"
                 :readonly="readonly"
               />
-              元，公司即按營業額之
+              元，公司即撥發營業額之
               <SharedInput
                 id="rewardPercent"
                 type="number"
@@ -145,7 +145,7 @@
                 :disabled="!local.rewardEnabled"
                 :readonly="readonly"
               />
-              % 給予創業者獎勵營運團隊。
+              % 給予創業者獎勵運營團隊。
             </span>
           </label>
         </div>
@@ -154,7 +154,7 @@
       <SharedRadio
         class="fundNote"
         v-model="local.fundNote"
-        label="3. 資金需求與說明："
+        label="3. 資金使用原則聲明："
         name="fundNote"
         :options="[
           {
@@ -170,7 +170,7 @@
         <SharedRadio
           v-model="local.reportSelected"
           v-model:extra="local.otherReport"
-          label="4. 定期報告說明："
+          label="4. 定期財報公開聲明："
           name="reportOptions"
           :options="local.reportOptions"
           :error="errors.reportSelected"

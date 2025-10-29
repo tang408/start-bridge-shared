@@ -74,65 +74,13 @@ const activeTab = ref("founder");
 const tabState = reactive({
   founder: {
     messages: [
-      {
-        id: 1,
-        title: "xx品牌專案，已刊登上架，等待媒合進度",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: true,
-        tagged: true,
-        favorite: true,
-      },
-      {
-        id: 2,
-        title: "未讀文件-已展開-已標籤",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: false,
-        tagged: true,
-        favorite: false,
-      },
-      {
-        id: 3,
-        title: "已讀文件-無標籤",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: true,
-        tagged: false,
-        favorite: false,
-      },
-      {
-        id: 4,
-        title: "已讀文件-已標籤",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: true,
-        tagged: true,
-        favorite: true,
-      },
+
     ],
     expandedId: 1,
   },
   cofounder: {
     messages: [
-      {
-        id: 1,
-        title: "（共創者）xx品牌專案…",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: true,
-        tagged: false,
-        favorite: false,
-      },
-      {
-        id: 2,
-        title: "（共創者）未讀文件…",
-        content:
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        read: false,
-        tagged: true,
-        favorite: true,
-      },
+
     ],
     expandedId: null,
   },
@@ -266,10 +214,12 @@ async function getUserNotifies() {
         id: notify.notifyId,
         title: notify.title,
         content: notify.content,
-        read: notify.status === 2, // 假設 status=1 是未讀，status=2 是已讀
+        read: notify.status !== 1,
         tagged: false, // API 資料中沒有這個欄位，可以根據需求調整
         favorite: notify.favorite
       };
+
+      console.log(notifies)
 
       if (notify.type === 1) {
         tabState.founder.messages.push(message);
@@ -320,6 +270,11 @@ onMounted(() => {
 
   &.unread.is-fav {
     box-shadow: 0 0 0 3px #ffcc4140 inset, 0 2px 10px #0000000f;
+  }
+  &.unread {
+    background: #fff9e6; // 淺黃背景
+    border-left: 4px solid #ffcc41; // 左側黃條
+
   }
 
   .msg-header {

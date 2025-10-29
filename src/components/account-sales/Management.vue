@@ -63,6 +63,7 @@
   >
     <div>專案名稱：{{ planInfo.planName }}</div>
     <div>專案狀態：{{ getStepName(planInfo.currentStep) }}</div>
+    <div class="color-1" v-if="planInfo.currentStep < 0"> 不通過原因：{{ planInfo.remark}}</div>
     <div>創業者：{{ planInfo.userName }}</div>
     <div>總共創金額：{{ formatAmount(planInfo.participantAmount) }}</div>
     <hr />
@@ -78,7 +79,7 @@
 
 </template>
 <script setup>
-import {reactive, computed, ref, onMounted} from "vue";
+import {reactive, computed, ref, onMounted, nextTick} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
 import SharedTable from "@/components/shared/Shared-Table.vue";
 import SharedModal from "@/components/shared/Shared-Modal.vue";
@@ -87,10 +88,11 @@ import {cityApi} from "@/api/modules/city.js";
 import {stepApi} from "@/api/modules/step.js";
 import {salesApi} from "@/api/modules/sales.js";
 import {useAuth} from "@/composables/useAuth.js";
-import { useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 
 const router = useRouter();
 const showModal = ref(false);
+const route = useRoute();
 
 const selectedProject = ref({});
 const { isLoggedIn, currentSales } = useAuth();
@@ -138,8 +140,32 @@ async function getCorePlanSteps() {
   corePlanStep.value = response.data;
 }
 
-onMounted(() => {
-  Promise.all([getCities(), getPlanSteps(), getAllPlanBySales(),getCorePlanSteps()]);
+onMounted(async () => {
+  try {
+    // 先載入基礎資料
+    await Promise.all([
+      getCities(),
+      getPlanSteps(),
+      getAllPlanBySales(),
+      getCorePlanSteps()
+    ]);
+
+    // 檢查 URL 參數
+    const { autoOpen, planId } = route.query;
+
+    if (autoOpen && planId) {
+      const id = parseInt(planId);
+      if (!isNaN(id)) {
+        // 使用 nextTick 確保 DOM 已更新
+        await nextTick();
+        await autoViewProject(id);
+      } else {
+        console.error('Invalid planId:', planId);
+      }
+    }
+  } catch (error) {
+    console.error('Error in onMounted:', error);
+  }
 });
 
 // 將 API 數據映射到 projects 格式
@@ -191,7 +217,19 @@ const displayedProjects = computed(() => {
 
 const planInfo = ref({});
 const userSignContractInfo = ref({});
+async function autoViewProject(planId) {
+  const formData = {
+    salesId: currentSales.value,
+    planId: planId
+  }
+  const response = await salesApi.getPlanInfoBySales(formData);
+  planInfo.value = response.data;
+
+  showModal.value = true;
+}
+
 async function viewProject(row) {
+  console.log('click')
   console.log(row)
   if (row.currentStep === '簽約資料業務審核中') {
     const formData = {

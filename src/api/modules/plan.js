@@ -44,4 +44,15 @@ export const planApi = {
     async getParticipantPlan(params = {}) {
         return api.post("/f/private/plan/get-participant-plan", params);
     },
+
+    async checkCreatePlanStatus(params = {}) {
+        return api.post("/f/private/plan/check-create-plan-status", params);
+    },
+
+    async extendPlanDate(params = {}) {
+        return api.post("/f/private/plan/extend-plan-date", params);
+    },
+    async endPlan(params = {}) {
+        return api.post("/f/private/plan/end-plan", params);
+    }
 };

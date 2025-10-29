@@ -117,7 +117,7 @@ watch(
 
 const goToRegister = () => {
   if (isLoggedIn.value) {
-    alert("：您已完成註冊。");
+    alert("您已完成註冊。");
   } else{
     router.push("/entSignUp");
   }

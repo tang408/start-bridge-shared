@@ -1,7 +1,7 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-2 d-grid">
-      <h5 class="form-title">二、創業企劃題</h5>
+      <h5 class="form-title">二、創業企劃概要</h5>
 
       <SharedTextarea
         id="p4-q1"
@@ -26,7 +26,7 @@
 
       <SharedTextarea
         id="p4-q3"
-        label="3. 請問您是否有測算過營運目標及預期成果？若如期達成後的下一階段計劃為何？"
+        label="3. 請問您是否有測算過營運目標及預期成果，若如期達成後的下一階段計劃為何？"
         v-model="local.q3"
         :rows="4"
         placeholder="placeholder"
@@ -36,7 +36,7 @@
       <SharedCheckline
         id="p4-q4"
         v-model="local.q4"
-        label="4. 請問您創業的初創團隊是如何組成？(可複選)"
+        label="4. 請問您創業的初創團隊是如何組成？預期招募多少成員即可啟動營運籌備？(請複選)"
         :options="[
           { key: 'founder', text: '本人親自參與經營' },
           { key: 'family', text: '邀約親友加入，關係：', placeholder: '' },
@@ -49,7 +49,8 @@
       <div>
         <SharedCheckline
           id="p4-q5"
-          label="5. 完成籌備後，正式營運所需人數與招聘方式"
+
+          label="5. 請問您完成籌備期間之後,正式營運時所需要員工人數及招聘方式"
           v-model="local.q5"
           :options="[
             {
@@ -63,6 +64,7 @@
         />
         <SharedRecruit
           id="p4-q5-channels"
+          type="recruit"
           v-model="local.q5.channels"
           :options="[
             { key: 'jobBank', text: '人力銀行' },
@@ -78,10 +80,10 @@
       <SharedTime
         id="p4-q6"
         v-model="local.q6"
-        label="6. 創業期間的時間規劃"
+        label="6. 請問您於創業期間預計投入經營及營運的時間規劃？"
         :options="[
-          { key: 'fulltime', text: '全職投入並同步參與經營', withTime: true },
-          { key: 'parttime', text: '全職投入但隨機參與經營', withTime: true },
+          { key: 'fulltime', text: '全職投入，並且同步參與營運。', withTime: true },
+          { key: 'parttime', text: '全職投入，隨機參與營運亦不支薪。', withTime: true },
           { key: 'other', text: '其他，請描述投入情況：' },
         ]"
         :error="props.errors.q6"
@@ -89,7 +91,7 @@
 
       <SharedRecruit
         id="p4-q7"
-        label="7. 預計門店顧客來源？(可複選)"
+        label="7. 請問您所預計創業的門店顧客來源？ ( 可複選 )"
         v-model="local.q7"
         :options="[
           { key: 'social', text: '親友推薦' },

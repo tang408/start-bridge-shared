@@ -58,7 +58,7 @@
               v-model="local.sharePay"
               v-model:extra="local.sharePayOther"
               label="【分潤支付方式】"
-              desc="※ 「星橋創媒」平台僅提供雙方建議,不代為分配款項、無管理責任，創業者需負責發放給【共同創業者】。"
+              desc="※ 「星橋創媒」平台僅提供雙方建議，不代為分配款項、無管理責任，創業者需負責發放給【共同創業者】。"
               name="sharePay"
               :options="[
               { value: 'bank', text: '銀行匯款至指定帳戶(需提供匯款憑證備查)' },

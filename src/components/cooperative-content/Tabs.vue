@@ -149,6 +149,7 @@ import {useRouter} from "vue-router";
 import {useAuth} from "@/composables/useAuth.js";
 import {userApi} from "@/api/modules/user.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
+import {planApi} from "@/api/modules/plan.js";
 
 const {isLoggedIn, currentUser} = useAuth();
 const router = useRouter();
@@ -311,6 +312,12 @@ async function goToStartup() {
           return;
         }
       }
+    }
+
+    const res = await planApi.checkCreatePlanStatus(formData);
+    if (res.code === 0 && res.data.canCreatePlan === false) {
+      alert("您已有一筆創業申請正在審核中，請勿重複申請。");
+      return;
     }
   }
   await router.push({

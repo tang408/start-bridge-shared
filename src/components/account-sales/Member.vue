@@ -74,7 +74,7 @@
   </div>
   <SharedModal
       v-model="showModal"
-      :title="selectedMember.type === 1 ? '共創者詳細資訊' : '會員詳細資訊'"
+      :title="selectedMember.type === 1 ? '會員詳細資訊' : '會員詳細資訊'"
       :mode="selectedMember.type === 2 ? 'close' : 'member'"
       @save="handleSave"
       @update:modelValue="handleClose"
@@ -109,6 +109,12 @@
               @click="openDocDialog('最終合約')"
           >
           最終合約
+        </span>
+          <span
+              class="doc-tag clickable"
+              @click="openDocDialog('身分文件')"
+          >
+          身分文件
         </span>
         </div>
 
@@ -838,7 +844,6 @@ async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = 
     }
   } catch (error) {
     console.error('獲取用戶詳情失敗:', error);
-    alert('無法載入會員詳情');
   }
 }
 

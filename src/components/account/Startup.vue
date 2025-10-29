@@ -1,4 +1,4 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <section v-if="mode === 'account'">
     <div class="fs-24">創業計劃管理</div>
     <SharedTabs
@@ -42,15 +42,16 @@
               ></span>
             </div>
 
-            <div class="steps-footer mt-3">
+            <div class="steps-footer mt-3 flex-column">
               <span class="status">媒合狀態：{{ p.stateText }}</span>
+              <span class="status mt-2" v-if="p.remark !== '' && p.status < 0">原因：{{ p.remark }}</span>
             </div>
           </div>
           <button
               v-if="p.status === 4"
               type="button"
               class="btn-upload"
-              @click="handleButtonClick(p)"
+              @click.stop="handleButtonClick(p)"
           >
             上傳資料
           </button>
@@ -58,7 +59,7 @@
               v-if="p.status === 7"
               type="button"
               class="btn-upload"
-              @click="handleButtonClick(p)"
+              @click.stop="handleButtonClick(p)"
           >
             查看合約並簽名
           </button>
@@ -66,10 +67,28 @@
               v-if="p.status === 13"
               type="button"
               class="btn-upload"
-              @click="handleButtonClick(p)"
+              @click.stop="handleButtonClick(p)"
           >
             上傳合約並支付服務費
           </button>
+          <!--並排顯示-->
+          <div v-if="p.status === 11 &isWithinOneWeekBeforeEnd(p.endTime)" class="">
+            <span>專案即將結束，您可以選擇以下操作：</span>
+            <button
+                type="button"
+                class="btn-expand"
+                @click.stop="handleExtendProject(p)"
+            >
+              延長專案
+            </button>
+            <button
+                type="button"
+                class="btn-end"
+                @click.stop="handleEndProject(p)"
+            >
+              結束專案
+            </button>
+          </div>
         </button>
       </article>
     </div>
@@ -198,11 +217,21 @@
         <label>支付金額</label>
         <div class="readonly-field">{{ formatAmount(3500) }} 元</div>
       </div>
-
+      <!-- 顯示匯款資訊 -->
+      <div class="form-group">
+        <label>匯款資訊</label>
+        <div class="readonly-field">
+          銀行名稱：{{ bankInfo.bankName }}<br />
+          銀行代碼：{{ bankInfo.bankCode }}<br />
+          帳號：{{ bankInfo.bankAccount }}<br />
+          戶名：{{ bankInfo.bankAccountName }}
+        </div>
+      </div>
       <SharedInput
           id="accountLast5"
           label="帳號後五碼*"
           type="text"
+          class="p-510"
           placeholder="請輸入帳號後五碼"
           v-model="paymentForm.accountLast5"
           :error="paymentErrors.accountLast5"
@@ -223,6 +252,52 @@
 
   </SharedModal>
 
+  <SharedModal
+      v-model="showExtendDialog"
+      title="延長專案"
+      mode="submit"
+      confirmText="確認延長"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleExtendSubmit"
+  >
+    <div class="extend-form">
+      <div class="warning-section">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-text">
+          此專案將延長合2個月，結束時間將延至  {{ extendedDate }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>提醒您：延長媒合期間已投入資源的創業夥伴有權撤回資源。</label>
+      </div>
+
+      <div class="confirm-question">
+        請問是否確定延長？
+      </div>
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showEndPlanDialog"
+      title="結束專案"
+      mode="submit"
+      confirmText="確認結束"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleEndPlanSubmit"
+  >
+    <div class="extend-form">
+      <div class="warning-section">
+        <div class="warning-icon">⚠️</div>
+        <div class="confirm-question">
+          請問是否確定結束專案？
+        </div>
+      </div>
+
+    </div>
+  </SharedModal>
+
   <!-- 支付上傳 Dialog -->
   <SharedModal
       v-model="showPaymentDialog"
@@ -237,6 +312,15 @@
       <div class="form-group">
         <label>支付金額</label>
         <div class="readonly-field">{{ formatAmount(paymentForm.amount) }} 元</div>
+      </div>
+      <div class="form-group">
+        <label>匯款資訊</label>
+        <div class="readonly-field">
+          銀行名稱：{{ bankInfo.bankName }}<br />
+          銀行代碼：{{ bankInfo.bankCode }}<br />
+          帳號：{{ bankInfo.bankAccount }}<br />
+          戶名：{{ bankInfo.bankAccountName }}
+        </div>
       </div>
 
       <SharedInput
@@ -306,6 +390,7 @@ import {userCheckApi} from "@/api/modules/userCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {transactionApi} from "@/api/modules/transaction.js";
 import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
+import {systemSettingApi} from "@/api/modules/systemSetting.js";
 
 const { isLoggedIn, currentUser } = useAuth();
 
@@ -329,6 +414,75 @@ async function handleSignatureSubmitted(result) {
   }
 
 }
+
+const showExtendDialog = ref(false);
+const extendedDate = ref('');
+
+const extendPlanId = ref(null);
+function computeExtendedDate(originalEndTime) {
+  // endTime = "2025-12-31"
+  const originalDate = new Date(originalEndTime);
+  const extendedDate = new Date(originalDate);
+  extendedDate.setMonth(extendedDate.getMonth() + 2); // 延長兩個月
+
+  const year = extendedDate.getFullYear();
+  const month = String(extendedDate.getMonth() + 1).padStart(2, '0'); // 月份從0開始
+  const day = String(extendedDate.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+function handleExtendProject(plan) {
+  extendedDate.value = computeExtendedDate(plan.endTime);
+  showExtendDialog.value = true;
+  extendPlanId.value = plan.id;
+}
+
+async function handleExtendSubmit() {
+  if (!extendPlanId.value) return;
+
+  const response = await planApi.extendPlanDate({
+    planId: extendPlanId.value,
+    userId: currentUser.value,
+  });
+
+  if (response.code === 0) {
+    alert("專案延長成功");
+    showExtendDialog.value = false;
+    // 重新載入頁面或更新資料
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  } else {
+    alert(response.message || "專案延長失敗，請稍後再試");
+  }
+}
+
+const showEndPlanDialog = ref(false);
+const endPlanId = ref(null);
+function handleEndProject(plan) {
+  showEndPlanDialog.value = true;
+  endPlanId.value = plan.id;
+}
+async function handleEndPlanSubmit() {
+  if (!endPlanId.value) return;
+
+  const response = await planApi.endPlan({
+    planId: endPlanId.value,
+    userId: currentUser.value,
+  });
+
+  if (response.code === 0) {
+    alert("專案結束成功");
+    showEndPlanDialog.value = false;
+    // 重新載入頁面或更新資料
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  } else {
+    alert(response.message || "專案結束失敗，請稍後再試");
+  }
+}
+
 const STEPS = {
   step1: Step1,
   step2: Step2,
@@ -910,12 +1064,12 @@ const formData = reactive({
     fundNote: "",
     reportOptions: [
       { value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限" },
-      { value: "monthly", text: "每月/季 現金流量表，需於次月 15 日前提供" },
+      { value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供" },
       {
         value: "season",
-        text: "每季/年度 財務報表，需於當季後次月 15 日前提供",
+        text: "每季/年度「財務報表」，需於當季後次月 15 日前提供",
       },
-      { value: "yearly", text: "每年度 資產負債表，需於次年一月底前提供" },
+      { value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供" },
       { text: "其他", value: "other", withInput: true },
     ],
     otherReport: {},
@@ -999,6 +1153,7 @@ function setDocStep(step) {
 }
 
 onMounted(() => {
+
   const qStep = (route.query.step || "").toString();
   if (Object.keys(STEPS).includes(qStep)) {
     docStep.value = qStep;
@@ -1062,6 +1217,7 @@ const progress = ref([
     progressStep: 3,
     stateText: "上傳合約",
     serviceCharge: 5,
+    endTime: "2024-12-15",
   },
 ]);
 const records = reactive([
@@ -1451,7 +1607,33 @@ async function getAllPlanStep() {
   const response = await stepApi.getAllPlanStep(formData)
   userPlanStepData.value = response.data
 }
+const systemSettingData = ref({})
 
+const bankInfo = computed(() => {
+  // 把 array 轉成 object
+  const settingsObject = systemSettingData.value.reduce((acc, item) => {
+    acc[item.type] = item.value
+    return acc
+  }, {})
+
+  return {
+    bankCode: settingsObject.bank_code || '',
+    bankAccount: settingsObject.bank_account || '',
+    bankAccountName: settingsObject.bank_account_name || '',
+    bankName: settingsObject.bank_name || ''
+  }
+})
+
+async function getSystemSetting() {
+  const formData = {
+    userId: currentUser.value,
+  }
+  const res = await systemSettingApi.getSystemSetting(formData)
+  if (res.code === 0) {
+    systemSettingData.value = res.data
+    console.log(systemSettingData.value)
+  }
+}
 async function getAllPlanByUser() {
   const formData = {
     userId: currentUser.value,
@@ -1467,12 +1649,30 @@ if (response.code === 0) {
       progressStep: changeProgressStep(plan.currentStep),
       serviceCharge: plan.serviceCharge ,
       stateText: userPlanStepData.value.find(step => step.id === plan.currentStep)?.userStep || "無進度",
+      remark: plan.remark || '',
+      endTime: plan.endTime || null,
     }))
   } else {
     alert("取得創業計劃書列表失敗，請稍後再試。")
     return;
   }
 }
+
+// 判斷是否在結束日期前一週內
+const isWithinOneWeekBeforeEnd = (endTime) => {
+  if (!endTime) return false
+
+  const today = new Date()
+  const endDate = new Date(endTime)
+
+  // 計算一週前的日期
+  const oneWeekBefore = new Date(endDate)
+  oneWeekBefore.setDate(endDate.getDate() - 7)
+
+  // 判斷今天是否在「一週前」和「結束日期」之間
+  return today >= oneWeekBefore && today <= endDate
+}
+
 
 
 // Dialog 顯示狀態
@@ -1545,9 +1745,11 @@ async function handleButtonClick(plan) {
     // 延遲一下再顯示對話框，確保資料已更新
     await nextTick();
     showSignContractDialog.value = true;
+    return;
   }
   if (plan.status === 13) {
     showPaymentDialog.value = true;
+    return;
   }
 
 }
@@ -1702,6 +1904,7 @@ onMounted(() => {
   if (isLoggedIn.value) {
     getAllPlanStep();
     getAllPlanByUser();
+    getSystemSetting();
   }
 
   // 檢查初始路由
@@ -2085,8 +2288,126 @@ const statusMap = {
     background: #ff7f50;
   }
 }
+.btn-expand {
+  background: #34b1ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  margin-top: 5px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #ff7f50;
+  }
+}
+.btn-end {
+  background: #939393;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  margin-top: 5px;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:hover {
+    background: #ff7f50;
+  }
+}
 
 hr {
   border: 1px solid #dfdfdf;
 }
+
+.payment-form {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  max-width: 600px;
+  margin: 0 auto;
+  font-family: "Noto Sans TC", sans-serif;
+}
+
+.payment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.payment-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #333;
+}
+
+.readonly-field {
+  background-color: #f7f9fc;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #1a202c;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.readonly-field br {
+  margin-bottom: 8px;
+}
+
+.p-510 {
+  width: 100%;
+}
+
+/* 匯款資訊分隔線 & 強調 */
+.payment-form .readonly-field {
+  border-left: 4px solid #FF7F50FF;
+}
+
+/* Button or Upload CTA 我預留，可加在下方 */
+.payment-form button,
+.payment-form .submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: #4a90e2;
+  color: white;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.payment-form button:hover {
+  background: #357abd;
+}
+
+/* RWD 手機優化 */
+@media (max-width: 480px) {
+  .payment-form {
+    padding: 16px;
+  }
+  .readonly-field {
+    font-size: 14px;
+  }
+}
+
+.confirm-question {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border: 2px dashed #dee2e6;
+}
+
 </style>
