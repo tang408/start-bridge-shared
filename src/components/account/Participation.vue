@@ -58,6 +58,17 @@
               <span class="dollar">已達成金額{{ fmtMoney(p.dollar) }}</span>
               <span class="remain">還差{{ fmtMoney(p.remain) }}</span>
             </div>
+            <hr />
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn-prolong"
+                @click="openProlongModal(p)"
+              >
+                延長專案
+              </button>
+              <button type="button" class="btn-finish">結束專案</button>
+            </div>
           </div>
         </button>
       </article>
@@ -243,6 +254,24 @@
         </table>
       </div>
     </div>
+
+    <SharedModal
+      v-model="showProlongModal"
+      title="專案延長"
+      titleAlign="center"
+      mode="long"
+      confirmText="確定"
+      @confirm="confirmProlong"
+    >
+      <template #default>
+        <p class="mb-0">此專案將延長媒合 2 個月，結束日期為： 2025-11-12</p>
+        <p class="mb-0">
+          提醒您：延長和媒合期間已投入資源的創業夥伴有權撤回資源。
+        </p>
+        <hr />
+        <p class="text-center mb-0">請問是否確定延長？</p>
+      </template>
+    </SharedModal>
   </section>
   <section v-else class="details">
     <article
@@ -385,6 +414,7 @@ import {useRoute, useRouter} from "vue-router";
 import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
 import {
   statusLabel,
   statusClass,
@@ -410,6 +440,18 @@ const expandedDetailsId = ref(null);
 const mode = ref("account");
 const form = reactive({agree: false});
 const errors = reactive({agree: ""});
+const showProlongModal = ref(false);
+const selectedProject = ref(null);
+
+function openProlongModal(p) {
+  selectedProject.value = p;
+  showProlongModal.value = true;
+}
+
+function confirmProlong() {
+  alert(`「${selectedProject.value.title}」已確認延長！`);
+  showProlongModal.value = false;
+}
 
 const props = defineProps({
   entry: {type: String, default: "account"},
@@ -1488,17 +1530,41 @@ async function handlePaymentSubmit() {
   font-size: $fs-14;
 }
 
-.btn-dollar {
-  border: 0;
-  padding: 10px 20px;
-  border-radius: $br-8;
-  background: $btn-orange;
-  color: $white;
-  cursor: pointer;
-  width: 120px;
-  font-weight: $fw-500;
-  font-size: $fs-16;
-  line-height: $lh-19;
+.btn {
+  &-dollar {
+    border: 0;
+    padding: 10px 20px;
+    border-radius: $br-8;
+    background: $btn-orange;
+    color: $white;
+    cursor: pointer;
+    width: 120px;
+    font-weight: $fw-500;
+    font-size: $fs-16;
+    line-height: $lh-19;
+  }
+  &-prolong {
+    border: 0;
+    padding: 10px 20px;
+    border-radius: $br-8;
+    background: $btn-orange;
+    color: $white;
+    font-weight: $fw-500;
+    font-size: $fs-16;
+    line-height: $lh-19;
+    width: 50%;
+  }
+  &-finish {
+    border: 0;
+    padding: 10px 20px;
+    border-radius: $br-8;
+    background: $brand-gray;
+    color: $text-deep;
+    font-weight: $fw-500;
+    font-size: $fs-16;
+    line-height: $lh-19;
+    width: 50%;
+  }
 }
 
 .file-list {

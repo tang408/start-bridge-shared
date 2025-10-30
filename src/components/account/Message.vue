@@ -259,13 +259,18 @@ onMounted(() => {
 .msg-card {
   position: relative;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  background: #ffffff80;
-  box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.05);
+  background: transparent;
   border-radius: 20px;
-  border: 2px solid transparent;
+  border: 1px solid #dfdfdf;
 
   &.is-fav {
     border-color: #ffcc41;
+  }
+
+  &.unread {
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid transparent;
   }
 
   &.unread.is-fav {
