@@ -3,17 +3,17 @@
 
   <div class="notifications">
     <article
-      v-for="n in notifications"
-      :key="n.id"
-      class="notify-card"
-      :class="[{ expanded: expandedId === n.id }, { unread: !n.read }]"
+        v-for="n in notifications"
+        :key="n.id"
+        class="notify-card"
+        :class="[{ expanded: expandedId === n.id }, { unread: !n.read }]"
     >
       <button
-        class="notify-header"
-        type="button"
-        @click="toggle(n.id)"
-        :aria-expanded="expandedId === n.id ? 'true' : 'false'"
-        :aria-controls="`panel-${n.id}`"
+          class="notify-header"
+          type="button"
+          @click="toggle(n.id)"
+          :aria-expanded="expandedId === n.id ? 'true' : 'false'"
+          :aria-controls="`panel-${n.id}`"
       >
         <div>
           <span class="status-pill" :class="n.type">{{ n.typeLabel }}</span>
@@ -23,10 +23,10 @@
 
       <transition name="notify">
         <div
-          v-show="expandedId === n.id"
-          class="notify-body"
-          :id="`panel-${n.id}`"
-          role="region"
+            v-show="expandedId === n.id"
+            class="notify-body"
+            :id="`panel-${n.id}`"
+            role="region"
         >
           <p class="notify-content">{{ n.text }}</p>
         </div>
@@ -36,62 +36,81 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
-import {useAuth} from "@/composables/useAuth.js";
-import {notifyApi} from "@/api/modules/notify.js";
-import {useNotifications} from "@/composables/useNotifications.js";
-import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
-import {useRouter} from "vue-router";
+import { onMounted, ref } from "vue";
+import { useAuth } from "@/composables/useAuth.js";
+import { notifyApi } from "@/api/modules/notify.js";
+import { useNotifications } from "@/composables/useNotifications.js";
+import { useRouter } from "vue-router";
 
-const {isLoggedIn, currentSales} = useAuth();
-const { updateUnreadCounts, decreaseUnreadCount } = useNotifications('sales');
+const { isLoggedIn, currentSales } = useAuth();
+const { decreaseUnreadCount } = useNotifications('sales');
 const router = useRouter();
 
-const messages = ref([]);
-const expandedId = ref(null); // 新增這行
-
-async function getSalesNotifies() {
-  const formData = {
-    salesId: currentSales.value
-  }
-  const response = await notifyApi.getSalesNotify(formData);
-  console.log(response);
-
-const notifications = ref([
-  {
-    id: 1,
-    type: "new",
-    typeLabel: "創業者",
-    title: "Duis aute irure dolor in reprehenderit in?",
-    text: "您的創業者專案已成功送出申請，系統將於 3 個工作天內完成審核。",
-    read: false,
-  },
-  {
-    id: 2,
-    type: "new",
-    typeLabel: "創業者",
-    title: "Duis aute irure dolor in reprehenderit in?",
-    text: "您的共創媒合已完成，請前往專案頁面確認詳細資料與後續步驟。",
-    read: true,
-  },
-  {
-    id: 3,
-    type: "new",
-    typeLabel: "創業者",
-    title: "Duis aute irure dolor in reprehenderit in?",
-    text: "星橋平台將於 11/1 進行系統維護，期間部分功能暫時無法使用。",
-    read: false,
-  },
-]);
-
+const notifications = ref([]);
 const expandedId = ref(null);
 
-function toggle(id) {
+// 將 API 資料轉換為前端格式
+function transformNotifyData(apiData) {
+  return apiData.map(item => ({
+    id: item.notifyId,
+    type: item.type === 1 ? 'founder' : 'cofounder', // 根據 type 設定類型
+    typeLabel: item.type === 1 ? '創業者' : '共創者',
+    title: item.title,
+    text: item.content || item.text, // API 可能用 content 欄位
+    read: item.status === 2, // status: 1=未讀, 2=已讀
+    notifyType: item.type // 保存原始 type 用於更新未讀數
+  }));
+}
+
+async function getSalesNotifies() {
+  try {
+    const formData = {
+      salesId: currentSales.value
+    };
+
+    const response = await notifyApi.getSalesNotify(formData);
+    console.log('API Response:', response);
+
+    if (response.code === 0 && response.data?.salesNotifyDatas) {
+      // 轉換 API 資料
+      notifications.value = transformNotifyData(response.data.salesNotifyDatas);
+    } else {
+      console.error('獲取通知失敗:', response.msg);
+    }
+  } catch (error) {
+    console.error('獲取通知時發生錯誤:', error);
+  }
+}
+
+// 切換展開狀態並標記為已讀
+async function toggle(id) {
+  // 切換展開/收起
   expandedId.value = expandedId.value === id ? null : id;
-  const n = notifications.value.find((x) => x.id === id);
-  if (n) n.read = true;
+
+  // 找到對應的通知
+  const notification = notifications.value.find((x) => x.id === id);
+
+  if (notification && !notification.read) {
+    // 標記為已讀
+    notification.read = true;
+
+    // 減少未讀數量
+    decreaseUnreadCount(notification.notifyType);
+
+    // 可選：呼叫 API 更新後端的已讀狀態
+    try {
+      await notifyApi.updateSalesNotify({ notifyId: id, status: 2 }); // 根據你的 API 調整
+    } catch (error) {
+      console.error('標記已讀失敗:', error);
+    }
+  }
 }
-}
+
+onMounted(() => {
+  if (isLoggedIn.value && currentSales.value) {
+    getSalesNotifies();
+  }
+});
 </script>
 
 <style scoped lang="scss">
@@ -114,6 +133,11 @@ function toggle(id) {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   }
 
+  // 新增這個區塊
+  &:not(.expanded) .notify-body {
+    display: none;
+  }
+
   .notify-header {
     width: 100%;
     background: transparent;
@@ -133,8 +157,13 @@ function toggle(id) {
       font-weight: 500;
       line-height: 1.2;
 
-      &.new {
+      &.founder {
         background: #ffcc41;
+        color: #fff;
+      }
+
+      &.cofounder {
+        background: #4a90e2;
         color: #fff;
       }
     }

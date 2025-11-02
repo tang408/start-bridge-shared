@@ -46,25 +46,13 @@
         :rows="displayedMembers"
         empty-text="目前沒有符合條件的會員"
     >
-      <template #planStatus="{ row }">
-        {{ formatPlanStatus(row.planStatus, row.type) }}
+      <!-- planName 插槽 -->
+      <template #planName="{ row }">
+    <span class="plan-link" @click="openPlanDialog(row)">
+      {{ row.planName }}
+    </span>
       </template>
-      <template #review="{ row }">
-        <div v-if="getActionType(row) === 'review'" class="review-btn-group">
-          <button class="btn-pass" @click="handleApproveClick(row, true)">通過</button>
-          <button class="btn-fail" @click="handleApproveClick(row, false)">不通過</button>
-        </div>
 
-        <button
-            v-else-if="getActionType(row) === 'notify'"
-            class="btn-notify"
-            @click="handleApprove(row, true)"
-        >
-          通知
-        </button>
-
-        <span v-else class="status-text">-</span>
-      </template>
       <template #actions="{ row }">
         <button class="icon-btn" @click="viewMember(row)">
           <img src="@/assets/icon/search.png" alt="查看"/>
@@ -74,488 +62,208 @@
   </div>
   <SharedModal
       v-model="showModal"
-      :title="selectedMember.type === 1 ? '會員詳細資訊' : '會員詳細資訊'"
-      :mode="selectedMember.type === 2 ? 'close' : 'member'"
+      :title="'會員詳細資訊'"
+      :mode="'close'"
       @save="handleSave"
       @update:modelValue="handleClose"
       class="member-modal form"
       titleAlign="center"
   >
-    <!-- Type 1: 創業者 -->
-    <template v-if="selectedMember.type === 1">
+    <div class="modal-content-wrapper">
+      <!-- 基本資料 -->
       <div class="modal-section">
-        <div class="title">基本資料</div>
-        <div>姓名：{{ selectedMember.name }}</div>
-        <div>會員身分：{{ selectedMemberDetail.type }}</div>
-        <div>已參與專案數量：創業: {{ selectedMemberDetail.founderPlanCount }} 、共創:
-          {{ selectedMemberDetail.coreFounderPlanCount }}
+        <div class="doc-label">基本資料</div>
+        <div>姓名：{{ selectedMemberDetail.name }}</div>
+        <div>會員身分：
+          <span v-if="selectedMemberDetail.type?.includes(1)">創業者</span>
+          <span v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.type?.includes(2)">、</span>
+          <span v-if="selectedMemberDetail.type?.includes(2)">共創者</span>
+        </div>
+        <div>已參與專案數量：
+          創業: {{ selectedMemberDetail.planCountInfo?.founderPlanCount || 0 }} 、
+          共創: {{ selectedMemberDetail.planCountInfo?.coreFounderPlanCount || 0 }}
         </div>
       </div>
 
-      <div class="modal-section mt-3">
-        <div class="title">創業者資訊</div>
-        <div>姓名：{{ selectedMember.name }}</div>
-        <div>專案名稱：{{ selectedMemberDetail.founderPlan?.[0]?.name }}</div>
-        <div>
-          創業者上傳資訊：
-          <span
-              class="doc-tag clickable"
-              @click="openDocDialog('創業計劃書')"
-          >
-          創業計劃書
-        </span>
-          <span
-              class="doc-tag clickable"
-              @click="openDocDialog('最終合約')"
-          >
-          最終合約
-        </span>
-          <span
-              class="doc-tag clickable"
-              @click="openDocDialog('身分文件')"
-          >
-          身分文件
-        </span>
-        </div>
-
-        <SharedDropdown
-            v-model="selectedMemberDetail.identityCertificationStatus"
-            label="身分驗證文件"
-            :options="[
-          { label: '通過', value: true },
-          { label: '不通過', value: false },
-        ]"
-            placeholder="身分檢核文件"
-            class="form-group"
-            readonly="true"
-        />
-      </div>
-
-      <div class="modal-section mt-4" v-if="selectedMemberDetail.coreFounderPlan?.length > 0">
-        <div class="title">共創者資訊</div>
-        <div>參與專案明細：</div>
-        <div class="co-list">
-          <div v-for="(c, i) in selectedMemberDetail.coreFounderPlan" :key="i" class="co-item">
-            <div class="co-title">{{ c.name }}</div>
-            <div class="co-status">{{ c.status }}</div>
-            <div class="co-amount">{{ c.amount }}</div>
+      <!-- 創業者資訊 - 只有當用戶是創業者時才顯示 -->
+      <template v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.founderInfo">
+        <hr/>
+        <div class="modal-section">
+          <div class="doc-label">創業者資訊</div>
+          <div class="doc-label">
+            預計加盟產業：{{ selectedMemberDetail.founderInfo.industryTypeName || '未設定' }}
           </div>
+          <div class="doc-label">
+            創業預算：{{ formatAmount(selectedMemberDetail.founderInfo.budget) }} 元
+          </div>
+          <div>
+            <span class="doc-label">上傳資訊：</span>
+            <span
+                v-if="selectedMemberDetail.founderInfo.fileInfo?.pcrUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('pcr', selectedMemberDetail.founderInfo.fileInfo.pcrUrl)"
+            >
+            良民證
+          </span>
+            <span
+                v-if="selectedMemberDetail.founderInfo.fileInfo?.identifyUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('identify', selectedMemberDetail.founderInfo.fileInfo.identifyUrl)"
+            >
+            身分證明
+          </span>
+            <span
+                v-if="selectedMemberDetail.founderInfo.fileInfo?.assetsUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('assets', selectedMemberDetail.founderInfo.fileInfo.assetsUrl)"
+            >
+            資產證明
+          </span>
+            <span
+                v-if="selectedMemberDetail.founderInfo.companyInfo?.companyName"
+                class="doc-tag clickable px-1"
+                @click="openCompanyDialog(selectedMemberDetail.founderInfo.companyInfo)"
+            >
+            公司資料
+          </span>
+          </div>
+
+          <SharedDropdown
+              v-model="selectedMemberDetail.founderInfo.identifyStatus"
+              label="身分驗證狀態"
+              :options="[
+              { label: '審核中', value: 0 },
+              { label: '通過', value: 1 },
+              { label: '不通過', value: 2 },
+            ]"
+              placeholder="身分檢核文件"
+              class="form-group"
+              readonly="true"
+          />
         </div>
-      </div>
-    </template>
+      </template>
 
-    <!-- Type 2: 共創者 -->
-    <template v-else-if="selectedMember.type === 2">
-      <div class="modal-section">
-        <div class="title">共創專案資訊</div>
-        <div>專案名稱：{{ selectedMemberDetail.planName }}</div>
-        <div>專案狀態：{{ selectedMemberDetail.currentStepName }}</div>
-        <div>創業者：{{ selectedMemberDetail.userName }}</div>
-        <div>總共創金額：NT$ {{ formatAmount(selectedMemberDetail.participantAmount) }}</div>
-      </div>
+      <!-- 共創者資訊 - 只有當用戶是共創者時才顯示 -->
+      <template v-if="selectedMemberDetail.type?.includes(2) && selectedMemberDetail.coreFounderInfo">
+        <hr/>
+        <div class="modal-section">
+          <div class="doc-label">共創者資訊</div>
+          <div class="doc-label">
+            預計參與產業：{{ selectedMemberDetail.coreFounderInfo.industryTypeName || '未設定' }}
+          </div>
+          <div class="doc-label">
+            共創預算：{{ formatAmount(selectedMemberDetail.coreFounderInfo.budget) }} 元
+          </div>
+          <div>
+            <span class="doc-label">上傳資訊：</span>
+            <span
+                v-if="selectedMemberDetail.coreFounderInfo.fileInfo?.identifyUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('identify', selectedMemberDetail.coreFounderInfo.fileInfo.identifyUrl)"
+            >
+            身分證明
+          </span>
+            <span
+                v-if="selectedMemberDetail.coreFounderInfo.fileInfo?.secondaryUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('secondary', selectedMemberDetail.coreFounderInfo.fileInfo.secondaryUrl)"
+            >
+            第二證件
+          </span>
+          </div>
 
-      <div class="modal-section mt-3">
-        <div class="title">募資進度</div>
-        <div>當前募資：NT$ {{ formatAmount(selectedMemberDetail.currentAmount) }}</div>
-        <div>目標金額：NT$ {{ formatAmount(selectedMemberDetail.targetAmount) }}</div>
-        <div>募資進度：{{ selectedMemberDetail.fundingProgress?.toFixed(2) }}%</div>
-      </div>
+          <SharedDropdown
+              v-model="selectedMemberDetail.coreFounderInfo.identifyStatus"
+              label="身分驗證狀態"
+              :options="[
+              { label: '審核中', value: 0 },
+              { label: '通過', value: 1 },
+              { label: '不通過', value: 2 },
+            ]"
+              placeholder="身分檢核文件"
+              class="form-group"
+              readonly="true"
+          />
+        </div>
+      </template>
 
-
-      <!-- 新增：參與明細列表 -->
-      <div class="modal-section mt-3">
-        <div class="title">參與明細</div>
-        <div v-if="selectedMemberDetail.participantDetails && selectedMemberDetail.participantDetails.length > 0">
+      <!-- 參與專案明細 -->
+      <hr/>
+      <div class="modal-section mt-2">
+        <div class="doc-label">參與專案明細</div>
+        <div v-if="selectedMemberDetail.participantPlanInfo?.length > 0">
           <div
-              v-for="(detail, index) in selectedMemberDetail.participantDetails"
-              :key="index"
-              class="participant-detail-item"
+              v-for="plan in selectedMemberDetail.participantPlanInfo"
+              :key="plan.id"
+              class="doc-label mb-2"
           >
-            <div class="detail-row">
-              <span class="detail-label">參與時間：</span>
-              <span>{{ detail.createdAt }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">參與金額：</span>
-              <span>NT$ {{ formatAmount(detail.amount) }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">狀態：</span>
-              <div class="status-action-group">
-                <span :class="detail.status">
-                  {{ getParticipantStatus(detail.status) }}
-                </span>
-                <!-- 根據狀態顯示審核按鈕 -->
-                <div v-if="detail.status === 1 || detail.status === 6 || detail.status === 13" class="review-btn-group">
-                  <button class="btn-pass" @click="handleCoreApproveClick(detail, true)">通過</button>
-                  <button class="btn-fail" @click="handleCoreApproveClick(detail, false)">不通過</button>
-                </div>
-                <div v-if="detail.status=== 6" class="notify-btn-group mt-2">
-                  <button class="btn-notify" @click="getUserSignCoreContractBySales(detail)">查看合約</button>
-                </div>
-                <div v-if="detail.status=== 10" class="notify-btn-group mt-2">
-                  <button class="btn-notify" @click="handleCoreApproveClick(detail, true)">通知完成</button>
-                </div>
-              </div>
-            </div>
-            <hr v-if="index < selectedMemberDetail.participantDetails.length - 1" class="my-2"/>
+            {{ plan.planName }} |
+            狀態: {{ plan.status }} |
+            金額: {{ formatAmount(plan.amount) }} 元
+            <span v-if="plan.remark" class="text-muted"> ({{ plan.remark }})</span>
           </div>
         </div>
         <div v-else class="text-muted">
-          暫無參與記錄
+          目前沒有參與任何專案
         </div>
       </div>
-    </template>
-  </SharedModal>
-  <!-- 輸入地址 Dialog -->
-  <SharedModal
-      v-model="showAddressDialog"
-      title="輸入地址"
-      mode="submit"
-      confirmText="確認送出"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleAddressSubmit"
-  >
-    <div class="payment-form">
-      <SharedInput
-          id="address"
-          v-model="addressForm.address"
-          label="地址*"
-          placeholder="請輸入地址"
-          type="text"
-          class="form-group ml-3"
-          :error="addressErrors.address"
-          :required="true"
-      />
     </div>
   </SharedModal>
 
-  <!-- 合約上傳 Dialog -->
   <SharedModal
-      v-model="showContractDialog"
-      title="上傳合約資料"
-      mode="submit"
-      confirmText="確認上傳"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleContractSubmit"
-  >
-    <div class="payment-form">
-      <SharedUpload
-          label="上傳合約*"
-          accept=".pdf,.doc,.docx"
-          :max-size="10"
-          name="salesContractFile"
-          v-model="contractForm.contractFileName"
-          :error="contractErrors.contractFile"
-          @upload-success="(result) => handleUploadSuccess('salesContractFile', result)"
-          required
-          :account="currentSales.value" :id="currentSales.value"/>
-    </div>
-  </SharedModal>
-
-  <!-- 合約上傳 Dialog -->
-  <SharedModal
-      v-model="showCorePlanFinalContractDialog"
-      title="上傳最後合約資料"
-      mode="submit"
-      confirmText="確認上傳"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleCorePlanFinalContractSubmit"
-  >
-    <div class="payment-form">
-      <SharedUpload
-          label="上傳合約*"
-          accept=".pdf,.doc,.docx"
-          :max-size="10"
-          name="corePlanFinalContract"
-          v-model="contractForm.contractFileName"
-          :error="contractErrors.contractFile"
-          @upload-success="(result) => handleUploadSuccess('corePlanFinalContract', result)"
-          required
-          :account="currentSales.value" :id="currentSales.value"/>
-    </div>
-  </SharedModal>
-
-  <!-- 不通過 Dialog -->
-  <SharedModal
-      v-model="showRemarkDialog"
-      title="不通過原因"
-      mode="submit"
-      confirmText="確認上傳"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleRejectSubmit"
-  >
-    <div class="payment-form">
-      <SharedInput
-          id="remark"
-          v-model="remark"
-          label="不通過原因"
-          placeholder="請輸入不通過的原因"
-          type="textarea"
-          class="form-group ml-3"
-          :required="true"
-      />
-    </div>
-  </SharedModal>
-
-
-  <!-- 文件詳情 Dialog -->
-  <SharedModal
-      v-model="showDocDialog"
-      title="文件詳情"
-      mode="close"
-      @update:modelValue="closeDocDialog"
-      class="doc-modal form"
+      v-model="showPlanDialog"
+      title="專案詳情"
+      mode="project"
+      @manage="handleManage"
+      @update:modelValue="handleClosePlanDialog"
+      class="project-modal"
       titleAlign="center"
   >
+    <div class="modal-content-wrapper">
+      <div class="modal-section">
+        <div class="doc-label">專案名稱：{{ planDetail.planName || '未設定' }}</div>
+        <div>專案狀態：{{ getPlanStatusText(planDetail.planStatus) }}</div>
+        <div>創業者：{{ planDetail.userName || '未知' }}</div>
+        <div>專案總預算：{{ formatAmount(planDetail.planStartupBudget) }} 元</div>
+        <div>自備款：{{ formatAmount(planDetail.planSelfFunded) }} 元</div>
+        <div>總募資金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
+        <div>共創者人數：{{ planDetail.planPartnerCount || 0 }} 人</div>
 
-    <div v-if="showDocDialog" class="dialog-overlay" @click="closeDocDialog">
-      <div class="dialog-container" @click.stop>
+        <hr/>
 
-        <div class="dialog-body">
-          <!-- 最終合約 -->
-          <div v-if="currentDocType === '最終合約'">
-            <div class="info-section">
-              <h4>最終合約</h4>
-              <div class="pdf-container">
-                <iframe
-                    :src="selectedMemberFinalContract.finalContractUrl"
-                    width="100%"
-                    height="800px"
-                    type="application/pdf"
-                ></iframe>
-              </div>
-            </div>
+        <div class="doc-label">共創者名單</div>
+        <div v-if="planDetail.participantPlanInfo && planDetail.participantPlanInfo.length > 0">
+          <div
+              v-for="(participant, index) in planDetail.participantPlanInfo"
+              :key="participant.id"
+              class="doc-label mb-2"
+          >
+            {{ participant.name }} -
+            狀態：{{ getParticipantStatus(participant.status) }} -
+            投入金額：{{ formatAmount(participant.amount) }} 元
           </div>
-          <!-- 創業計劃書 -->
-          <div v-if="currentDocType === '創業計劃書' && planDetail">
-            <div class="info-section">
-              <h4>基本資訊</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>是否有相關經驗：</label>
-                  <span>{{ planDetail.hasExperience ? '是' : '否' }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.experienceDetails">
-                  <label>經驗詳情：</label>
-                  <span>{{ planDetail.experienceDetails }}</span>
-                </div>
-                <div class="info-item">
-                  <label>財務限制：</label>
-                  <span>{{ planDetail.financialConstraints ? '是' : '否' }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.constraintsExplanation">
-                  <label>限制說明：</label>
-                  <span>{{ planDetail.constraintsExplanation }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>優勢與資源</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.advantageExplanation">
-                  <label>優勢說明：</label>
-                  <span>{{ planDetail.advantageExplanation }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.availableResources">
-                  <label>可用資源：</label>
-                  <span>{{ planDetail.availableResources }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.supportDocumentation">
-                  <label>支持文件：</label>
-                  <span>{{ planDetail.supportDocumentation }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>創新與計劃</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.innovationDescription">
-                  <label>創新描述：</label>
-                  <span>{{ planDetail.innovationDescription }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.briefingSession">
-                  <label>創業規劃是否有參加其他說明會：</label>
-                  <span>{{ planDetail.briefingSession }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.nextStagePlan">
-                  <label>下階段計劃：</label>
-                  <span>{{ planDetail.nextStagePlan }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>招募資訊</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.recruitmentMethods">
-                  <label>招募方式：</label>
-                  <span>{{ planDetail.recruitmentMethods }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.expectedNumberPeople">
-                  <label>預期人數：</label>
-                  <span>{{ planDetail.expectedNumberPeople }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.recruitmentPipeline">
-                  <label>招募管道：</label>
-                  <span>{{ planDetail.recruitmentPipeline }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h4>其他資訊</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.investTime">
-                  <label>投入時間：</label>
-                  <span>{{ planDetail.investTime }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.customerSource">
-                  <label>客源來源：</label>
-                  <span>{{ planDetail.customerSource }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.storeLocationType">
-                  <label>店面類型：</label>
-                  <span>{{ planDetail.storeLocationType }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.coFounderAddedValue">
-                  <label>共創者附加價值：</label>
-                  <span>{{ planDetail.coFounderAddedValue }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 籌備成本 -->
-            <div class="info-section">
-              <h4>籌備成本明細</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>加盟費：</label>
-                  <span>NT$ {{ planPrepareCosts.franchiseFee?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>裝潢費用：</label>
-                  <span>NT$ {{ planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>設備費用：</label>
-                  <span>NT$ {{ planPrepareCosts.equipmentCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>首批物料成本：</label>
-                  <span>NT$ {{ planPrepareCosts.firstMaterialCost?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>薪資預算：</label>
-                  <span>NT$ {{ planPrepareCosts.paySalaryBudget?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>其他人事成本：</label>
-                  <span>NT$ {{ planPrepareCosts.otherPersonnelCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>行銷費用：</label>
-                  <span>NT$ {{ planPrepareCosts.marketingExpenses?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>其他費用：</label>
-                  <span>NT$ {{ planPrepareCosts.otherCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item total">
-                  <label>總計：</label>
-                  <span>NT$ {{ calculateTotalPrepareCosts()?.toLocaleString() }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 營運成本 -->
-
-            <div class="info-section">
-              <h4>營運成本百分比</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>營業額目標：</label>
-                  <span>NT$ {{ planOperatingCost.turnoverTarget?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>首批物料成本：</label>
-                  <span>{{
-                      planOperatingCost.firstMaterialCostsPercent
-                    }}% (NT$ {{ planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item" v-if="planOperatingCost.firstMaterialCostsRemark">
-                  <label>備註：</label>
-                  <span>{{ planOperatingCost.firstMaterialCostsRemark }}</span>
-                </div>
-                <div class="info-item">
-                  <label>人事成本：</label>
-                  <span>{{
-                      planOperatingCost.personnelCostsPercent
-                    }}% (NT$ {{ planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>租金成本：</label>
-                  <span>{{
-                      planOperatingCost.rentalCostsPercent
-                    }}% (NT$ {{ planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>營運成本：</label>
-                  <span>{{
-                      planOperatingCost.peratingCostsPercent
-                    }}% (NT$ {{ planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>其他成本：</label>
-                  <span>{{
-                      planOperatingCost.otherCostsPercent
-                    }}% (NT$ {{ planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>獎勵門檻：</label>
-                  <span>NT$ {{ planOperatingCost.rewardThreshold?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>獎勵百分比：</label>
-                  <span>{{ planOperatingCost.rewardPercent }}%</span>
-                </div>
-                <div class="info-item full-width" v-if="planOperatingCost.otherStatement">
-                  <label>其他說明：</label>
-                  <span>{{ planOperatingCost.otherStatement }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 分潤條款 -->
-            <div class="info-section">
-              <h4>分潤條款</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>分潤週期：</label>
-                  <span>{{ planProfitSharing.profitDistributionCycle }}</span>
-                </div>
-                <div class="info-item">
-                  <label>計算方式：</label>
-                  <span>{{ planProfitSharing.profitCalculationMethod }}</span>
-                </div>
-                <div class="info-item">
-                  <label>支付方式：</label>
-                  <span>{{ planProfitSharing.profitPaymentMethod }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        </div>
+        <div v-else class="text-muted">
+          目前沒有共創者
         </div>
       </div>
     </div>
   </SharedModal>
 
+  <SharedModal
+      v-model="showDocDialog"
+      :title="docDialogTitle"
+      mode="close"
+      @update:modelValue="handleCloseDocDialog"
+      class="doc-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section text-center">
+        <img :src="docDialogUrl" alt="文件預覽" class="doc-image"/>
+      </div>
+    </div>
+  </SharedModal>
 
 </template>
 
@@ -568,86 +276,35 @@ import {useAuth} from "@/composables/useAuth.js";
 import {salesApi} from "@/api/modules/sales.js";
 import {stepApi} from "@/api/modules/step.js";
 import {salesLevelApi} from "@/api/modules/salesLevel.js";
-import {salesCheckApi} from "@/api/modules/salesCheck.js";
-import SharedInput from "@/components/shared/Shared-Input.vue";
 import {cityApi} from "@/api/modules/city.js";
 
 const {isLoggedIn, currentSales} = useAuth();
 
 import {useRoute, useRouter} from 'vue-router';
-import SharedUpload from "@/components/shared/Shared-Upload.vue";
 
 const route = useRoute();
+const router = useRouter();
 
 const showModal = ref(false);
 const selectedMember = ref({});
 
 const columns = [
-  {key: "type", label: "身分"},
-  {key: "planDate", label: "時間"},
+  { key: "formattedType", label: "身分" },
+  {key: "createdAt", label: "時間"},
   {key: "name", label: "會員名字"},
   {key: "planName", label: "專案名稱"},
-  {key: "planStatus", label: "專案狀態"},
-  {key: "review", label: "操作"},
   {key: "actions", label: "查看"},
 ];
 
-
-const getActionType = (row) => {
-  if (row.type === 1 && reviewStepsFounder.includes(row.planStatus)) {
-    return 'review';
-  }
-  return 'none';
+function formatMemberType(types) {
+  if (!Array.isArray(types)) return '';
+  const labels = [];
+  if (types.includes(1)) labels.push('創業者');
+  if (types.includes(2)) labels.push('共創者');
+  return labels.join('、'); // 使用頓號分隔
 }
 
-
-// 格式化步驟狀態
-const formatPlanStatus = (statusId, type) => {
-  if (type === 1) {
-    const step = planSteps.value.find(s => s.id === statusId);
-    return step ? step.step : `未知狀態 (${statusId})`;
-  } else if (type === 2) {
-    const step = planSteps.value.find(s => s.id === statusId);
-    return step ? step.step : `未知狀態 (${statusId})`;
-  }
-  return `未知狀態 (${statusId})`;
-}
-
-const members = reactive([
-  {
-    id: 1,
-    type: "創業者",
-    date: "2024-12-03",
-    name: "張小白",
-    planName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    planStatus: "管理專案",
-    planId: 101,
-    identity: "創業者",
-    projectName: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    status: "管理專案",
-    projectCount: "創辦1、大創4",
-    docs: ["創業計劃書", "合約", "公司資料", "公司帳戶"],
-    reviewStatus: "",
-    idDoc: "",
-    coCreate: [
-      {
-        title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-        status: "媒合中",
-        amount: "200,000",
-      },
-      {
-        title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-        status: "媒合中",
-        amount: "200,000",
-      },
-      {
-        title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-        status: "媒合中",
-        amount: "200,000",
-      },
-    ],
-  },
-]);
+const members = reactive([]);
 
 const filter = reactive({
   type: "",
@@ -659,11 +316,14 @@ const filter = reactive({
 const displayedMembers = computed(() => {
   console.log(filter)
   let list = [...members];
-  if (filter.type)
-    list = list.filter((m) => m.type === filter.type);
 
-  if (filter.status)
+  if (filter.type) {
+    list = list.filter((m) => Array.isArray(m.type) && m.type.includes(Number(filter.type)));
+  }
+
+  if (filter.status) {
     list = list.filter((m) => m.planStatus === filter.status);
+  }
 
   if (filter.dateOrder) {
     list.sort((a, b) =>
@@ -676,18 +336,17 @@ const displayedMembers = computed(() => {
   if (filter.city) {
     list = list.filter((m) => m.city === filter.city);
   }
+
   return list;
 });
 
 const cities = ref([]);
-
 async function getCities() {
   const response = await cityApi.getCities();
   cities.value = response.data;
 }
 
 const SalesLevels = ref([]);
-
 async function getSalesLevel() {
   const response = await salesLevelApi.getSalesLevel();
   SalesLevels.value = response.data;
@@ -695,18 +354,27 @@ async function getSalesLevel() {
 }
 
 const planSteps = ref([]);
+const corePlanStep = ref([]);
 
 async function getAllPlanStep() {
   const response = await stepApi.getAllPlanStep();
   planSteps.value = response.data;
 }
-
-const corePlanStep = ref([]);
+function getPlanStatusText(stepId) {
+  const step = planSteps.value.find(s => s.id === stepId);
+  return step ? step.step : '未知狀態';
+}
 
 async function getAllCorePlanStep() {
   const response = await stepApi.getAllCorePlanStep();
   corePlanStep.value = response.data;
 }
+
+function getParticipantStatus(stepId) {
+  const step = corePlanStep.value.find(s => s.id === stepId);
+  return step ? step.step : '未知狀態';
+}
+
 
 async function getAllUserBySales() {
   const formData = {
@@ -720,6 +388,7 @@ async function getAllUserBySales() {
 
     return {
       ...member,
+      formattedType: formatMemberType(member.type),
       planStatus: member.planStatus,  // 保留原始 ID
       rank: level ? level.name : `未知等級 (${member.rank})`,
     };
@@ -734,11 +403,6 @@ function formatAmount(amount) {
   return amount.toLocaleString('zh-TW');
 }
 
-function getParticipantStatus(stepId) {
-  console.log(corePlanStep.value)
-  const step = corePlanStep.value.find(s => s.id === stepId);
-  return step ? step.step : '未知狀態';
-}
 
 
 onMounted(async () => {
@@ -746,457 +410,90 @@ onMounted(async () => {
     await getCities();
     await getAllPlanStep();
     await getAllCorePlanStep()
-    await getAllCorePlanStep();
     await getSalesLevel();
     await getAllUserBySales();
-
-    // 檢查是否有 autoOpen 參數
-    if (route.query.autoOpen === 'true' && route.query.userId) {
-      await openMemberDetail(
-          route.query.userId,
-          route.query.type ? parseInt(route.query.type) : null,
-          route.query.planId ? parseInt(route.query.planId) : null
-      );
-    }
   }
 });
-const selectedMemberDetail = ref({});
-const selectedMemberFinalContract = ref({})
-// 自動打開會員詳情的函數
-async function openMemberDetail(userId, typeFromQuery = null, planIdFromQuery = null) {
-  // 優先從 query 參數獲取，否則從 members 中查找
-  const member = members.find(m => m.id === parseInt(userId));
+
+const showPlanDialog = ref(false);
+const planDetail = ref({});
+async function openPlanDialog(row) {
   const formData = {
     salesId: currentSales.value,
-    userId: parseInt(userId),
-    type: typeFromQuery || member.type,
-    planId: planIdFromQuery || (member ? member.planId : 0)
+    userId: row.id,
+    planId: row.planId || undefined,
+    participantPlanId: row.participantPlanId || undefined,
   }
 
-  try {
-    const response = await salesApi.getUserInfoBySales(formData);
-    if (response.code === 0) {
-      selectedMemberDetail.value = response.data;
-      if (selectedMemberDetail.value.founderPlan[0].currentStep === 14) {
-        const finalContractResponse = await salesApi.getPlanFinalContractBySales({
-          salesId: currentSales.value,
-          userId: parseInt(userId),
-          planId: formData.planId
-        });
-        if (finalContractResponse.code === 0) {
-          selectedMemberFinalContract.value = finalContractResponse.data;
-        } else {
-          alert('獲取最終合約失敗，無法查看詳情');
-        }
-      }
-      // 設置 selectedMember
-      if (member) {
-        selectedMember.value = {...member};
-      } else {
-        // 從 query 重建基本資訊
-        selectedMember.value = {
-          id: parseInt(userId),
-          name: response.data.userName || '未知用戶',
-          type: formData.type === 1 ? '創業者' : '共創者',
-          planId: formData.planId,
-          docs: ["創業計劃書", "合約", "公司資料", "公司帳戶", "最終合約"],
-        };
-      }
-
-      // 只在 type === 1 (創業者) 時處理審核狀態
-      if (formData.type === 1 && selectedMemberDetail.value.founderPlan?.[0]) {
-        const currentStep = selectedMemberDetail.value.founderPlan[0].currentStep;
-
-        if (currentStep === 2) {
-          selectedMemberDetail.reviewStatus = false;
-        } else if (currentStep === 1) {
-          selectedMemberDetail.reviewStatus = "";
-        } else if (currentStep > 2) {
-          selectedMemberDetail.reviewStatus = true;
-        }
-      }
-
-      // 處理共創計劃狀態
-      if (selectedMemberDetail.value.coreFounderPlan) {
-        selectedMemberDetail.value.coreFounderPlan =
-            selectedMemberDetail.value.coreFounderPlan.map(plan => {
-              const step = corePlanStep.value.find(step => step.id === plan.status);
-              return {
-                ...plan,
-                status: step ? step.step : `未知狀態 (${plan.status})`
-              };
-            });
-      }
-
-      // 處理創業計劃狀態
-      if (selectedMemberDetail.value.founderPlan) {
-        selectedMemberDetail.value.founderPlan =
-            selectedMemberDetail.value.founderPlan.map(plan => {
-              const step = planSteps.value.find(step => step.id === plan.status);
-              return {
-                ...plan,
-                status: step ? step.userStep : `未知狀態 (${plan.status})`
-              };
-            });
-      }
-
-      showModal.value = true;
-    }
-  } catch (error) {
-    console.error('獲取用戶詳情失敗:', error);
-  }
+    const response = await salesApi.getUserPlanInfoBySales(formData)
+  planDetail.value = response.data;
+  showPlanDialog.value = true;
 }
 
+const handleManage = () => {
+  const query = {
+    userId: planDetail.value.userId,
+    autoOpen: 'planDetail', // 標記要自動開啟的 dialog
+  }
+
+  // 根據是創業者還是共創者傳遞不同的參數
+  if (planDetail.value.participantPlanId && planDetail.value.participantPlanId > 0) {
+    // 共創者
+    query.participantPlanId = planDetail.value.participantPlanId
+  } else {
+    // 創業者
+    query.planId = planDetail.value.planId
+  }
+
+  // 跳轉到 management 頁面
+  router.push({
+    path: '/account-sales/management',
+    query: query
+  })
+
+  // 關閉當前 dialog
+  showPlanDialog.value = false
+}
+
+
+const selectedMemberDetail = ref({});
 
 async function viewMember(row) {
   selectedMember.value = {...row};
   showModal.value = true;
-  await openMemberDetail(row.id, row.type, row.planId);
+  await openMemberDetail(row.id);
 }
-
-// 需要審核的步驟（創業者）
-const reviewStepsFounder = [1, 6, 8, 14, 16, 18, 20];
-const addressForm = reactive({
-  address: ''
-});
-const addressErrors = reactive({
-  address: ''
-});
-
-async function handleAddressSubmit() {
-  addressErrors.address = '';
-
-  if (!addressForm.address) {
-    addressErrors.address = '地址為必填項';
-  }
-
-  await handleApprove(currentProcessingRow.value, true, addressForm.address);
-}
-
-const showAddressDialog = ref(false);
-const showRemarkDialog = ref(false);
-const remark = ref('');
-const currentProcessingRow = ref(null);
-
-async function handleApproveClick(row, approved) {
-  // 保存當前處理的 row
-  currentProcessingRow.value = row;
-
-  if (row.planStatus === 6 && approved) {
-    showContractDialog.value = true;
-    return; // 等待合約上傳完成
-  }
-
-  if (row.planStatus === 18 && approved) {
-    showAddressDialog.value = true;
-    return; // 等待地址輸入完成
-  }
-
-  if (!approved) {
-    showRemarkDialog.value = true;
-    return; // 等待輸入不通過原因
-  }
-
-  // 如果是通過且不需要上傳合約，直接處理
-  await handleApprove(row, true);
-}
-
-const userSignCoreContractInfo = ref({});
-
-async function getUserSignCoreContractBySales(detail) {
+async function openMemberDetail(userId) {
   const formData = {
     salesId: currentSales.value,
-    userId: detail.userId,
-    participantPlanId: detail.participantPlanId,
+    userId: parseInt(userId),
   }
-
-  const response = await salesApi.getUserSignCoreContractBySales(formData)
-  if (response.code === 0) {
-    userSignCoreContractInfo.value = response.data;
-    window.open(userSignCoreContractInfo.value.signCoreContractUrl, '_blank')
-  } else {
-    alert('獲取用戶簽署合約資訊失敗，無法查看詳情');
-  }
-}
-
-// 狀態管理
-const currentProcessingDetail = ref(null); // 當前處理的明細
-
-// 1. 審核按鈕點擊處理
-async function handleCoreApproveClick(detail, approved) {
-  console.log('審核操作:', detail, approved);
-
-  // 如果是步驟 13 且通過，需要先上傳合約
-  if (detail.status === 13 && approved) {
-    // 檢查是否已有合約 ID
-    if (!contractForm.contractFileId) {
-      // 保存當前處理的明細
-      currentProcessingDetail.value = detail;
-      // 打開合約上傳對話框
-      showCorePlanFinalContractDialog.value = true;
-      return; // 等待合約上傳完成
-    }
-  }
-
-  // 如果不是步驟 13，或者已經有合約 ID，直接進行審核
-  await submitCoreApproval(detail, approved);
-}
-
-// 2. 提交審核（統一的審核邏輯）
-async function submitCoreApproval(detail, approved) {
-  const formData = {
-    salesId: currentSales.value,
-    userId: detail.userId,
-    participantPlanId: detail.participantPlanId,
-    approved: approved,
-    remark: ''
-  };
-
-  let response;
 
   try {
-    switch (detail.status) {
-      case 1: // 待審核
-        response = await salesCheckApi.checkCoreMoneyBySales(formData);
-        if (response.code === 0) {
-          alert('已處理共創者審核');
-          await getAllUserBySales();
-          showModal.value = false;
-        } else {
-          alert('操作失敗: ' + response.message);
-        }
-        break;
+    const response = await salesApi.getUserInfoBySales(formData);
+    console.log('用戶詳情:', response.data); // 調試用
 
-      case 6: // 待簽署合約
-        response = await salesCheckApi.checkCoreContractBySales(formData);
-        if (response.code === 0) {
-          alert('已處理共創者合約審核');
-          await getAllUserBySales();
-          showModal.value = false;
-        } else {
-          alert('操作失敗: ' + response.message);
-        }
-        break;
-
-      case 10: // 通知用戶完成
-        response = await salesCheckApi.contactUserBySales(formData);
-        if (response.code === 0) {
-          alert('已通知共創者完成');
-          await getAllUserBySales();
-          showModal.value = false;
-        } else {
-          alert('操作失敗: ' + response.message);
-        }
-        break;
-
-      case 13: // 待上傳最終合約
-        if (!contractForm.contractFileId) {
-          alert('請先上傳最終合約');
-          return;
-        }
-
-        formData.finalContractId = contractForm.contractFileId;
-        response = await salesCheckApi.uploadCorePlanFinalContractBySales(formData);
-
-        if (response.code === 0) {
-          alert('已上傳共創者最終合約');
-          await getAllUserBySales();
-          showModal.value = false;
-
-          // 清空合約表單
-          contractForm.contractFileId = null;
-          contractForm.contractFileName = null;
-        } else {
-          alert('操作失敗: ' + response.message);
-        }
-        break;
-
-      default:
-        alert('此步驟無法操作');
-        showModal.value = false;
-        return;
+    if (response.code === 0) {
+      selectedMemberDetail.value = response.data;
+      showModal.value = true;
+    } else {
+      // 處理錯誤
+      console.error('獲取用戶詳情失敗:', response.message);
     }
   } catch (error) {
-    console.error('審核失敗:', error);
-    alert('操作失敗，請稍後再試');
+    console.error('獲取用戶詳情失敗:', error);
+    // 可以顯示錯誤提示
   }
 }
 
-async function handleRejectSubmit() {
-  if (!remark.value || remark.value.trim() === '') {
-    alert('不通過原因不可為空');
-    return;
-  }
-
-  // 使用保存的 currentProcessingRow 而不是 selectedMember
-  await handleApprove(currentProcessingRow.value, false);
-
-  showRemarkDialog.value = false;
-  remark.value = '';
-  currentProcessingRow.value = null; // 清空
+function handleClosePlanDialog(val) {
+  showPlanDialog.value = val;
 }
 
-async function handleContractSubmit() {
-  if (!contractForm.contractFileName) {
-    contractErrors.contractFile = '請上傳合約文件';
-    return;
-  }
-
-  contractErrors.contractFile = '';
-
-  // 在這裡處理合約提交邏輯
-  alert('合約上傳成功');
-
-  showContractDialog.value = false;
-
-  // 清空合約表單
-  contractForm.contractFileName = '';
-
-  // 繼續進行審核
-  await handleApprove(currentProcessingRow.value, true);
-  currentProcessingRow.value = null; // 清空
+function handleCloseDocDialog(val) {
+  showDocDialog.value = val;
 }
 
-const showCorePlanFinalContractDialog = ref(false);
-
-async function handleCorePlanFinalContractSubmit() {
-  if (!contractForm.contractFileName) {
-    contractErrors.contractFile = '請上傳合約文件';
-    return;
-  }
-
-  contractErrors.contractFile = '';
-
-  // 在這裡處理合約提交邏輯
-  alert('合約上傳成功');
-
-  showCorePlanFinalContractDialog.value = false;
-
-  // 清空合約表單
-  contractForm.contractFileName = '';
-
-  // 繼續進行審核
-  await submitCoreApproval(currentProcessingDetail.value, true);
-  currentProcessingRow.value = null; // 清空
-}
-
-async function handleApprove(row, approved, address = '') {
-  console.log(row)
-  const formData = {
-    salesId: currentSales.value,
-    planId: row.planId || 0,
-    approved: approved,
-    remark: remark.value || ''
-  }
-  let response;
-  switch (row.planStatus) {
-    case 1: // 創業計劃書審核
-      response = await salesCheckApi.checkPlanBySales(formData)
-      if (response.code === 0) {
-        alert('已處理創業計劃書審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-    case 6: // 合約上傳
-      formData.contractId = contractForm.contractFileId;
-      response = await salesCheckApi.uploadContractBySales(formData)
-      if (response.code === 0) {
-        alert('已上傳合約');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-    case 8:
-      response = await salesCheckApi.checkContractBySales(formData)
-      if (response.code === 0) {
-        alert('已處理合約審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-    case 14:
-      response = await salesCheckApi.checkResourceBySales(formData)
-      if (response.code === 0) {
-        alert('已處理資源確認審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-
-    case 16:
-      response = await salesCheckApi.checkFranchiseBySales(formData)
-      if (response.code === 0) {
-        alert('已處理加盟審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-
-    case 18:
-      formData.address = address;
-      response = await salesCheckApi.checkAddressBySales(formData)
-      if (response.code === 0) {
-        alert('已處理營業地址審核');
-        await getAllUserBySales();
-        showModal.value = false;
-        showAddressDialog.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-
-    case 20:
-      response = await salesCheckApi.finishPlanBySales(formData)
-      if (response.code === 0) {
-        alert('已處理專案結案審核');
-        await getAllUserBySales();
-        showModal.value = false;
-      } else {
-        alert('操作失敗: ' + response.message);
-      }
-      break;
-
-
-    default:
-      alert('此步驟無法操作');
-      return;
-  }
-}
-
-const showContractDialog = ref(false);
-const contractForm = reactive({
-  contractFileId: null,
-  contractFileName: '',
-});
-
-const contractErrors = reactive({
-  contractFile: '',
-});
-
-function handleUploadSuccess(field, result) {
-  console.log('Upload success result:', result); // 用來檢查返回的結果結構
-  if (field === 'salesContractFile') {
-    // 嘗試不同的可能屬性名稱
-    contractForm.contractFileId = result.data?.id
-    contractForm.contractFileName = result.data?.displayName
-    contractErrors.contractFile = '';
-  } else if (field === 'corePlanFinalContract') {
-    contractForm.contractFileId = result.data?.id
-    contractForm.contractFileName = result.data?.displayName
-    contractErrors.contractFile = '';
-  }
-}
 
 function handleClose(val) {
   showModal.value = val;
@@ -1205,76 +502,42 @@ function handleClose(val) {
 
 const showDocDialog = ref(false)
 const currentDocType = ref('')
-
-// 計算屬性：取得當前計劃的詳細資料
-const planDetail = computed(() => {
-  return selectedMemberDetail.value?.founderPlan?.[0]?.planDetail || null
+const docDialogTitle = computed(() => {
+  switch (currentDocType.value) {
+    case 'pcr':
+      return '良民證預覽'
+    case 'identify':
+      return '身分證明預覽'
+    case 'assets':
+      return '資產證明預覽'
+    case 'secondary':
+      return '第二證件預覽'
+    default:
+      return '文件預覽'
+  }
 })
-
-const planPrepareCosts = computed(() => {
-  return selectedMemberDetail.value?.founderPlan?.[0]?.planPrepareCosts || null
-})
-
-const planOperatingCost = computed(() => {
-  return selectedMemberDetail.value?.founderPlan?.[0]?.planOperatingCost || null
-})
-
-const planProfitSharing = computed(() => {
-  return selectedMemberDetail.value?.founderPlan?.[0]?.planProfitSharing || null
-})
-
-// 計算籌備成本總計
-const calculateTotalPrepareCosts = () => {
-  if (!planPrepareCosts.value) return 0
-
-  const costs = planPrepareCosts.value
-  return (
-      (costs.franchiseFee || 0) +
-      (costs.decorationCosts || 0) +
-      (costs.equipmentCosts || 0) +
-      (costs.firstMaterialCost || 0) +
-      (costs.paySalaryBudget || 0) +
-      (costs.otherPersonnelCosts || 0) +
-      (costs.marketingExpenses || 0) +
-      (costs.cashFlow || 0) +
-      (costs.otherCosts || 0)
-  )
-}
-
+const docDialogUrl = ref('')
 // 打開文件對話框
-const openDocDialog = (docType) => {
-  currentDocType.value = docType
+const openDocDialog = (type,url) => {
+  console.log(type,url)
   showDocDialog.value = true
-  console.log(docType)
-}
+  docDialogUrl.value = url
 
-// 關閉文件對話框
-const closeDocDialog = () => {
-  showDocDialog.value = false
-  currentDocType.value = ''
-}
-
-async function getPlanFinalContractBySales(detail) {
-  const formData = {
-    salesId: currentSales.value,
-    userId: detail.userId,
-    planId: detail.planId,
-  }
-
-  const response = await salesApi.getPlanFinalContractBySales(formData)
-  if (response.code === 0) {
-    if (response.data && response.data.finalContractUrl) {
-      window.open(response.data.finalContractUrl, '_blank')
-    } else {
-      alert('該計劃尚未上傳最終合約');
-    }
-  } else {
-    alert('獲取最終合約失敗，無法查看詳情');
-  }
 }
 
 </script>
 <style scoped lang="scss">
+.plan-link {
+  color: #1e90ff; // 或你喜歡的藍色
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: #0066cc; // hover 時的顏色
+    text-decoration: underline;
+  }
+}
+
 .doc-tag {
   color: $btn-orange;
 }
@@ -1359,6 +622,7 @@ async function getPlanFinalContractBySales(detail) {
 }
 
 .doc-tag {
+  font-size: 14px;
   cursor: default;
 }
 
@@ -1493,5 +757,48 @@ async function getPlanFinalContractBySales(detail) {
 
 .detail-table tbody tr:hover {
   background: #f8f9fa;
+}
+
+.modal-content-wrapper {
+  max-height: 60vh; // 視窗高度的 60%
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px; // 避免內容被滾動條遮住
+
+  // 美化滾動條
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #999;
+    }
+  }
+
+  // Firefox 滾動條樣式
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f5f5f5;
+}
+
+// 為 modal section 添加適當間距
+.modal-section {
+  margin-bottom: 16px;
+
+  .title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #333;
+  }
 }
 </style>

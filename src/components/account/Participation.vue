@@ -414,7 +414,6 @@ import {useRoute, useRouter} from "vue-router";
 import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
-import SharedModal from "@/components/shared/Shared-Modal.vue";
 import {
   statusLabel,
   statusClass,

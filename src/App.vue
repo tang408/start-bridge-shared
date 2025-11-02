@@ -19,7 +19,7 @@ const checkSession = () => {
 
   if (lastActivity && isLoggedIn.value) {
     const timeDiff = Date.now() - parseInt(lastActivity);
-    const TIMEOUT = 60 * 1000; // 30分鐘無活動就登出
+    const TIMEOUT = 20 * 60 * 1000; // 30分鐘無活動就登出
 
     if (timeDiff > TIMEOUT) {
       console.log('長時間無活動,執行登出');
