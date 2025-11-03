@@ -13,15 +13,24 @@ export const userCheckApi = {
         return api.post("/f/private/user-check/sign-contract-by-user", params);
     },
 
+    async signContractSubmitByUser(params = {}) {
+        return api.post("/f/private/user-check/sign-contract-submit-by-user", params);
+    },
+
     async signCoreContractByUser(params = {}) {
         return api.post("/f/private/user-check/sign-core-contract-by-user", params);
+    },
+
+    async signCoreContractSubmitByUser(params = {}) {
+        return api.post("/f/private/user-check/sign-core-contract-submit-by-user", params);
     },
 
     async createCoreServiceChargeInfoByUser(params = {}) {
         return api.post("/f/private/user-check/create-core-service-charge-info-by-user", params);
     },
 
-    async uploadContractByUser(params = {}) {
-        return api.post("/f/private/user-check/upload-contract-by-user", params);
-    },
+    async uploadCorePlanFinalContractByUser(params = {}) {
+        return api.post("/f/private/user-check/upload-core-plan-final-contract-by-user", params);
+    }
+
 }

@@ -51,5 +51,9 @@ export const salesApi = {
 
     async getUserPlanInfoBySales(params = {}) {
         return api.post("/f/private/sales/get-user-plan-info-by-sales", params);
+    },
+
+    async getPlanDetailBySales(params = {}) {
+        return api.post("/f/private/sales/get-plan-detail-by-sales", params);
     }
 };

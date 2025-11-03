@@ -68,6 +68,7 @@ const props = defineProps({
   buttonText: { type: String, default: "" },
   account: { type: String, required: true }, // 新增 account 參數
   name: { type: String, default: null }, // 新增 name 參數
+  type: { type: String, default: "證明文件" }, // 新增 type 參數
   disabled: { type: Boolean, default: false }, // 新增 disabled 參數
 });
 
@@ -142,15 +143,11 @@ async function onChange(e) {
       if (props.name === 'companyLogo') {
         result = await fileApi.uploadImageFile(file, props.account,props.name)
       } else if (props.name === 'userPaymentProofFile') {
-        result = await fileApi.uploadPaymentProofByUser(file, props.account, props.name);
-      } else if (props.name === 'userContractFile') {
-        result = await fileApi.uploadContractFile(file, props.account, props.name);
-      } else if (props.name === 'salesContractFile') {
-        result = await fileApi.uploadSalesContractFile(file, props.account, props.name);
-      } else if (props.name === 'planFinalContract') {
-        result = await fileApi.uploadPlanFinalContractFile(file, props.account, props.name);
+        result = await fileApi.uploadPaymentProofByUser(file, props.account, props.type);
+      }   else if (props.name === 'planFinalContract') {
+        result = await fileApi.uploadPlanFinalContractFile(file, props.account, props.type);
       } else if (props.name === 'corePlanFinalContract') {
-        result = await fileApi.uploadCorePlanFinalContractFile(file, props.account, props.name);
+        result = await fileApi.uploadCorePlanFinalContractFile(file, props.account, props.type);
       }
 
       else {

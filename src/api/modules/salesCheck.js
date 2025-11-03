@@ -41,7 +41,5 @@ export const salesCheckApi = {
         return api.post("/f/private/sales-check/contact-user-by-sales", params);
     },
 
-    async uploadCorePlanFinalContractBySales(params = {}) {
-        return api.post("/f/private/sales-check/upload-core-plan-final-contract-by-sales", params);
-    }
+
 }

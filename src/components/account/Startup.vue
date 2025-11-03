@@ -2,9 +2,9 @@
   <section v-if="mode === 'account'">
     <div class="fs-24">創業計劃管理</div>
     <SharedTabs
-      class="mt-05"
-      v-model="activeTab"
-      :tabs="[
+        class="mt-05"
+        v-model="activeTab"
+        :tabs="[
         { label: '創業進度', value: 'progress' },
         { label: '創業明細', value: 'detail' },
       ]"
@@ -12,17 +12,17 @@
 
     <div v-if="activeTab === 'progress'" class="w-100">
       <article
-        v-for="p in progress"
-        :key="p.id"
-        class="card"
-        :class="{ expanded: expandedId === p.id }"
+          v-for="p in progress"
+          :key="p.id"
+          class="card"
+          :class="{ expanded: expandedId === p.id }"
       >
         <button
-          type="button"
-          class="summary"
-          @click="toggle(p.id)"
-          :aria-expanded="expandedId === p.id ? 'true' : 'false'"
-          :aria-controls="`details-${p.id}`"
+            type="button"
+            class="summary"
+            @click="toggle(p.id)"
+            :aria-expanded="expandedId === p.id ? 'true' : 'false'"
+            :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
             <span class="status-pill" :class="statusClass(p.status)">
@@ -35,10 +35,10 @@
           <div class="steps-wrap">
             <div class="steps-bar">
               <span
-                v-for="n in 8"
-                :key="n"
-                class="steps-step"
-                :class="{ active: n <= p.progressStep }"
+                  v-for="n in 8"
+                  :key="n"
+                  class="steps-step"
+                  :class="{ active: n <= p.progressStep }"
               ></span>
             </div>
 
@@ -48,6 +48,14 @@
             </div>
           </div>
           <button
+              v-if="p.status < 0 || p.status === 2"
+              type="button"
+              class="btn-upload"
+              @click.stop="handleButtonClick(p)"
+          >
+            審核不通過，請重新上傳資料
+          </button>
+          <button
               v-if="p.status === 4"
               type="button"
               class="btn-upload"
@@ -56,15 +64,23 @@
             上傳資料
           </button>
           <button
+              v-if="p.status === 6"
+              type="button"
+              class="btn-upload"
+              @click.stop="handleButtonClick(p)"
+          >
+            前往簽屬合約
+          </button>
+          <button
               v-if="p.status === 7"
               type="button"
               class="btn-upload"
               @click.stop="handleButtonClick(p)"
           >
-            查看合約並簽名
+            我已簽屬完成
           </button>
           <button
-              v-if="p.status === 13"
+              v-if="p.status === 12"
               type="button"
               class="btn-upload"
               @click.stop="handleButtonClick(p)"
@@ -72,7 +88,7 @@
             上傳合約並支付服務費
           </button>
           <!--並排顯示-->
-          <div v-if="p.status === 11 &isWithinOneWeekBeforeEnd(p.endTime)" class="">
+          <div v-if="p.status === 10 &isWithinOneWeekBeforeEnd(p.endTime)" class="">
             <span>專案即將結束，您可以選擇以下操作：</span>
             <button
                 type="button"
@@ -96,18 +112,18 @@
     <div v-if="activeTab === 'detail'" class="records">
       <div class="toolbar">
         <SharedDropdown
-          v-model="recFilter.timeOrder"
-          placeholder="依時間排序"
-          :options="[
+            v-model="recFilter.timeOrder"
+            placeholder="依時間排序"
+            :options="[
             { label: '新→舊', value: 'desc' },
             { label: '舊→新', value: 'asc' },
           ]"
         />
 
         <SharedDropdown
-          v-model="recFilter.action"
-          placeholder="依動作排序"
-          :options="[
+            v-model="recFilter.action"
+            placeholder="依動作排序"
+            :options="[
             { label: '全部', value: '' },
             { label: '初次投入', value: '初次投入' },
             { label: '追加投入', value: '追加投入' },
@@ -117,9 +133,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.status"
-          placeholder="依狀態排序"
-          :options="[
+            v-model="recFilter.status"
+            placeholder="依狀態排序"
+            :options="[
             { label: '全部', value: '' },
             { label: '成功', value: '成功' },
             { label: '失敗', value: '失敗' },
@@ -128,9 +144,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.amountOrder"
-          placeholder="依金額排序"
-          :options="[
+            v-model="recFilter.amountOrder"
+            placeholder="依金額排序"
+            :options="[
             { label: '不排序', value: '' },
             { label: '高→低', value: 'desc' },
             { label: '低→高', value: 'asc' },
@@ -138,9 +154,9 @@
         />
 
         <SharedDropdown
-          v-model="recFilter.export"
-          placeholder="匯出格式"
-          :options="[
+            v-model="recFilter.export"
+            placeholder="匯出格式"
+            :options="[
             { label: 'CSV', value: '1' },
             { label: 'JPG', value: '2' },
           ]"
@@ -150,25 +166,25 @@
       <div class="table-wrap">
         <table class="records-table">
           <thead>
-            <tr>
-              <th>時間</th>
-              <th>專案名稱</th>
-              <th>動作</th>
-              <th>狀態</th>
-            </tr>
+          <tr>
+            <th>時間</th>
+            <th>專案名稱</th>
+            <th>動作</th>
+            <th>狀態</th>
+          </tr>
           </thead>
           <tbody>
-            <tr v-for="row in displayedRecords" :key="row.id">
-              <td class="table-wrap-date" data-th="時間">{{ row.date }}</td>
-              <td class="ellipsis" :title="row.title" data-th="專案名稱">
-                {{ row.title }}
-              </td>
-              <td data-th="動作">{{ row.action }}</td>
-              <td data-th="狀態">{{ row.status }}</td>
-            </tr>
-            <tr v-if="!displayedRecords.length">
-              <td colspan="5" class="empty">目前沒有符合條件的紀錄</td>
-            </tr>
+          <tr v-for="row in displayedRecords" :key="row.id">
+            <td class="table-wrap-date" data-th="時間">{{ row.date }}</td>
+            <td class="ellipsis" :title="row.title" data-th="專案名稱">
+              {{ row.title }}
+            </td>
+            <td data-th="動作">{{ row.action }}</td>
+            <td data-th="狀態">{{ row.status }}</td>
+          </tr>
+          <tr v-if="!displayedRecords.length">
+            <td colspan="5" class="empty">目前沒有符合條件的紀錄</td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -194,23 +210,23 @@
       {{ docTitle }}
     </div>
     <component
-      :is="currentStepComponent"
-      v-model="formData[docStep]"
-      :errors="formErrors[docStep]"
-      @next="goNext"
-      :step1Budget="formData.step1.budget"
-      @submit="createPlan"
+        :is="currentStepComponent"
+        v-model="formData[docStep]"
+        :errors="formErrors[docStep]"
+        @next="goNext"
+        :step1Budget="formData.step1.budget"
+        @submit="createPlan"
     />
   </section>
 
   <SharedModal
-  v-model="showReleaseChargeDialog"
-  title="支付上架費"
-  mode="submit"
-  confirmText="確認上傳"
-  cancelText="取消"
-  :showCancel="true"
-  @submit="handleReleaseChargeSubmit"
+      v-model="showReleaseChargeDialog"
+      title="支付上架費"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleReleaseChargeSubmit"
   >
     <div class="payment-form">
       <div class="form-group">
@@ -221,9 +237,9 @@
       <div class="form-group">
         <label>匯款資訊</label>
         <div class="readonly-field">
-          銀行名稱：{{ bankInfo.bankName }}<br />
-          銀行代碼：{{ bankInfo.bankCode }}<br />
-          帳號：{{ bankInfo.bankAccount }}<br />
+          銀行名稱：{{ bankInfo.bankName }}<br/>
+          銀行代碼：{{ bankInfo.bankCode }}<br/>
+          帳號：{{ bankInfo.bankAccount }}<br/>
           戶名：{{ bankInfo.bankAccountName }}
         </div>
       </div>
@@ -247,7 +263,10 @@
           :error="paymentErrors.paymentProof"
           @upload-success="(result) => handleUploadSuccess('userPaymentProofFile', result)"
           required
-          account="currentUser.value" :id="currentUser.value" />
+          :account="uploadAccount"
+          :type="'上架費匯款明細'"
+          :id="currentUser.value"
+      />
     </div>
 
   </SharedModal>
@@ -265,7 +284,7 @@
       <div class="warning-section">
         <div class="warning-icon">⚠️</div>
         <div class="warning-text">
-          此專案將延長合2個月，結束時間將延至  {{ extendedDate }}
+          此專案將延長合2個月，結束時間將延至 {{ extendedDate }}
         </div>
       </div>
       <div class="form-group">
@@ -294,7 +313,6 @@
           請問是否確定結束專案？
         </div>
       </div>
-
     </div>
   </SharedModal>
 
@@ -316,9 +334,9 @@
       <div class="form-group">
         <label>匯款資訊</label>
         <div class="readonly-field">
-          銀行名稱：{{ bankInfo.bankName }}<br />
-          銀行代碼：{{ bankInfo.bankCode }}<br />
-          帳號：{{ bankInfo.bankAccount }}<br />
+          銀行名稱：{{ bankInfo.bankName }}<br/>
+          銀行代碼：{{ bankInfo.bankCode }}<br/>
+          帳號：{{ bankInfo.bankAccount }}<br/>
           戶名：{{ bankInfo.bankAccountName }}
         </div>
       </div>
@@ -331,7 +349,7 @@
           v-model="paymentForm.accountLast5"
           :error="paymentErrors.accountLast5"
           required
-       />
+      />
 
       <SharedUpload
           label="上傳合約*"
@@ -342,7 +360,9 @@
           :error="paymentErrors.contractFile"
           @upload-success="(result) => handleUploadSuccess('planFinalContract', result)"
           required
-       :account="currentUser.value"  :id="currentUser.value"/>
+          :type="'創業者上傳合約'"
+          :account="uploadAccount" :id="currentUser.value"/>
+
 
       <SharedUpload
           label="上傳付款憑證*"
@@ -353,26 +373,49 @@
           :error="paymentErrors.paymentProof"
           @upload-success="(result) => handleUploadSuccess('userPaymentProofFile', result)"
           required
-       account="currentUser.value" :id="currentUser.value" />
+          :account="uploadAccount"
+          :type="'服務費匯款明細'"
+          :id="currentUser.value"/>
     </div>
   </SharedModal>
 
-  <!-- PDF簽名組件 -->
-  <SharedPDFSign
-      :mode="'planContract'"
-      :contract-data="contractForm"
-      :visible="showSignContractDialog"
-      @close="showSignContractDialog = false"
-      @submit="handleSignatureSubmitted"
-  />
+  <!-- 合約確認 Dialog -->
+  <SharedModal
+      v-model="showContractConfirmDialog"
+      title="合約確認"
+      mode="submit"
+      confirmText="確認提交"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleContractConfirm"
+      @cancel="handleContractCancel"
+      class="contract-confirm-dialog"
+  >
+    <div class="contract-confirm-content">
+
+      <div class="agreement-checkbox">
+        <label class="checkbox-label">
+          <input
+              type="checkbox"
+              v-model="contractAgreed"
+              @change="contractErrors.agreement = ''"
+          />
+          <span class="checkbox-text">我已詳閱、同意平台合約並完成簽章。</span>
+        </label>
+        <div v-if="contractErrors.agreement" class="error-message">
+          {{ contractErrors.agreement }}
+        </div>
+      </div>
+    </div>
+  </SharedModal>
 </template>
 
 <script setup>
-import { useRouter, useRoute } from "vue-router";
+import {useRouter, useRoute} from "vue-router";
 import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
-import { statusLabel, statusClass } from "@/utils/status";
+import {statusLabel, statusClass} from "@/utils/status";
 import Step1 from "./startup-components/Step1.vue";
 import Step2 from "./startup-components/Step2.vue";
 import Step3 from "./startup-components/Step3.vue";
@@ -389,36 +432,21 @@ import SharedUpload from "@/components/shared/Shared-Upload.vue";
 import {userCheckApi} from "@/api/modules/userCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {transactionApi} from "@/api/modules/transaction.js";
-import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
 
-const { isLoggedIn, currentUser } = useAuth();
+const {isLoggedIn, currentUser, currentUserName} = useAuth();
 
-async function handleSignatureSubmitted(result) {
-  showSignContractDialog.value = false;
-
-  const formData = {
-    planId:paymentForm.planId,
-    contractId:result.signContractId,
-    userId: currentUser.value,
-  }
-
-  const response = await userCheckApi.signContractByUser(formData)
-  if (response.code === 0 ) {
-    // 更新狀態或進行其他操作
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  } else {
-    alert(response.message || "合約簽名失敗，請稍後再試");
-  }
-
-}
+const uploadAccount = computed(() => {
+  const userName = currentUserName.value
+  const planId = paymentForm.planId
+  return `${userName}_${planId}`
+})
 
 const showExtendDialog = ref(false);
 const extendedDate = ref('');
 
 const extendPlanId = ref(null);
+
 function computeExtendedDate(originalEndTime) {
   // endTime = "2025-12-31"
   const originalDate = new Date(originalEndTime);
@@ -431,6 +459,7 @@ function computeExtendedDate(originalEndTime) {
 
   return `${year}-${month}-${day}`;
 }
+
 function handleExtendProject(plan) {
   extendedDate.value = computeExtendedDate(plan.endTime);
   showExtendDialog.value = true;
@@ -459,10 +488,12 @@ async function handleExtendSubmit() {
 
 const showEndPlanDialog = ref(false);
 const endPlanId = ref(null);
+
 function handleEndProject(plan) {
   showEndPlanDialog.value = true;
   endPlanId.value = plan.id;
 }
+
 async function handleEndPlanSubmit() {
   if (!endPlanId.value) return;
 
@@ -483,6 +514,7 @@ async function handleEndPlanSubmit() {
   }
 }
 
+
 const STEPS = {
   step1: Step1,
   step2: Step2,
@@ -497,6 +529,7 @@ const docStep = ref("step1");
 const currentStepComponent = computed(() => STEPS[docStep.value]);
 const expandedId = ref(null);
 const currentPlanId = ref(null);
+
 async function toggle(planId) {
   console.log('點擊計畫 ID:', planId);
   expandedId.value = expandedId.value === planId ? null : planId;
@@ -520,6 +553,7 @@ async function toggle(planId) {
     });
   }
 }
+
 async function loadPlanData(planId) {
   try {
     const requestData = {
@@ -580,26 +614,27 @@ async function loadPlanData(planId) {
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
-          { item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '') },
-          { item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '') },
-          { item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '') },
-          { item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '') },
-          { item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '') },
-          { item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '') },
-          { item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '') },
-          { item: "營運週轉金及現金流", amount: String(planData.cashFlow || '') },
-          { item: "其他（請說明）", amount: String(planData.otherCosts || '') },
-          { item: "總計", amount: planData.franchiseFee &&
-                    planData.decorationCosts &&
-                    planData.equipmentCosts &&
-                    planData.firstMaterialCost &&
-                    planData.paySalaryBudget &&
-                    planData.otherPersonnelCosts &&
-                    planData.marketingExpenses &&
-                    planData.cashFlow &&
-                    planData.otherCosts
-              ? String(
-                  Number(planData.franchiseFee || 0) +
+          {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
+          {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '')},
+          {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
+          {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
+          {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
+          {item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '')},
+          {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
+          {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
+          {
+            item: "總計", amount: planData.franchiseFee &&
+            planData.decorationCosts &&
+            planData.equipmentCosts &&
+            planData.firstMaterialCost &&
+            planData.paySalaryBudget &&
+            planData.otherPersonnelCosts &&
+            planData.marketingExpenses &&
+            planData.cashFlow &&
+            planData.otherCosts
+                ? String(
+                    Number(planData.franchiseFee || 0) +
                     Number(planData.decorationCosts || 0) +
                     Number(planData.equipmentCosts || 0) +
                     Number(planData.firstMaterialCost || 0) +
@@ -609,7 +644,7 @@ async function loadPlanData(planId) {
                     Number(planData.cashFlow || 0) +
                     Number(planData.otherCosts || 0)
                 )
-              : '',
+                : '',
           },
         ],
         costStruct: [
@@ -649,31 +684,31 @@ async function loadPlanData(planId) {
           {
             item: "總計",
             percent: planData.firstMaterialCostsPercent &&
-                    planData.personnelCostsPercent &&
-                    planData.rentalCostsPercent &&
-                    planData.peratingCostsPercent &&
-                    planData.otherCostsPercent
-              ? String(
-                  Number(planData.firstMaterialCostsPercent || 0) +
+            planData.personnelCostsPercent &&
+            planData.rentalCostsPercent &&
+            planData.peratingCostsPercent &&
+            planData.otherCostsPercent
+                ? String(
+                    Number(planData.firstMaterialCostsPercent || 0) +
                     Number(planData.personnelCostsPercent || 0) +
                     Number(planData.rentalCostsPercent || 0) +
                     Number(planData.peratingCostsPercent || 0) +
                     Number(planData.otherCostsPercent || 0)
                 )
-              : '',
+                : '',
             amount: planData.firstMaterialCostsAmount &&
-                    planData.personnelCostsAmount &&
-                    planData.rentalCostsAmount &&
-                    planData.peratingCostsAmount &&
-                    planData.otherCostsAmount
-              ? String(
-                  Number(planData.firstMaterialCostsAmount || 0) +
+            planData.personnelCostsAmount &&
+            planData.rentalCostsAmount &&
+            planData.peratingCostsAmount &&
+            planData.otherCostsAmount
+                ? String(
+                    Number(planData.firstMaterialCostsAmount || 0) +
                     Number(planData.personnelCostsAmount || 0) +
                     Number(planData.rentalCostsAmount || 0) +
                     Number(planData.peratingCostsAmount || 0) +
                     Number(planData.otherCostsAmount || 0)
                 )
-              : '',
+                : '',
             note: '',
             desc: "(淨利，不含稅)",
           },
@@ -717,10 +752,10 @@ function parseBriefingSession(text) {
 
   if (text.startsWith('是')) {
     const content = text.replace(/^是\s*\(|\)$/g, '').trim();
-    return { yes: { checked: true, value: content } };
+    return {yes: {checked: true, value: content}};
   } else if (text.startsWith('否')) {
     const content = text.replace(/^否\s*\(|\)$/g, '').trim();
-    return { plan: { checked: true, value: content } };
+    return {plan: {checked: true, value: content}};
   }
 
   return {};
@@ -735,16 +770,16 @@ function parseRecruitmentMethods(text) {
 
   methods.forEach(method => {
     if (method.includes('本人親自參與經營')) {
-      result.founder = { checked: true, value: '' };
+      result.founder = {checked: true, value: ''};
     } else if (method.includes('邀約親友加入')) {
       const match = method.match(/邀約親友加入:\s*(.+)/);
-      result.family = { checked: true, value: match ? match[1] : '' };
+      result.family = {checked: true, value: match ? match[1] : ''};
     } else if (method.includes('另行招募')) {
       const match = method.match(/另行招募:\s*(.+)/);
-      result.recruit = { checked: true, value: match ? match[1] : '' };
+      result.recruit = {checked: true, value: match ? match[1] : ''};
     } else if (method.includes('其他')) {
       const match = method.match(/其他:\s*(.+)/);
-      result.other = { checked: true, value: match ? match[1] : '' };
+      result.other = {checked: true, value: match ? match[1] : ''};
     }
   });
 
@@ -760,16 +795,16 @@ function parseRecruitmentPipeline(text) {
 
   channels.forEach(channel => {
     if (channel.includes('人力銀行')) {
-      result.jobBank = { checked: true, value: '' };
+      result.jobBank = {checked: true, value: ''};
     } else if (channel.includes('社群平台')) {
-      result.social = { checked: true, value: '' };
+      result.social = {checked: true, value: ''};
     } else if (channel.includes('親友介紹')) {
-      result.referral = { checked: true, value: '' };
+      result.referral = {checked: true, value: ''};
     } else if (channel.includes('門店張貼')) {
-      result.poster = { checked: true, value: '' };
+      result.poster = {checked: true, value: ''};
     } else if (channel.includes('其他')) {
       const match = channel.match(/其他:\s*(.+)/);
-      result.other = { checked: true, value: match ? match[1] : '' };
+      result.other = {checked: true, value: match ? match[1] : ''};
     }
   });
 
@@ -820,16 +855,16 @@ function parseCustomerSource(text) {
 
   sources.forEach(source => {
     if (source.includes('親友推薦')) {
-      result.social = { checked: true, value: '' };
+      result.social = {checked: true, value: ''};
     } else if (source.includes('過路散客')) {
-      result.passenger = { checked: true, value: '' };
+      result.passenger = {checked: true, value: ''};
     } else if (source.includes('商圈經營')) {
-      result.business = { checked: true, value: '' };
+      result.business = {checked: true, value: ''};
     } else if (source.includes('網路口碑')) {
-      result.web = { checked: true, value: '' };
+      result.web = {checked: true, value: ''};
     } else if (source.includes('其他')) {
       const match = source.match(/其他:\s*(.+)/);
-      result.other = { checked: true, value: match ? match[1] : '' };
+      result.other = {checked: true, value: match ? match[1] : ''};
     }
   });
 
@@ -838,7 +873,7 @@ function parseCustomerSource(text) {
 
 // Step4: Q8 - 解析門市地點 "住家型商圈"
 function parseStoreLocation(text) {
-  if (!text) return { value: '', note: {} };
+  if (!text) return {value: '', note: {}};
 
   const locationMap = {
     '核心商圈': 'core',
@@ -850,7 +885,7 @@ function parseStoreLocation(text) {
 
   for (const [key, value] of Object.entries(locationMap)) {
     if (text.includes(key)) {
-      return { value, note: {} };
+      return {value, note: {}};
     }
   }
 
@@ -858,13 +893,13 @@ function parseStoreLocation(text) {
   const match = text.match(/其他:\s*(.+)/);
   return {
     value: 'other',
-    note: { other: match ? match[1] : text }
+    note: {other: match ? match[1] : text}
   };
 }
 
 // Step4: Q9 - 解析共創者附加價值 "推廣親友及資源"
 function parseCoFounderValue(text) {
-  if (!text) return { value: '', note: {} };
+  if (!text) return {value: '', note: {}};
 
   const valueMap = {
     '協助經營': 'operation',
@@ -876,7 +911,7 @@ function parseCoFounderValue(text) {
 
   for (const [key, value] of Object.entries(valueMap)) {
     if (text.includes(key)) {
-      return { value, note: {} };
+      return {value, note: {}};
     }
   }
 
@@ -884,7 +919,7 @@ function parseCoFounderValue(text) {
   const match = text.match(/其他:\s*(.+)/);
   return {
     value: 'other',
-    note: { other: match ? match[1] : text }
+    note: {other: match ? match[1] : text}
   };
 }
 
@@ -912,7 +947,7 @@ function parseOtherReport(text) {
   if (!text || !text.includes('其他')) return {};
 
   const match = text.match(/其他:\s*(.+)/);
-  return match ? { other: match[1] } : {};
+  return match ? {other: match[1]} : {};
 }
 
 // Step6: 解析分潤週期 "每月結算並分潤一次(每一個月)"
@@ -929,36 +964,36 @@ function parseProfitCycle(text) {
 
 // Step6: 解析分潤計算方式
 function parseProfitCalc(text) {
-  if (!text) return { value: '', other: {} };
+  if (!text) return {value: '', other: {}};
 
   if (text.includes('同意依照')) {
-    return { value: 'agree', other: {} };
+    return {value: 'agree', other: {}};
   } else if (text.includes('其他')) {
     const match = text.match(/其他:\s*(.+)/);
     return {
       value: 'other',
-      other: { other: match ? match[1] : text }
+      other: {other: match ? match[1] : text}
     };
   }
 
-  return { value: '', other: {} };
+  return {value: '', other: {}};
 }
 
 // Step6: 解析分潤支付方式
 function parseProfitPay(text) {
-  if (!text) return { value: '', other: {} };
+  if (!text) return {value: '', other: {}};
 
   if (text.includes('銀行匯款')) {
-    return { value: 'bank', other: {} };
+    return {value: 'bank', other: {}};
   } else if (text.includes('其他')) {
     const match = text.match(/其他:\s*(.+)/);
     return {
       value: 'other',
-      other: { other: match ? match[1] : text }
+      other: {other: match ? match[1] : text}
     };
   }
 
-  return { value: '', other: {} };
+  return {value: '', other: {}};
 }
 
 // 返回列表
@@ -968,7 +1003,7 @@ function backToList() {
   expandedId.value = null;
   router.push({
     path: '/account/startup',
-    query: { source: 'account' }
+    query: {source: 'account'}
   });
 }
 
@@ -983,7 +1018,7 @@ const formData = reactive({
     amountRange: 10,
     partnerLimit: "",
   },
-  step2: { file: null },
+  step2: {file: null},
   step3: {
     hasStartupExp: "",
     expDesc: "",
@@ -999,7 +1034,7 @@ const formData = reactive({
     q2: {},
     q3: "",
     q4: {},
-    q5: { total: "", channels: [] },
+    q5: {total: "", channels: []},
     q6: {},
     q7: [],
     q8Location: "",
@@ -1009,16 +1044,16 @@ const formData = reactive({
   },
   step5: {
     prepBudget: [
-      { item: "品牌加盟的相關費用", amount: "" },
-      { item: "店面的裝潢設計工程", amount: "" },
-      { item: "營運設備與生財器具", amount: "" },
-      { item: "開店前首批儲備物料", amount: "" },
-      { item: "創業者預計支薪預算", amount: "" },
-      { item: "籌備期其他人事成本", amount: "" },
-      { item: "開店前品牌行銷費用", amount: "" },
-      { item: "營運週轉金及現金流", amount: "" },
-      { item: "其他（請說明）", amount: "" },
-      { item: "總計", amount: "" },
+      {item: "品牌加盟的相關費用", amount: ""},
+      {item: "店面的裝潢設計工程", amount: ""},
+      {item: "營運設備與生財器具", amount: ""},
+      {item: "開店前首批儲備物料", amount: ""},
+      {item: "創業者預計支薪預算", amount: ""},
+      {item: "籌備期其他人事成本", amount: ""},
+      {item: "開店前品牌行銷費用", amount: ""},
+      {item: "營運週轉金及現金流", amount: ""},
+      {item: "其他（請說明）", amount: ""},
+      {item: "總計", amount: ""},
     ],
     costStruct: [
       {
@@ -1048,7 +1083,7 @@ const formData = reactive({
         amount: "",
         note: "",
       },
-      { item: "其他", percent: "", amount: "", note: "" },
+      {item: "其他", percent: "", amount: "", note: ""},
       {
         item: "總計",
         percent: "",
@@ -1063,14 +1098,14 @@ const formData = reactive({
 
     fundNote: "",
     reportOptions: [
-      { value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限" },
-      { value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供" },
+      {value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
+      {value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
       {
         value: "season",
         text: "每季/年度「財務報表」，需於當季後次月 15 日前提供",
       },
-      { value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供" },
-      { text: "其他", value: "other", withInput: true },
+      {value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"},
+      {text: "其他", value: "other", withInput: true},
     ],
     otherReport: {},
   },
@@ -1082,7 +1117,7 @@ const formData = reactive({
     sharePayOther: {},
     agree: "",
   },
-  step8: { agree: "" },
+  step8: {agree: ""},
 });
 
 const formErrors = reactive({
@@ -1095,8 +1130,8 @@ const formErrors = reactive({
     amountRange: "",
     partnerLimit: "",
   },
-  step2: { file: "" },
-  step3: { hasStartupExp: "" },
+  step2: {file: ""},
+  step3: {hasStartupExp: ""},
   step4: {
     q1: "",
     q2: "",
@@ -1122,15 +1157,15 @@ const formErrors = reactive({
     sharePay: "",
     agree: "",
   },
-  step8: { agree: "" },
+  step8: {agree: ""},
 });
 
 function goNext(nextStep) {
   if (Object.keys(STEPS).includes(nextStep)) {
     docStep.value = nextStep;
 
-    const query = { ...route.query, step: nextStep };
-    router.replace({ query });
+    const query = {...route.query, step: nextStep};
+    router.replace({query});
   }
 }
 
@@ -1149,11 +1184,10 @@ const docTitle = computed(() => {
 function setDocStep(step) {
   if (!Object.keys(STEPS).includes(step)) return;
   docStep.value = step;
-  router.replace({ query: { ...route.query, step } });
+  router.replace({query: {...route.query, step}});
 }
 
 onMounted(() => {
-
   const qStep = (route.query.step || "").toString();
   if (Object.keys(STEPS).includes(qStep)) {
     docStep.value = qStep;
@@ -1163,21 +1197,21 @@ onMounted(() => {
 });
 
 watch(
-  () => route.query.step,
-  (val) => {
-    const qStep = (val || "").toString();
-    if (Object.keys(STEPS).includes(qStep) && qStep !== docStep.value) {
-      docStep.value = qStep;
+    () => route.query.step,
+    (val) => {
+      const qStep = (val || "").toString();
+      if (Object.keys(STEPS).includes(qStep) && qStep !== docStep.value) {
+        docStep.value = qStep;
+      }
     }
-  }
 );
 
 watch(
-  () => route.query.source,
-  (val) => {
-    mode.value = val === "business" ? "business" : "account";
-  },
-  { immediate: true }
+    () => route.query.source,
+    (val) => {
+      mode.value = val === "business" ? "business" : "account";
+    },
+    {immediate: true}
 );
 
 
@@ -1206,7 +1240,7 @@ watch(
         docStep.value = qStep;
       }
     },
-    { immediate: true }
+    {immediate: true}
 );
 
 const progress = ref([
@@ -1252,13 +1286,14 @@ const displayedRecords = computed(() => {
     list = list.filter((r) => r.status === recFilter.status);
   if (recFilter.timeOrder) {
     list.sort((a, b) =>
-      recFilter.timeOrder === "asc"
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date)
+        recFilter.timeOrder === "asc"
+            ? new Date(a.date) - new Date(b.date)
+            : new Date(b.date) - new Date(a.date)
     );
   }
   return list;
 });
+
 function convertFormData(formData, userId) {
   // 字串轉布林值
   function stringToBool(value) {
@@ -1277,6 +1312,7 @@ function convertFormData(formData, userId) {
     const item = costStruct.find(cost => cost.item === itemName);
     return item ? parseFloat(item.percent) || 0 : 0;
   }
+
   function getCostAmount(costStruct, itemName) {
     const item = costStruct.find(cost => cost.item === itemName);
     return item ? parseFloat(item.amount) || 0 : 0;
@@ -1584,22 +1620,43 @@ function convertFormData(formData, userId) {
     // 合作條件 (Step6)
     profitDistributionCycle: getProfitCycleText(step6.sharePeriod),
     profitCalculationMethod: getProfitCalcText(step6.shareCalc, step6.shareCalcOther),
-    profitPaymentMethod: getProfitPayText(step6.sharePay, step6.sharePayOther)  };
+    profitPaymentMethod: getProfitPayText(step6.sharePay, step6.sharePayOther)
+  };
 }
 
 async function createPlan() {
-  const data = convertFormData(formData, currentUser.value)
-  const response = await planApi.createPlan(data)
-  if (response.code === 0) {
-    alert("創業計劃書提交成功！")
-    router.push("/account/startup")
+  const data = convertFormData(formData, currentUser.value);
+
+  let response;
+
+  // 判斷是編輯還是新建
+  if (isEditMode.value && editPlanId.value) {
+    // 更新現有計劃
+    response = await planApi.updatePlan({
+      ...data,
+      planId: editPlanId.value
+    });
   } else {
-    alert("創業計劃書提交失敗，請稍後再試。")
-    return;
+    // 新建計劃
+    response = await planApi.createPlan(data);
+  }
+
+  if (response.code === 0) {
+    alert(isEditMode.value ? "創業計劃書更新成功！" : "創業計劃書提交成功！");
+
+    // 重置編輯狀態
+    isEditMode.value = false;
+    editPlanId.value = null;
+
+    router.push("/account/startup");
+    await getAllPlanByUser();
+  } else {
+    alert(isEditMode.value ? "創業計劃書更新失敗，請稍後再試。" : "創業計劃書提交失敗，請稍後再試。");
   }
 }
 
 const userPlanStepData = ref([])
+
 async function getAllPlanStep() {
   const formData = {
     userId: currentUser.value,
@@ -1607,7 +1664,13 @@ async function getAllPlanStep() {
   const response = await stepApi.getAllPlanStep(formData)
   userPlanStepData.value = response.data
 }
+
 const systemSettingData = ref({})
+
+const founderSignUrl = computed(() => {
+  const setting = systemSettingData.value.find(item => item.type === 'founder_sign_url')
+  return setting ? setting.value : ''
+})
 
 const bankInfo = computed(() => {
   // 把 array 轉成 object
@@ -1634,6 +1697,7 @@ async function getSystemSetting() {
     console.log(systemSettingData.value)
   }
 }
+
 async function getAllPlanByUser() {
   const formData = {
     userId: currentUser.value,
@@ -1641,13 +1705,13 @@ async function getAllPlanByUser() {
   const response = await planApi.getAllPlanByUser(formData)
   console.log(response)
 
-if (response.code === 0) {
+  if (response.code === 0) {
     progress.value = response.data.map(plan => ({
       id: plan.planId,
       status: plan.currentStep,
       title: plan.planName,
       progressStep: changeProgressStep(plan.currentStep),
-      serviceCharge: plan.serviceCharge ,
+      serviceCharge: plan.serviceCharge,
       stateText: userPlanStepData.value.find(step => step.id === plan.currentStep)?.userStep || "無進度",
       remark: plan.remark || '',
       endTime: plan.endTime || null,
@@ -1674,7 +1738,6 @@ const isWithinOneWeekBeforeEnd = (endTime) => {
 }
 
 
-
 // Dialog 顯示狀態
 const showReleaseChargeDialog = ref(false);
 const showSignContractDialog = ref(false);
@@ -1693,9 +1756,9 @@ const paymentForm = reactive({
 });
 
 const contractForm = reactive({
-  id:null,
-  displayName:'',
-  salesContractUrl:''
+  id: null,
+  displayName: '',
+  salesContractUrl: ''
 });
 
 // 錯誤訊息
@@ -1709,6 +1772,24 @@ const paymentErrors = reactive({
 function formatAmount(amount) {
   return amount?.toLocaleString('zh-TW') || '0';
 }
+
+// Dialog 狀態
+const showContractConfirmDialog = ref(false)
+const contractAgreed = ref(false)
+const contractErrors = ref({})
+const currentPlan = ref(null)
+
+// 打開確認 Dialog
+function openContractConfirmDialog(plan) {
+  currentPlan.value = plan
+  contractAgreed.value = false
+  contractErrors.value = {}
+  showContractConfirmDialog.value = true
+}
+
+// 新增一個 ref 來追蹤是否為編輯模式
+const isEditMode = ref(false);
+const editPlanId = ref(null);
 
 // 處理按鈕點擊，打開 Dialog
 async function handleButtonClick(plan) {
@@ -1726,32 +1807,108 @@ async function handleButtonClick(plan) {
   paymentErrors.paymentProof = '';
   paymentErrors.accountLast5 = '';
 
+  if (plan.status < 0 || plan.status === 2) {
+    // 1. 設定編輯模式
+    isEditMode.value = true;
+    editPlanId.value = plan.id;
+
+    // 2. 載入該計劃的資料
+    await loadPlanData(plan.id);
+
+    // 3. 設定為編輯模式
+    mode.value = 'business';
+
+    // 4. 跳轉到第一步
+    docStep.value = 'step1';
+
+    // 5. 更新路由
+    router.push({
+      path: '/account/startup',
+      query: {
+        source: 'business',
+        planId: plan.id,
+        step: 'step1',
+        edit: 'true' // 標記為編輯模式
+      }
+    });
+
+    return;
+  }
+
   // 顯示 Dialog
   if (plan.status === 4) {
     showReleaseChargeDialog.value = true;
     return;
   }
-  if (plan.status === 7) {
+  if (plan.status === 6) {
+    // 獲取簽署合約的 URL
+    const signUrl = founderSignUrl.value
+
+    if (!signUrl) {
+      alert('簽署合約 URL 未設定，請聯繫管理員')
+      return
+    }
+
+    // 在新分頁中打開
+    window.open(signUrl, '_blank')
+
     const formData = {
       planId: plan.id,
       userId: currentUser.value,
     }
-    const response = await planApi.getSalesContractByPlanUser(formData)
-    if (response.code === 0) {
-      contractForm.id = response.data.id
-      contractForm.displayName = response.data.displayName
-      contractForm.salesContractUrl = response.data.salesContractUrl
+
+    const res = await userCheckApi.signContractByUser(formData)
+    if (res.code === 0) {
+      await getAllPlanByUser()
+    } else {
+      alert(res.message || '合約簽署失敗，請稍後再試')
     }
-    // 延遲一下再顯示對話框，確保資料已更新
-    await nextTick();
-    showSignContractDialog.value = true;
-    return;
   }
-  if (plan.status === 13) {
+
+  if (plan.status === 7) {
+    openContractConfirmDialog(plan)
+  }
+  if (plan.status === 12) {
     showPaymentDialog.value = true;
     return;
   }
+}
 
+async function handleContractConfirm() {
+  // 驗證是否勾選
+  if (!contractAgreed.value) {
+    contractErrors.value = {
+      agreement: '請勾選同意條款'
+    }
+    return
+  }
+
+  // 清除錯誤
+  contractErrors.value = {}
+
+  // 提交合約
+  const formData = {
+    planId: currentPlan.value.id,
+    userId: currentUser.value,
+  }
+
+  try {
+    const res = await userCheckApi.signContractSubmitByUser(formData)
+    if (res.code === 0) {
+      alert('已提交完成，請等待審核結果。')
+      showContractConfirmDialog.value = false
+      await getAllPlanByUser()
+    } else {
+      alert(res.message || '合約提交失敗，請稍後再試')
+    }
+  } catch (error) {
+    console.error('提交合約失敗:', error)
+    alert('合約提交失敗，請稍後再試')
+  }
+}
+
+async function handleContractCancel() {
+  showContractConfirmDialog.value = false
 }
 
 // 驗證表單
@@ -1775,6 +1932,7 @@ function validateReleaseChargePaymentForm() {
 
   return isValid;
 }
+
 function validatePaymentForm() {
   let isValid = true;
 
@@ -1806,23 +1964,23 @@ async function handleReleaseChargeSubmit() {
   if (!validateReleaseChargePaymentForm()) {
     return;
   }
-    const formData = {
-      planId: paymentForm.planId,
-      userId: paymentForm.userId,
-      accountLast5: paymentForm.accountLast5,
-      amount: 3500,
-      paymentProof: paymentForm.paymentProof
-    }
+  const formData = {
+    planId: paymentForm.planId,
+    userId: paymentForm.userId,
+    accountLast5: paymentForm.accountLast5,
+    amount: 3500,
+    paymentProof: paymentForm.paymentProof
+  }
 
-    const response = await userCheckApi.createReleaseChargeInfoByUser(formData)
+  const response = await userCheckApi.createReleaseChargeInfoByUser(formData)
 
-    if (response.code === 0) {
-      alert('成功');
-      showReleaseChargeDialog.value = false;
-      await getAllPlanByUser()
-    } else {
-      alert(response.message || '上傳失敗');
-    }
+  if (response.code === 0) {
+    alert('成功');
+    showReleaseChargeDialog.value = false;
+    await getAllPlanByUser()
+  } else {
+    alert(response.message || '上傳失敗');
+  }
 }
 
 // 提交表單
@@ -1873,7 +2031,7 @@ function changeProgressStep(currentStep) {
 
   // 上架費用 + 上傳合約資料
   if (currentStep >= 4 && currentStep < 7) {
-      return 3
+    return 3
   }
 
   // 審核中
@@ -1886,12 +2044,11 @@ function changeProgressStep(currentStep) {
     return 5
   }
 
-  if(currentStep >= 14 && currentStep < 17) {
+  if (currentStep >= 14 && currentStep < 17) {
     return 6
   }
 
-  if (currentStep >= 17 && currentStep < 22 )
-  {
+  if (currentStep >= 17 && currentStep < 22) {
     return 7
   }
 
@@ -1908,7 +2065,7 @@ onMounted(() => {
   }
 
   // 檢查初始路由
-  const { source, planId, step } = route.query;
+  const {source, planId, step} = route.query;
 
   if (source === 'account' && planId) {
     mode.value = 'preview';
@@ -1926,6 +2083,7 @@ onMounted(() => {
     setDocStep('step1');
   }
 });
+
 function handleUploadSuccess(fileType, result) {
   const fileId = result.data?.id;
   const fileName = result.data?.displayName || result.data?.name;
@@ -1944,11 +2102,12 @@ function handleUploadSuccess(fileType, result) {
 
 watch(activeTab, (newTab) => {
   if (newTab === 'detail' && isLoggedIn.value) {
-   getTransactionByUser()
+    getTransactionByUser()
   }
 });
 
 const transactionsData = ref([]);
+
 async function getTransactionByUser() {
   const formData = {
     userId: currentUser.value,
@@ -2030,6 +2189,7 @@ const statusMap = {
   cursor: pointer;
   padding: 6px 4px 12px;
   border-radius: 22px;
+
   &:focus-visible {
     outline: 2px solid #ffcc41;
   }
@@ -2054,6 +2214,7 @@ const statusMap = {
   font-weight: 400;
   font-size: $fs-14;
   line-height: 17px;
+
   &.applying {
     background: $btn-yellow;
     color: $white;
@@ -2090,11 +2251,13 @@ const statusMap = {
     @media (max-width: 576px) {
       height: 10px;
     }
+
     &.active {
       background-color: $btn-yellow;
     }
   }
 }
+
 .steps-footer {
   display: flex;
   justify-content: space-between;
@@ -2106,6 +2269,7 @@ const statusMap = {
 
 .records {
   width: 100%;
+
   .toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -2123,6 +2287,7 @@ const statusMap = {
       font-weight: 600;
       line-height: 1;
       transition: background 0.15s ease, box-shadow 0.15s ease;
+
       &:hover {
         background: #fff7ef;
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
@@ -2162,6 +2327,7 @@ const statusMap = {
   .table-wrap-date {
     letter-spacing: 2px;
   }
+
   .records-table .ta-right {
     text-align: start;
   }
@@ -2190,6 +2356,7 @@ const statusMap = {
   line-height: 1;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
+
 .records .dropdown.open .dropdown-btn,
 .records .dropdown-btn:hover {
   background: #fff7ef;
@@ -2199,6 +2366,7 @@ const statusMap = {
 @media (max-width: 576px) {
   .records .toolbar {
     gap: 10px;
+
     .btn-export {
       width: 100%;
       margin-left: 0;
@@ -2284,10 +2452,12 @@ const statusMap = {
   padding: 12px 0;
   cursor: pointer;
   transition: background 0.2s;
+
   &:hover {
     background: #ff7f50;
   }
 }
+
 .btn-expand {
   background: #34b1ff;
   color: #fff;
@@ -2300,10 +2470,12 @@ const statusMap = {
   padding: 12px 0;
   cursor: pointer;
   transition: background 0.2s;
+
   &:hover {
     background: #ff7f50;
   }
 }
+
 .btn-end {
   background: #939393;
   color: #fff;
@@ -2316,6 +2488,7 @@ const statusMap = {
   padding: 12px 0;
   cursor: pointer;
   transition: background 0.2s;
+
   &:hover {
     background: #ff7f50;
   }
@@ -2408,6 +2581,48 @@ hr {
   background: #f8f9fa;
   border-radius: 4px;
   border: 2px dashed #dee2e6;
+}
+
+.contract-confirm-content {
+  padding: 20px 0;
+
+  .agreement-checkbox {
+    margin-bottom: 24px;
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 12px;
+      border-radius: 8px;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+
+      input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: #1e90ff;
+      }
+
+      .checkbox-text {
+        font-size: 15px;
+        color: #333;
+        font-weight: 500;
+      }
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 8px;
+      margin-left: 32px;
+    }
+  }
 }
 
 </style>

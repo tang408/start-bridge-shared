@@ -1,5 +1,6 @@
 <template>
   <div class="fs-24">參與專案管理</div>
+
   <section v-if="mode === 'account'">
     <SharedTabs
         v-model="activeTab"
@@ -26,17 +27,17 @@
             :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="statusClass(p.status)">{{
-                statusLabel(p.status)
-              }}</span>
-            <span class="time" v-if="isRunning(p.status)"
-            >剩餘 {{ p.lastUpdate }}</span
-            >
+            <span class="status-pill" :class="statusClass(p.status)">
+              {{ statusLabel(p.status) }}
+            </span>
+            <span class="time" v-if="isRunning(p.status)">
+              剩餘 {{ p.lastUpdate }}
+            </span>
           </header>
 
           <div class="gap-1 d-grid">
             <div class="title">{{ p.title }}</div>
-            <div class="content">{{ p.content }}</div>
+            <div class="content mt-2">{{ p.content }}</div>
           </div>
 
           <div class="progress-wrap" v-if="p.status !== 'applying'">
@@ -55,19 +56,8 @@
             </div>
 
             <div class="progress-footer mt-2">
-              <span class="dollar">已達成金額{{ fmtMoney(p.dollar) }}</span>
-              <span class="remain">還差{{ fmtMoney(p.remain) }}</span>
-            </div>
-            <hr />
-            <div class="d-flex gap-2">
-              <button
-                type="button"
-                class="btn-prolong"
-                @click="openProlongModal(p)"
-              >
-                延長專案
-              </button>
-              <button type="button" class="btn-finish">結束專案</button>
+              <span class="dollar">已達成金額 {{ fmtMoney(p.dollar) }}</span>
+              <span class="remain">還差 {{ fmtMoney(p.remain) }}</span>
             </div>
           </div>
         </button>
@@ -90,75 +80,92 @@
             :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="statusClass(p.status)">{{
-                statusLabel(p.status)
-              }}</span>
-            <span class="time" v-if="isRunning(p.status)"
-            >剩餘 {{ p.lastUpdate }}</span
-            >
+            <span class="status-pill" :class="statusClass(p.status)">
+              {{ statusLabel(p.status) }}
+            </span>
+            <span class="time" v-if="isRunning(p.status)">
+              剩餘 {{ p.lastUpdate }}
+            </span>
             <span class="time" v-if="p.status === 'match-failed'">退款中</span>
           </header>
 
           <div class="title">{{ p.title }}</div>
           <div>
-            <div
-
-                  class="detail-panel"
-                  :id="`details-${p.id}`">
-
-                <div class="tx-list">
-                  <div
-                      v-for="(t, i) in p.transactions"
-                      :key="i"
-                      class="tx-row"
-                      >
+            <div class="detail-panel" :id="`details-${p.id}`">
+              <div class="tx-list">
+                <div
+                    v-for="(t, i) in p.transactions"
+                    :key="i"
+                    class="tx-row"
+                >
                   <div class="tx-date">{{ t.date }}</div>
-                  <button
-                        type="button"
-                        class="tx-download"
-                        @click="handleClick(t,p)"
-                        v-if="t.status === 5 "
-                    >簽名
-                    </button>
+
+                  <!-- 根據狀態顯示不同按鈕 -->
+                  <div class="tx-btn">
                     <button
+                        v-if="t.status === 5"
                         type="button"
-                        class="tx-download"
-                        @click="handleClick(t,p)"
-                        v-if="t.status === 11 "
-                    >支付服務費
+                        @click="handleSignCoreContract(t, p)"
+                    >
+                      簽名
                     </button>
-                    <div class="tx-btn">
-                    <button>button</button>
+
+                    <button
+                        v-if="t.status === 6"
+                        type="button"
+                        @click="handleSignCoreContractSubmit(t, p)"
+                    >
+                      我已簽屬完成
+                    </button>
+
+                    <button
+                        v-if="t.status === 11"
+                        type="button"
+                        @click="handlePayServiceFee(t, p)"
+                    >
+                      支付服務費
+                    </button>
+
+                    <button
+                        v-if="t.status === 13"
+                        type="button"
+                        @click="handleUploadCorePlanFinalContract(t, p)"
+                    >
+                      上傳合約
+                    </button>
                   </div>
                   <div class="tx-label">{{ t.invest }}</div>
-                    <div class="tx-status">
-                      {{ txStatusLabel(t.statusKey) }}
-                    </div>
-                    <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
+                  <div class="tx-status">
+                    {{ txStatusLabel(t.statusKey) }}
                   </div>
+                  <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
                 </div>
-                <hr/>
               </div>
+              <hr/>
+            </div>
 
             <div class="details-dollar d-flex justify-content-end">
               <span>共創總額</span>
-              <span class="details-dollar-content">{{
-                  fmtMoney(p.dollar)
-                }}</span>
+              <span class="details-dollar-content">
+                {{ fmtMoney(p.dollar) }}
+              </span>
             </div>
+
+            <!-- 增加金額表單 -->
             <div class="form-row mt-5" v-if="p.status === 'running'">
               <input
-                type="text"
-                class="form-input"
-                v-model="p.increaseAmountStr"
-                @input="onAmountInput(p)"
-                @blur="onAmountBlur(p)"
-                inputmode="numeric"
+                  type="text"
+                  class="form-input"
+                  v-model="p.increaseAmountStr"
+                  @input="onAmountInput(p)"
+                  @blur="onAmountBlur(p)"
+                  inputmode="numeric"
+                  placeholder="請輸入追加金額"
               />
               <button
-                type="button"
-                class="btn-dollar"
-                @click="handleIncrease(p)"
+                  type="button"
+                  class="btn-dollar"
+                  @click="handleIncrease(p)"
               >
                 增加金額
               </button>
@@ -167,7 +174,6 @@
         </button>
       </article>
     </div>
-
 
     <!-- 共創紀錄 -->
     <div v-else-if="activeTab === 'records'" class="records">
@@ -184,24 +190,13 @@
         <SharedDropdown
             v-model="recFilter.action"
             placeholder="依動作排序"
-            :options="[
-            { label: '全部', value: '' },
-            { label: '初次投入', value: '初次投入' },
-            { label: '追加投入', value: '追加投入' },
-            { label: '退款', value: '退款' },
-            { label: '取消', value: '取消' },
-          ]"
+            :options="actionOptions"
         />
 
         <SharedDropdown
             v-model="recFilter.status"
             placeholder="依狀態排序"
-            :options="[
-            { label: '全部', value: '' },
-            { label: '成功', value: '成功' },
-            { label: '失敗', value: '失敗' },
-            { label: '處理中', value: '處理中' },
-          ]"
+            :options="statusFilterOptions"
         />
 
         <SharedDropdown
@@ -211,15 +206,6 @@
             { label: '不排序', value: '' },
             { label: '高→低', value: 'desc' },
             { label: '低→高', value: 'asc' },
-          ]"
-        />
-
-        <SharedDropdown
-            v-model="recFilter.export"
-            placeholder="匯出格式"
-            :options="[
-            { label: 'CSV', value: '1' },
-            { label: 'JPG', value: '2' },
           ]"
         />
       </div>
@@ -254,25 +240,9 @@
         </table>
       </div>
     </div>
-
-    <SharedModal
-      v-model="showProlongModal"
-      title="專案延長"
-      titleAlign="center"
-      mode="long"
-      confirmText="確定"
-      @confirm="confirmProlong"
-    >
-      <template #default>
-        <p class="mb-0">此專案將延長媒合 2 個月，結束日期為： 2025-11-12</p>
-        <p class="mb-0">
-          提醒您：延長和媒合期間已投入資源的創業夥伴有權撤回資源。
-        </p>
-        <hr />
-        <p class="text-center mb-0">請問是否確定延長？</p>
-      </template>
-    </SharedModal>
   </section>
+
+  <!-- Brand 模式 -->
   <section v-else class="details">
     <article
         v-for="p in projectsData"
@@ -288,23 +258,21 @@
           :aria-controls="`details-${p.id}`"
       >
         <header class="card-head">
-          <span class="status-pill" :class="statusClass(p.status)">{{
-              statusLabel(p.status)
-            }}</span>
-          <span class="time" v-if="isRunning(p.status)"
-          >剩餘 {{ p.lastUpdate }}</span
-          >
+          <span class="status-pill" :class="statusClass(p.status)">
+            {{ statusLabel(p.status) }}
+          </span>
+          <span class="time" v-if="isRunning(p.status)">
+            剩餘 {{ p.lastUpdate }}
+          </span>
         </header>
 
         <div class="gap-1 d-grid">
           <div class="title">{{ p.title }}</div>
           <div class="content">{{ p.content }}</div>
         </div>
+
         <div>
-          <div
-            class="progress-wrap"
-            v-if="p.status !== 'applying' && !p.progress"
-          >
+          <div class="progress-wrap" v-if="p.status !== 'applying' && p.progress !== undefined">
             <div
                 class="progress-bar"
                 role="progressbar"
@@ -320,38 +288,43 @@
             </div>
 
             <div class="progress-footer mt-2">
-              <span class="dollar">已達成金額{{ fmtMoney(p.dollar) }}</span>
-              <span class="remain">還差{{ fmtMoney(p.remain) }}</span>
+              <span class="dollar">已達成金額 {{ fmtMoney(p.dollar) }}</span>
+              <span class="remain">還差 {{ fmtMoney(p.remain) }}</span>
             </div>
           </div>
 
           <hr/>
+
+          <!-- 同意條款 -->
           <div class="form-group">
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
-              <RouterLink class="agree-link" @click.stop
-              >參與風險聲明
-              </RouterLink
-              >
+              <RouterLink class="agree-link" @click.stop>
+                參與風險聲明
+              </RouterLink>
               及
-              <RouterLink class="agree-link" @click.stop
-              >平台免責聲明
-              </RouterLink
-              >
+              <RouterLink class="agree-link" @click.stop>
+                平台免責聲明
+              </RouterLink>
             </div>
-
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
 
+          <!-- 參與共創表單 -->
           <div class="form-row mt-3">
             <input
                 type="number"
                 class="form-input"
                 v-model.number="p.increaseAmount"
                 min="0"
+                placeholder="請輸入參與金額"
             />
-            <button type="button" class="btn-dollar" @click="participate(p)">
+            <button
+                type="button"
+                class="btn-dollar"
+                @click="participate(p)"
+            >
               參與共創
             </button>
           </div>
@@ -360,7 +333,7 @@
     </article>
   </section>
 
-  <!-- 支付上傳 Dialog -->
+  <!-- 支付服務費 Dialog -->
   <SharedModal
       v-model="showPaymentDialog"
       title="上傳支付資料"
@@ -369,11 +342,14 @@
       cancelText="取消"
       :showCancel="true"
       @submit="handlePaymentSubmit"
+      @cancel="handlePaymentCancel"
   >
     <div class="payment-form">
       <div class="form-group">
         <label>支付金額</label>
-        <div class="readonly-field">{{ formatAmount(paymentForm.amount) }} 元</div>
+        <div class="readonly-field">
+          {{ formatAmount(paymentForm.amount) }} 元
+        </div>
       </div>
 
       <SharedInput
@@ -384,6 +360,7 @@
           v-model="paymentForm.accountLast5"
           :error="paymentErrors.accountLast5"
           required
+          maxlength="5"
       />
 
       <SharedUpload
@@ -393,27 +370,48 @@
           name="userPaymentProofFile"
           v-model="paymentForm.paymentProofName"
           :error="paymentErrors.paymentProof"
-          @upload-success="(result) => handleUploadSuccess('userPaymentProofFile', result)"
+          @upload-success="handleUploadSuccess"
           required
-          account="currentUser.value" :id="currentUser.value" />
+          :account="uploadAccount"
+          :type="'共創者服務費匯款明細'"
+          :id="currentUser"
+      />
     </div>
   </SharedModal>
 
-  <!-- PDF簽名組件 -->
-  <SharedPDFSign
-      :mode="'planCoreContract'"
-      :contract-data="contractForm"
-      :visible="showSignCoreContractDialog"
-      @close="showSignCoreContractDialog = false"
-      @submit="handleSignatureSubmitted"
-  />
+  <SharedModal
+    v-model="showCorePlanFinalContractDialog"
+    title="合約上傳"
+    mode="submit"
+    confirmText="確認上傳"
+    cancelText="取消"
+    :showCancel="true"
+    @submit="handleCorePlanFinalContractSubmit"
+  >
+    <div class="form-group">
+      <SharedUpload
+        id="corePlanFinalContractFile"
+        accept=".pdf,.jpg,.jpeg,.png"
+        :max-size="10"
+        name="corePlanFinalContract"
+        v-model="corePlanFinalContractFileName"
+        :error="corePlanFinalContractError"
+        :account="uploadAccount"
+        :type="'共創者上傳合約'"
+        :id="currentUser"
+       label="上傳最終合約文件*"/>
+    </div>
+  </SharedModal>
 </template>
 
 <script setup>
 import {useRoute, useRouter} from "vue-router";
-import {ref, reactive, computed, onMounted, watch, nextTick} from "vue";
+import {ref, reactive, computed, onMounted, watch} from "vue";
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
+import SharedInput from "@/components/shared/Shared-Input.vue";
+import SharedUpload from "@/components/shared/Shared-Upload.vue";
 import {
   statusLabel,
   statusClass,
@@ -422,36 +420,20 @@ import {
 } from "@/utils/status";
 import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
-import SharedPDFSign from "@/components/shared/Shared-PDFSign.vue";
 import {userCheckApi} from "@/api/modules/userCheck.js";
-import SharedInput from "@/components/shared/Shared-Input.vue";
-import SharedUpload from "@/components/shared/Shared-Upload.vue";
-import SharedModal from "@/components/shared/Shared-Modal.vue";
+import {systemSettingApi} from "@/api/modules/systemSetting.js";
 
-const {isLoggedIn, currentUser} = useAuth();
-
+const {isLoggedIn, currentUser, currentUserName} = useAuth();
 const router = useRouter();
 const route = useRoute();
 
-const activeTab = ref("progress");
-const expandedId = ref(null);
-const expandedDetailsId = ref(null);
-const mode = ref("account");
-const form = reactive({agree: false});
-const errors = reactive({agree: ""});
-const showProlongModal = ref(false);
-const selectedProject = ref(null);
+const uploadAccount = computed(() => {
+  const userName = currentUserName.value
+  const planId = paymentForm.participantPlanId
+  return `${userName}_${planId}`
+})
 
-function openProlongModal(p) {
-  selectedProject.value = p;
-  showProlongModal.value = true;
-}
-
-function confirmProlong() {
-  alert(`「${selectedProject.value.title}」已確認延長！`);
-  showProlongModal.value = false;
-}
-
+// Props
 const props = defineProps({
   entry: {type: String, default: "account"},
   preselectTab: {type: String, default: "progress"},
@@ -459,303 +441,38 @@ const props = defineProps({
   brandName: {type: String, default: ""},
 });
 
-function toggle(id) {
-  expandedId.value = expandedId.value === id ? null : id;
-}
+// ==================== 狀態管理 ====================
+const activeTab = ref("progress");
+const expandedId = ref(null);
+const expandedDetailsId = ref(null);
+const mode = ref("account");
 
-function toggleDetails(id) {
-  expandedDetailsId.value = expandedDetailsId.value === id ? null : id;
-}
+// 表單
+const form = reactive({agree: false});
+const errors = reactive({agree: ""});
 
-const projects = reactive([
-  {
-    id: 1,
-    status: "running",
-    lastUpdate: "12天 2小時 50分",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
-    progress: 80,
-    reached: 113456789,
-    dollar: 123456789,
-    remain: 86543211,
-    goal: 1200000,
-    increaseAmount: 200000,
-    showFundBox: true,
-    fav: false,
-    files: [
-      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
-      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
-      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
-      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
-    ],
-  },
-  {
-    id: 2,
-    status: "running",
-    lastUpdate: "2天 2小時 50分",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
-    progress: 80,
-    reached: 113456789,
-    dollar: 123456789,
-    remain: 86543211,
-    goal: 1200000,
-    increaseAmount: 0,
-    showFundBox: false,
-    fav: true,
-    files: [
-      {id: "f1", title: "募資簡報", fileName: "pitchdeck.pdf", url: "#"},
-      {id: "f2", title: "市場規模", fileName: "market.pdf", url: "#"},
-      {id: "f3", title: "營運狀況", fileName: "operation.pdf", url: "#"},
-      {id: "f4", title: "財務狀況", fileName: "finance.pdf", url: "#"},
-    ],
-  },
-  {
-    id: 3,
-    status: "match-success",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    content: "媒合中(自訂專案狀態說明，給他們建立常用的狀態說明下拉)",
-    progress: 110,
-    reached: 113456789,
-    dollar: 123456789,
-    remain: 86543211,
-    goal: 1200000,
-    increaseAmount: 0,
-    showFundBox: false,
-    fav: true,
-  },
-  {
-    id: 4,
-    status: "match-failed",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    content: "退款中",
-    progress: 110,
-    reached: 113456789,
-    dollar: 123456789,
-    remain: 86543211,
-    goal: 1200000,
-    increaseAmount: 0,
-    showFundBox: false,
-    fav: true,
-  },
-]);
+// 數據
+const projects = ref([]);
+const details = ref([]);
+const records = ref([]);
+const projectsData = ref([]);
 
-const details = reactive([
-  {
-    id: "d-101",
-    status: "running",
-    lastUpdate: "12天 2小時 50分",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    dollar: 1200000,
-    transactions: [
-      {
-        id: 1,
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 1200000,
-      },
-      {
-        id: 1,
-        date: "2024-12-03",
-        invest: "初次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        id: 1,
-        date: "2024-12-03",
-        invest: "初次投入",
-        statusKey: "failed",
-        amount: 1200000,
-      },
-    ],
-  },
-  {
-    id: "d-102",
-    status: "running",
-    lastUpdate: "2天 2小時 50分",
-    title: "另一個專案名稱另一個專案名稱",
-    dollar: 680000,
-    transactions: [
-      {
-        date: "2024-12-01",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 300000,
-      },
-      {
-        date: "2024-12-02",
-        invest: "再次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 180000,
-      },
-    ],
-  },
-  {
-    id: "d-103",
-    status: "match-success",
-    lastUpdate: "2天 2小時 50分",
-    title: "另一個專案名稱另一個專案名稱",
-    dollar: 680000,
-    transactions: [
-      {
-        date: "2024-12-01",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 300000,
-      },
-      {
-        date: "2024-12-02",
-        invest: "再次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 180000,
-      },
-    ],
-  },
-  {
-    id: "d-104",
-    status: "match-failed",
-    lastUpdate: "2天 2小時 50分",
-    title: "另一個專案名稱另一個專案名稱",
-    dollar: 680000,
-    transactions: [
-      {
-        date: "2024-12-01",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 300000,
-      },
-      {
-        date: "2024-12-02",
-        invest: "再次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 180000,
-      },
-    ],
-  },
-  {
-    id: "d-105",
-    status: "success",
-    lastUpdate: "2天 2小時 50分",
-    title: "另一個專案名稱另一個專案名稱",
-    dollar: 680000,
-    transactions: [
-      {
-        date: "2024-12-01",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 300000,
-      },
-      {
-        date: "2024-12-02",
-        invest: "再次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 180000,
-      },
-    ],
-  },
-  {
-    id: "d-106",
-    status: "failed",
-    lastUpdate: "2天 2小時 50分",
-    title: "另一個專案名稱另一個專案名稱",
-    dollar: 680000,
-    transactions: [
-      {
-        date: "2024-12-01",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 300000,
-      },
-      {
-        date: "2024-12-02",
-        invest: "再次投入",
-        statusKey: "pending",
-        amount: 200000,
-      },
-      {
-        date: "2024-12-03",
-        invest: "再次投入",
-        statusKey: "success",
-        amount: 180000,
-      },
-    ],
-  },
-]);
+// 篩選
+const recFilter = reactive({
+  timeOrder: "",
+  action: "",
+  status: "",
+  amountOrder: "",
+});
 
-const records = reactive([
-  {
-    id: "rec-1",
-    date: "2024-12-03",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    action: "初次投入",
-    status: "成功",
-    amount: 200200000,
-  },
-  {
-    id: "rec-2",
-    date: "2024-11-28",
-    title: "另一個專案名稱",
-    action: "追加投入",
-    status: "處理中",
-    amount: 500000,
-  },
-  {
-    id: "rec-3",
-    date: "2024-11-15",
-    title: "第三個專案",
-    action: "退款",
-    status: "失敗",
-    amount: 200000,
-  },
-]);
-
-const projectsData = reactive([
-  {
-    id: 1,
-    status: "running",
-    lastUpdate: "2天 2小時 50分",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    content: "自訂專案狀態說明(EX:缺乏OO資訊)  給他們建立常用的狀態說明下拉",
-    progress: 80,
-    dollar: 113456789,
-    remain: 86543211,
-    goal: 1200000,
-    increaseAmount: 200000,
-  },
-]);
-
+// 支付表單
+const showPaymentDialog = ref(false);
 const paymentForm = reactive({
-  participantPlanId : null,
+  participantPlanId: null,
   userId: null,
   accountLast5: "",
   amount: 0,
-  paymentProof:null,
+  paymentProof: null,
   paymentProofName: "",
 });
 
@@ -764,34 +481,47 @@ const paymentErrors = reactive({
   paymentProof: "",
 });
 
-function removeProject(id) {
-  const i = projects.findIndex((p) => p.id === id);
-  if (i !== -1) projects.splice(i, 1);
-}
+// 當前選中的數據
+const selectedTransaction = ref(null);
+const selectedPlan = ref(null);
 
-function fmtMoney(n) {
-  if (n === null || n === undefined || isNaN(n)) return "—";
-  return Number(n).toLocaleString("zh-Hant-TW");
-}
+const systemSettingData = ref({})
 
+const coreFounderSignUrl = computed(() => {
+  const setting = systemSettingData.value.find(item => item.type === 'core_founder_sign_url')
+  return setting ? setting.value : ''
+})
 
-// 篩選狀態
-const recFilter = reactive({
-  timeOrder: "",
-  action: "",
-  status: "",
-  amountOrder: "",
-  export: "",
-});
+// ==================== Computed ====================
 
-// 排序 + 篩選後資料
+// 動作篩選選項
+const actionOptions = computed(() => [
+  {label: '全部', value: ''},
+  {label: '初次投入', value: '初次投入'},
+  {label: '追加投入', value: '追加投入'},
+  {label: '退款', value: '退款'},
+  {label: '取消', value: '取消'},
+]);
+
+// 狀態篩選選項
+const statusFilterOptions = computed(() => [
+  {label: '全部', value: ''},
+  {label: '成功', value: '成功'},
+  {label: '失敗', value: '失敗'},
+  {label: '處理中', value: '處理中'},
+]);
+
+// 排序 + 篩選後的記錄
 const displayedRecords = computed(() => {
-  let list = [...records];
+  let list = [...records.value];
 
-  if (recFilter.action && recFilter.action !== "all") {
+  // 動作篩選
+  if (recFilter.action) {
     list = list.filter((r) => r.action === recFilter.action);
   }
-  if (recFilter.status && recFilter.status !== "all") {
+
+  // 狀態篩選
+  if (recFilter.status) {
     list = list.filter((r) => r.status === recFilter.status);
   }
 
@@ -816,6 +546,459 @@ const displayedRecords = computed(() => {
   return list;
 });
 
+// ==================== Methods ====================
+
+// 切換展開
+function toggle(id) {
+  expandedId.value = expandedId.value === id ? null : id;
+}
+
+function toggleDetails(id) {
+  expandedDetailsId.value = expandedDetailsId.value === id ? null : id;
+}
+
+// 格式化金額
+function fmtMoney(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  return Number(n).toLocaleString("zh-Hant-TW");
+}
+
+function formatAmount(amount) {
+  return fmtMoney(amount);
+}
+
+// 計算剩餘時間
+function calculateTimeRemaining(endDate) {
+  const now = new Date();
+  const end = new Date(endDate);
+  const diff = end - now;
+
+  if (diff <= 0) return "已結束";
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  return `${days}天 ${hours}小時 ${minutes}分`;
+}
+
+// 格式化狀態 key
+function formatStatusKey(status) {
+  switch (status) {
+    case 1:
+      return 'pending';
+    case 2:
+      return 'success';
+    case 3:
+      return 'failed';
+    default:
+      return 'unknown';
+  }
+}
+
+// 映射計畫狀態
+function mapPlanStatus(currentStep) {
+  if (currentStep === 9) return 'running';
+  if (currentStep === 10) return 'running';
+  if (currentStep === 11 || currentStep === 2) return 'match-failed';
+  if (currentStep >= 12) return 'match-success';
+  if (currentStep < 0) return 'match-failed';
+  return 'pending-start';
+}
+
+// ==================== API 調用 ====================
+
+// 獲取所有參與計畫
+async function getAllParticipantPlanByUser() {
+  try {
+    const response = await planApi.getAllParticipantPlanByUser({
+      userId: currentUser.value,
+    });
+
+    if (response.code === 0) {
+      projects.value = response.data.map((plan) => {
+        const progress = plan.targetAmount > 0
+            ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
+            : 0;
+
+        const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0);
+        const status = mapPlanStatus(plan.currentStep);
+
+        return {
+          id: plan.planId,
+          status: status,
+          lastUpdate: calculateTimeRemaining(plan.endDate),
+          title: plan.planName,
+          content: statusLabel(status),
+          progress: progress,
+          dollar: plan.totalParticipantAmount,
+          remain: remain,
+          goal: plan.targetAmount,
+          showFundBox: true,
+          fav: false,
+        };
+      });
+    } else {
+      console.error('獲取參與計畫失敗:', response.message);
+    }
+  } catch (error) {
+    console.error('獲取參與計畫錯誤:', error);
+  }
+}
+
+// 獲取參與計畫明細
+async function getAllParticipantPlanDetailByUser() {
+  try {
+    const response = await planApi.getAllParticipantPlanDetailByUser({
+      userId: currentUser.value,
+    });
+
+    if (response.code === 0) {
+      details.value = response.data.map((plan) => {
+        const status = mapPlanStatus(plan.currentStep);
+        const transactions = plan.participantData.map((tx) => ({
+          id: tx.id,
+          date: tx.date,
+          status: tx.status,
+          statusKey: formatStatusKey(tx.status),
+          amount: tx.amount,
+          invest: tx.action === 1 ? '初次投入' : '追加投入',
+        }));
+
+        return {
+          id: plan.planId,
+          status: status,
+          lastUpdate: calculateTimeRemaining(plan.endDate),
+          title: plan.planName,
+          dollar: plan.participantTotalAmount,
+          transactions: transactions,
+          increaseAmountStr: '',
+        };
+      });
+    } else {
+      console.error('獲取計畫明細失敗:', response.message);
+    }
+  } catch (error) {
+    console.error('獲取計畫明細錯誤:', error);
+  }
+}
+
+// 獲取參與記錄
+async function getAllParticipantPlanRecordByUser() {
+  try {
+    const response = await planApi.getAllParticipantPlanRecordByUser({
+      userId: currentUser.value,
+    });
+
+    if (response.code === 0) {
+
+      records.value = response.data.map((record) => {
+        const actionMap = {
+          1: '初次投入',
+          2: '追加投入',
+          3: '退款',
+          4: '取消',
+        };
+
+        const statusMap = {
+          1: '處理中',
+          2: '成功',
+          3: '失敗',
+        };
+        return {
+          id: record.id,
+          date: record.date,
+          title: record.planName,
+          action: actionMap[record.action] || '未知',
+          status: statusMap[record.transactionStatus] || '未知',
+          amount: record.amount,
+        };
+      });
+    } else {
+      console.error('獲取參與記錄失敗:', response.message);
+    }
+  } catch (error) {
+    console.error('獲取參與記錄錯誤:', error);
+  }
+}
+
+async function getSystemSetting() {
+  const formData = {
+    userId: currentUser.value,
+  }
+  const res = await systemSettingApi.getSystemSetting(formData)
+  if (res.code === 0) {
+    systemSettingData.value = res.data
+    console.log(systemSettingData.value)
+  }
+}
+
+// 獲取單一品牌計畫（brand 模式）
+async function getParticipantPlan() {
+  try {
+    const response = await planApi.getParticipantPlan({
+      userId: currentUser.value,
+      planId: Number(route.query.planId),
+    });
+
+    if (response.code === 0) {
+      const plan = response.data;
+      const progress = plan.targetAmount > 0
+          ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
+          : 0;
+
+      const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0);
+      const status = mapPlanStatus(plan.currentStep);
+
+      projectsData.value = [{
+        id: plan.planId,
+        status: status,
+        lastUpdate: calculateTimeRemaining(plan.endDate),
+        title: plan.planName,
+        content: statusLabel(status),
+        progress: progress,
+        dollar: plan.totalParticipantAmount,
+        remain: remain,
+        goal: plan.targetAmount,
+        increaseAmount: 0,
+      }];
+    } else {
+      alert(response.message || '取得專案失敗');
+    }
+  } catch (error) {
+    console.error('獲取品牌計畫錯誤:', error);
+  }
+}
+
+// ==================== 用戶操作 ====================
+
+// 參與共創
+async function participate(p) {
+  errors.agree = "";
+
+  if (!p.increaseAmount || p.increaseAmount <= 0) {
+    alert('請輸入參與金額');
+    return;
+  }
+
+  if (!form.agree) {
+    errors.agree = "請同意風險聲明及平台免責聲明";
+    return;
+  }
+
+  try {
+    const response = await planApi.participantPlan({
+      userId: currentUser.value,
+      planId: Number(route.query.planId),
+      amount: p.increaseAmount,
+    });
+
+    if (response.code === 0) {
+      alert('參與成功');
+      await router.push('/account/participation');
+      await refreshAllData();
+    } else {
+      alert(response.message || '參與失敗');
+    }
+  } catch (error) {
+    console.error('參與共創錯誤:', error);
+    alert('參與失敗，請稍後再試');
+  }
+}
+
+// 增加金額
+async function handleIncrease(plan) {
+  const amount = parseFloat(plan.increaseAmountStr);
+
+  if (!amount || amount <= 0 || isNaN(amount)) {
+    alert('請輸入有效的追加金額');
+    return;
+  }
+
+  try {
+    const response = await planApi.participantPlan({
+      userId: currentUser.value,
+      planId: plan.id,
+      amount: amount,
+    });
+
+    if (response.code === 0) {
+      alert('追加成功');
+      plan.increaseAmountStr = '';
+      await refreshAllData();
+    } else {
+      alert(response.message || '追加失敗');
+    }
+  } catch (error) {
+    console.error('追加金額錯誤:', error);
+    alert('追加失敗，請稍後再試');
+  }
+}
+
+// 處理簽名合約 (status === 5)
+async function handleSignCoreContract(transaction, plan) {
+  const signUrl = coreFounderSignUrl.value
+
+  if (!signUrl) {
+    alert('簽署合約 URL 未設定，請聯繫管理員')
+    return
+  }
+
+  // 在新分頁中打開
+  window.open(signUrl, '_blank')
+
+  const formData = {
+    participantPlanId: transaction.id,
+    planId: plan.id,
+    userId: currentUser.value,
+  }
+
+  const res = await userCheckApi.signCoreContractByUser(formData)
+  if (res.code === 0) {
+    await refreshAllData()
+  } else {
+    alert(res.message || '簽署合約失敗，請稍後再試')
+  }
+}
+
+async function handleSignCoreContractSubmit(transaction, plan) {
+  const formData = {
+    participantPlanId: transaction.id,
+    planId: plan.id,
+    userId: currentUser.value,
+  }
+
+  const res = await userCheckApi.signCoreContractSubmitByUser(formData)
+  if (res.code === 0) {
+    alert('已通知管理員審核，感謝您的配合')
+    await refreshAllData()
+  } else {
+    alert(res.message || '提交簽署失敗，請稍後再試')
+  }
+}
+
+// 處理支付服務費 (status === 11)
+function handlePayServiceFee(transaction, plan) {
+  selectedTransaction.value = transaction;
+  selectedPlan.value = plan;
+
+  // 設置支付表單
+  paymentForm.participantPlanId = transaction.id;
+  paymentForm.userId = currentUser.value;
+  paymentForm.amount = transaction.amount * 0.05; // 5% 服務費
+  paymentForm.accountLast5 = '';
+  paymentForm.paymentProof = null;
+  paymentForm.paymentProofName = '';
+
+  // 清空錯誤
+  paymentErrors.accountLast5 = '';
+  paymentErrors.paymentProof = '';
+
+  showPaymentDialog.value = true;
+}
+
+// 處理上傳成功事件
+function handleUploadCorePlanFinalContract(transaction, plan) {
+  selectedTransaction.value = transaction;
+  selectedPlan.value = plan;
+
+  showCorePlanFinalContractDialog.value = true;
+}
+
+// 文件上傳成功
+function handleUploadSuccess(result) {
+  const fileId = result.data?.id;
+  const fileName = result.data?.displayName || result.data?.name;
+
+  if (fileId) {
+    paymentForm.paymentProof = fileId;
+    paymentForm.paymentProofName = fileName;
+    paymentErrors.paymentProof = '';
+  }
+}
+
+// 驗證支付表單
+function validatePaymentForm() {
+  let isValid = true;
+
+  if (!paymentForm.paymentProof) {
+    paymentErrors.paymentProof = '請上傳付款憑證';
+    isValid = false;
+  }
+
+  if (!paymentForm.accountLast5 || !/^\d{5}$/.test(paymentForm.accountLast5)) {
+    paymentErrors.accountLast5 = '請輸入正確的5位數字';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+// 提交支付資料
+async function handlePaymentSubmit() {
+  if (!validatePaymentForm()) {
+    return;
+  }
+
+  try {
+    const response = await userCheckApi.createCoreServiceChargeInfoByUser({
+      participantPlanId: paymentForm.participantPlanId,
+      userId: currentUser.value,
+      accountLast5: paymentForm.accountLast5,
+      amount: paymentForm.amount,
+      paymentProof: paymentForm.paymentProof,
+    });
+
+    if (response.code === 0) {
+      alert("支付資料上傳成功");
+      showPaymentDialog.value = false;
+      await refreshAllData();
+    } else {
+      alert(response.message || "上傳失敗");
+    }
+  } catch (error) {
+    console.error('提交支付資料錯誤:', error);
+    alert("上傳失敗，請稍後再試");
+  }
+}
+
+// 取消支付
+function handlePaymentCancel() {
+  showPaymentDialog.value = false;
+  paymentForm.accountLast5 = '';
+  paymentForm.paymentProof = null;
+  paymentForm.paymentProofName = '';
+}
+
+// 金額輸入處理
+function onAmountInput(plan) {
+  // 只允許數字和小數點
+  plan.increaseAmountStr = plan.increaseAmountStr.replace(/[^\d.]/g, '');
+}
+
+function onAmountBlur(plan) {
+  // 格式化金額
+  const amount = parseFloat(plan.increaseAmountStr);
+  if (!isNaN(amount) && amount > 0) {
+    plan.increaseAmountStr = amount.toString();
+  } else {
+    plan.increaseAmountStr = '';
+  }
+}
+
+// ==================== 輔助函數 ====================
+
+// 刷新所有數據
+async function refreshAllData() {
+  await Promise.all([
+    getSystemSetting(),
+    getAllParticipantPlanByUser(),
+    getAllParticipantPlanDetailByUser(),
+    getAllParticipantPlanRecordByUser(),
+  ]);
+}
+
+// 同步模式
 function syncModeFromRoute() {
   const byProp = props.entry === "brand";
   const byQuery = route.query.source === "brand";
@@ -828,417 +1011,54 @@ function syncModeFromRoute() {
   }
 }
 
-onMounted(() => {
-  getAllParticipantPlanByUser()
-  getAllParticipantPlanDetailByUser()
-  getAllParticipantPlanRecordByUser()
-  syncModeFromRoute();
-  if (!route.query.tab) activeTab.value = props.preselectTab;
+// ==================== 生命週期 ====================
 
-  if (mode.value === "brand" && route.query.brandId) {
-    getParticipantPlan();
+onMounted(async () => {
+  syncModeFromRoute();
+
+  if (mode.value === "account") {
+    await refreshAllData();
+  } else if (mode.value === "brand" && route.query.planId) {
+    await getParticipantPlan();
   }
 });
 
+// 監聽路由變化
 watch(
     () => [props.entry, route.query.source, route.query.tab],
     () => {
-      const byProp = props.entry === "brand";
-      const byQuery = route.query.source === "brand";
-      mode.value = byProp || byQuery ? "brand" : "account";
-      if (typeof route.query.tab === "string") {
-        activeTab.value = route.query.tab;
-      }
-
+      syncModeFromRoute();
     }
 );
 
-async function getParticipantPlan() {
-  const formData = {
-    userId: currentUser.value,
-    planId: Number(route.query.planId),
-  }
-  const response = await planApi.getParticipantPlan(formData)
-  if (response.code === 0) {
-    const plan = response.data
-    const progress = plan.targetAmount > 0
-        ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
-        : 0
-
-    const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0)
-    const lastUpdate = calculateTimeRemaining(plan.endDate)
-    let status
-    if (plan.currentStep === 11) {
-      status = 'running'
-    }
-    projectsData.splice(0, projectsData.length)
-    projectsData.push({
-      id: plan.planId,
-      status: status,
-      lastUpdate: lastUpdate,
-      title: plan.planName,
-      progress: progress,
-      dollar: plan.totalParticipantAmount,
-      remain: remain,
-      goal: plan.targetAmount,
-      increaseAmount: 200000,
-    })
-    console.log('轉換後的資料:', projectsData)
-  } else {
-    alert(response.message || '取得專案失敗，請稍後再試')
-  }
-}
-
-async function participate(p) {
-  // 驗證
-  errors.agree = ""
-  if (!p.increaseAmount || p.increaseAmount <= 0) {
-    alert('請輸入參與金額')
-    return
-  }
-  if (!form.agree) {
-    errors.agree = "請同意風險聲明及平台免責聲明"
-    return
-  }
-
-  const formData = {
-    userId: currentUser.value,
-    planId: Number(route.query.planId),
-    amount: p.increaseAmount,
-  }
-
-  const response = await planApi.participantPlan(formData)
-  if (response.code === 0) {
-    alert('參與成功')
-    await router.push('/account/participation')
-    await getAllParticipantPlanByUser()
-  } else {
-    alert(response.message || '參與失敗，請稍後再試')
-  }
-}
-
-async function getAllParticipantPlanByUser() {
-  const formData = {
-    userId: currentUser.value,
-  }
-
-  const response = await planApi.getAllParticipantPlanByUser(formData)
-  if (response.code === 0) {
-    // 清空原本的陣列
-    projects.splice(0, projects.length)
-
-    // 添加新資料
-    response.data.forEach((plan) => {
-      const progress = plan.targetAmount > 0
-          ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
-          : 0
-
-      const remain = Math.max(plan.targetAmount - plan.totalParticipantAmount, 0)
-      const lastUpdate = calculateTimeRemaining(plan.endDate)
-      let status
-      if (plan.currentStep === 11) {
-        status = 'running'
-      }
-      projects.push({
-        id: plan.planId,
-        status: status,
-        lastUpdate: lastUpdate,
-        title: plan.planName,
-        progress: progress,
-        dollar: plan.totalParticipantAmount * 10000,
-        remain: remain * 10000,
-        goal: plan.targetAmount * 10000,
-        showFundBox: true,
-        fav: false,
-        files: []
-      })
-    })
-
-    console.log('轉換後的資料:', projects)
-  } else {
-    alert(response.message || '取得參與專案失敗，請稍後再試')
-  }
-}
-
-async function getAllParticipantPlanRecordByUser() {
-  const formData = {
-    userId: currentUser.value,
-  }
-
-  const response = await planApi.getAllParticipantPlanRecordByUser(formData)
-  if (response.code === 0) {
-    // 清空原本的陣列
-    records.splice(0, records.length)
-
-    // 添加新資料
-    response.data.forEach((record) => {
-      let action
-      if (record.action === 1) {
-        action = '初次投入'
-      } else if (record.action === 2) {
-        action = '追加投入'
-      } else if (record.action === 3) {
-        action = '退款'
-      } else if (record.action === 4) {
-        action = '取消'
-      }
-      let status
-      if (record.status === 1) {
-        status = '處理中'
-      } else if (record.status === 2) {
-        status = '成功'
-      } else if (record.status === 3) {
-        status = '失敗'
-      }
-      records.push({
-        id: record.recordId,
-        date: record.date,
-        title: record.planName,
-        action: action,
-        status: status,
-        amount: record.amount,
-      })
-    })
-
-    console.log('轉換後的資料:', records)
-  } else {
-    alert(response.message || '取得共創紀錄失敗，請稍後再試')
-  }
-
-}
-
-async function getAllParticipantPlanDetailByUser() {
-  const formData = {
-    userId: currentUser.value,
-  }
-
-  const response = await planApi.getAllParticipantPlanDetailByUser(formData)
-  if (response.code === 0) {
-    // 清空原本的陣列
-    details.splice(0, details.length)
-
-    // 添加新資料
-    response.data.forEach((plan) => {
-      let status
-      if (plan.currentStep === 11) {
-        status = 'running'
-      } else if (plan.currentStep === 12) {
-        status = 'match-failed'
-      } else if (plan.currentStep >= 13) {
-        status = 'match-success'
-      }
-      const lastUpdate = calculateTimeRemaining(plan.endDate)
-      const transactions = plan.participantData.map((tx) => ({
-        id: tx.id,
-        date: tx.date,
-        status: tx.status,
-        statusKey: formatStatusKey(tx.status),
-        amount: tx.amount,
-      }))
-      details.push({
-        id: plan.planId,
-        status: status,
-        lastUpdate: lastUpdate,
-        title: plan.planName,
-        dollar: plan.participantTotalAmount,
-        transactions: transactions,
-      })
-    })
-
-    console.log('轉換後的資料:', details)
-  } else {
-    alert(response.message || '取得共創明細失敗，請稍後再試')
-  }
-}
-
-function formatStatusKey(status) {
-  switch (status) {
-    case 1:
-      return 'pending'
-    case 2:
-      return 'success'
-    case 3:
-      return 'failed'
-    default:
-      return 'unknown'
-  }
-
-}
-
-// 3. 倒數時間計算函數
-function calculateTimeRemaining(endDate) {
-  const now = new Date()
-  const end = new Date(endDate)
-  const diff = end - now
-
-  if (diff <= 0) return "已結束"
-
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-
-  return `${days}天 ${hours}小時 ${minutes}分`
-}
-
-const increaseAmount = ref(0)
-
-async function handleIncrease(planId, amount) {
-  const formData = {
-    userId: currentUser.value,
-    planId: planId,
-    amount: Number(amount),
-  }
-  const response = await planApi.participantPlan(formData)
-  if (response.code === 0) {
-    alert('追加成功')
-    await getAllParticipantPlanByUser()
-    await getAllParticipantPlanDetailByUser()
-    await getAllParticipantPlanRecordByUser()
-  } else {
-    alert(response.message || '追加失敗，請稍後再試')
-  }
-}
-
-const showSignCoreContractDialog = ref(false);
-const contractForm = reactive({
-  id: null,
-  displayName: '',
-  coreContractByAdminUrl: '',
-})
-
-const selectedData = ref(null);
-const selectedPlanData = ref(null);
-
-async function handleClick(participantPlan, plan) {
-
-  if (!isLoggedIn.value) {
-    alert('請先登入')
-    router.push({name: 'Login', query: {redirect: router.currentRoute.value.fullPath}})
-    return
-  }
-  selectedData.value = participantPlan
-  selectedPlanData.value = plan
-  // 檢查是否有合約資料
-  if (participantPlan.status === 5) {
-    const formData = {
-      userId: currentUser.value,
-      participantPlanId: participantPlan.id,
-    }
-    const response = await planApi.getAdminCoreContractByPlanUser(formData)
-    if (response.code === 0) {
-      contractForm.id = response.data.id
-      contractForm.displayName = response.data.displayName
-      contractForm.coreContractByAdminUrl = response.data.adminCoreContractUrl
-    }
-
-    await nextTick();
-    showSignCoreContractDialog.value = true
-  }
-
-  if (participantPlan.status === 11) {
-    paymentForm.participantPlanId = participantPlan.id
-    paymentForm.userId = currentUser.value
-    paymentForm.amount = participantPlan.amount * 5 / 100
-    paymentForm.accountLast5 = ''
-    paymentForm.paymentProof = null
-
-    showPaymentDialog.value = true;
-    return
-  }
-}
-
-async function handleSignatureSubmitted(result) {
-  showSignCoreContractDialog.value = false;
-  console.log(selectedData.value)
-  console.log(selectedPlanData.value)
-  console.log(result)
-
-  const formData = {
-    planId: selectedPlanData.value.id,
-    participantPlanId: selectedData.value.id,
-    userId: currentUser.value,
-    coreContractId: result.signContractId
-  }
-
-  const response = await userCheckApi.signCoreContractByUser(formData)
-  if (response.code === 0) {
-    // 更新狀態或進行其他操作
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-  } else {
-    alert(response.message || "合約簽名失敗，請稍後再試");
-  }
-}
-
-const showPaymentDialog = ref(false);
-function handleUploadSuccess(fileType, result) {
-  const fileId = result.data?.id;
-  const fileName = result.data?.displayName || result.data?.name;
-  console.log(result)
-  if (fileId) {
-     if (fileType === 'userPaymentProofFile') {
-      paymentForm.paymentProof = fileId;
-      paymentForm.paymentProofName = fileName;
-    }
-  }
-}
-
-function formatAmount(amount) {
-  if (amount === null || amount === undefined || isNaN(amount)) return "—";
-  return Number(amount).toLocaleString("zh-Hant-TW");
-}
-
-function validatePaymentForm() {
-  let isValid = true;
-
-  if (!paymentForm.paymentProof) {
-    paymentErrors.paymentProof = '請上傳付款憑證';
-    isValid = false;
-  } else {
-    paymentErrors.paymentProof = '';
-  }
-
-  if (!paymentForm.accountLast5 || !/^\d{5}$/.test(paymentForm.accountLast5)) {
-    paymentErrors.accountLast5 = '請輸入正確的帳戶後五碼';
-    isValid = false;
-  } else {
-    paymentErrors.accountLast5 = '';
-  }
-
-  return isValid;
-}
-
-async function handlePaymentSubmit() {
-  if (!validatePaymentForm()) {
+const showCorePlanFinalContractDialog = ref(false)
+const corePlanFinalContractFileName = ref('')
+const corePlanFinalContractError = ref('')
+async function handleCorePlanFinalContractSubmit() {
+  if (!corePlanFinalContractFileName.value) {
+    corePlanFinalContractError.value = '請上傳最終合約文件';
     return;
   }
 
-  // 提交支付資料
   const formData = {
-    participantPlanId: selectedData.value.id,
+    participantPlanId: selectedTransaction.value.id,
+    planId: selectedPlan.value.id,
     userId: currentUser.value,
-    accountLast5: paymentForm.accountLast5,
-    amount: paymentForm.amount,
-    paymentProof: paymentForm.paymentProof,
-  };
+    finalContractId: corePlanFinalContractFileName.value.id,
+  }
 
-  const response = await userCheckApi.createCoreServiceChargeInfoByUser(formData);
-  if (response.code === 0) {
-    alert("支付資料上傳成功");
-    showPaymentDialog.value = false;
-    // 重置表單
-    paymentForm.accountLast5 = "";
-    paymentForm.paymentProof = null;
-    paymentForm.paymentProofName = "";
-    // 更新資料
-    await getAllParticipantPlanByUser();
-    await getAllParticipantPlanDetailByUser();
-    await getAllParticipantPlanRecordByUser();
+  const res = await userCheckApi.uploadCorePlanFinalContractByUser(formData)
+  if (res.code === 0) {
+    alert('最終合約文件上傳成功，感謝您的配合')
+    showCorePlanFinalContractDialog.value = false
+    corePlanFinalContractFileName.value = ''
+    corePlanFinalContractError.value = ''
+    await refreshAllData()
   } else {
-    alert(response.message || "支付資料上傳失敗，請稍後再試");
+    alert(res.message || '上傳失敗，請稍後再試')
   }
 }
+
 </script>
 
 <style lang="scss" scoped>
@@ -1323,6 +1143,7 @@ async function handlePaymentSubmit() {
   line-height: 17px;
   width: 120px;
   text-align: center;
+
   &.pending-start {
     background: #dfdfdf;
     border: 1px solid #dfdfdf;
@@ -1542,6 +1363,7 @@ async function handlePaymentSubmit() {
     font-size: $fs-16;
     line-height: $lh-19;
   }
+
   &-prolong {
     border: 0;
     padding: 10px 20px;
@@ -1553,6 +1375,7 @@ async function handlePaymentSubmit() {
     line-height: $lh-19;
     width: 50%;
   }
+
   &-finish {
     border: 0;
     padding: 10px 20px;
@@ -1634,8 +1457,9 @@ async function handlePaymentSubmit() {
     }
 
     .tx-btn {
-      width: 25%;
-      text-align: end;
+      width: 35%;
+      text-align: center;
+
       button {
         border-radius: 50px;
         border: none;

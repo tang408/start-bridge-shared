@@ -79,6 +79,7 @@ async function handleLogin() {
       let loginPayload = {
         token: response.data.token,
         user: null,
+        userName: null,
         sales: null
       };
 
@@ -86,6 +87,7 @@ async function handleLogin() {
         loginPayload.sales = response.data.salesId;
       } else if (isUserLogin) {
         loginPayload.user = response.data.userId;
+        loginPayload.userName = response.data.userName;
       }
 
       await login(loginPayload);

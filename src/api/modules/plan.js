@@ -5,6 +5,10 @@ export const planApi = {
         return api.post("/f/private/plan/create-plan", params);
     },
 
+    async updatePlan(params = {}) {
+        return api.post("/f/private/plan/update-plan", params);
+    },
+
     async getAllPlan(params = {}) {
         return api.post("/f/public/plan/get-all-plan", params);
     },
