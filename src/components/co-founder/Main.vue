@@ -92,7 +92,7 @@
           <SharedInput
             id="email"
             type="email"
-            label="電子郵件*(作為登入帳號使用)"
+            label="電子郵件*"
             autocomplete="email"
             v-model="form.email"
             :error="errors.email"

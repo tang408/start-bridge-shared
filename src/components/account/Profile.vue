@@ -156,6 +156,7 @@
             button-text="重新上傳"
             :account="formFounder.fullname"
             :name="'assetProof'"
+            :max-size-mb="10"
             @upload-success="(result) => handleUploadSuccess('assetProof', result)"
             :disabled="ro('assetProof')"
         />
@@ -171,6 +172,7 @@
             button-text="重新上傳"
             :account="formFounder.fullname"
             :name="'policeRecord'"
+            :max-size-mb="10"
             @upload-success="(result) => handleUploadSuccess('policeRecord', result)"
             :disabled="ro('policeRecord')"
         />
@@ -241,7 +243,7 @@
             v-model="formFounder.companyLogo"
             :error="errFounder.companyLogo"
             accept=".jpg,.jpeg,.png,.gif,.pdf"
-            :max-size="10 * 1024 * 1024"
+            :max-size-mb="5"
             button-text="重新上傳"
             :account="formFounder.fullname"
             :name="'companyLogo'"

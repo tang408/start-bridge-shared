@@ -37,6 +37,7 @@
           <SharedPassword
               ref="passwordRef"
               id="password"
+              type="password"
               label="密碼*"
               v-model="form.password"
               :error="errors.password"
@@ -85,7 +86,7 @@
               ref="emailRef"
               id="email"
               type="email"
-              label="電子郵件*(作為登入帳號使用)"
+              label="電子郵件*"
               v-model="form.email"
               :error="errors.email"
           />

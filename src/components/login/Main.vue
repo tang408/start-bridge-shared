@@ -45,13 +45,15 @@ import SharedInput from "@/components/shared/Shared-Input.vue";
 import {userApi} from "@/api/modules/user.js";
 import router from "@/router/index.js";
 import { useAuth } from "@/composables/useAuth.js";
+import SharedMessageBox from "@/components/shared/Shared-Message-Box.vue";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const { login, redirectTo } = useAuth();
 const username = ref("");
 const password = ref("");
 const errors = ref({ username: "", password: "" });
 
-async function handleLogin() {
+async function handleLogin(title, content) {
   errors.value = { username: "", password: "" };
 
   if (!username.value) {
@@ -115,11 +117,16 @@ async function handleLogin() {
         }
       }
     } else {
-      alert(response.message || '登入失敗，請稍後再試');
+      await NewAlert.show(
+          "登入失敗",
+          response.message // 傳入內容
+      );
     }
   } catch (error) {
-    console.error('Login error:', error);
-    alert('登入失敗，請稍後再試');
+    await NewAlert.show(
+        "登入失敗",
+        "登入失敗，請稍後再試。"
+    );
   }
 }
 </script>

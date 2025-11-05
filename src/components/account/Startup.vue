@@ -55,22 +55,28 @@
           >
             審核不通過，請重新上傳資料
           </button>
+
           <button
-              v-if="p.status === 4"
+              v-if="(p.status === 4 || p.status === 5)"
               type="button"
               class="btn-upload"
-              @click.stop="handleButtonClick(p)"
+              :disabled="p.paymentStatus === 1"
+              @click.stop="handleUploadData(p)"
           >
             上傳資料
           </button>
+
+          <!-- 簽約立案按鈕 -->
           <button
-              v-if="p.status === 6"
+              v-if="(p.status === 4 || p.status === 5)"
               type="button"
               class="btn-upload"
-              @click.stop="handleButtonClick(p)"
+              :disabled="p.contractStatus === 1"
+              @click.stop="handleSignContract(p)"
           >
-            前往簽屬合約
+            簽署平台合約
           </button>
+
           <button
               v-if="p.status === 7"
               type="button"
@@ -1252,6 +1258,8 @@ const progress = ref([
     stateText: "上傳合約",
     serviceCharge: 5,
     endTime: "2024-12-15",
+    paymentStatus: 1,
+    contractStatus: 1,
   },
 ]);
 const records = reactive([
@@ -1715,6 +1723,8 @@ async function getAllPlanByUser() {
       stateText: userPlanStepData.value.find(step => step.id === plan.currentStep)?.userStep || "無進度",
       remark: plan.remark || '',
       endTime: plan.endTime || null,
+      paymentStatus: plan.paymentStatus || 0,
+      contractStatus: plan.contractStatus || 0,
     }))
   } else {
     alert("取得創業計劃書列表失敗，請稍後再試。")
@@ -1835,42 +1845,47 @@ async function handleButtonClick(plan) {
     return;
   }
 
-  // 顯示 Dialog
-  if (plan.status === 4) {
-    showReleaseChargeDialog.value = true;
-    return;
-  }
-  if (plan.status === 6) {
-    // 獲取簽署合約的 URL
-    const signUrl = founderSignUrl.value
-
-    if (!signUrl) {
-      alert('簽署合約 URL 未設定，請聯繫管理員')
-      return
-    }
-
-    // 在新分頁中打開
-    window.open(signUrl, '_blank')
-
-    const formData = {
-      planId: plan.id,
-      userId: currentUser.value,
-    }
-
-    const res = await userCheckApi.signContractByUser(formData)
-    if (res.code === 0) {
-      await getAllPlanByUser()
-    } else {
-      alert(res.message || '合約簽署失敗，請稍後再試')
-    }
-  }
-
   if (plan.status === 7) {
     openContractConfirmDialog(plan)
   }
   if (plan.status === 12) {
     showPaymentDialog.value = true;
     return;
+  }
+}
+
+async function handleUploadData(plan) {
+  paymentForm.planId = plan.id;
+  paymentForm.userId = currentUser.value;
+  paymentForm.amount = plan.serviceCharge;
+
+  paymentErrors.contractFile = '';
+  paymentErrors.paymentProof = '';
+  paymentErrors.accountLast5 = '';
+
+  showReleaseChargeDialog.value = true;
+}
+
+async function handleSignContract(plan) {
+  const signUrl = founderSignUrl.value;
+
+  if (!signUrl) {
+    alert('簽署合約 URL 未設定，請聯繫管理員');
+    return;
+  }
+
+  window.open(signUrl, '_blank');
+
+  const formData = {
+    planId: plan.id,
+    userId: currentUser.value,
+  };
+
+  const res = await userCheckApi.signContractByUser(formData);
+  if (res.code === 0) {
+    await getAllPlanByUser();
+  } else {
+    alert(res.message || '合約簽署失敗，請稍後再試');
   }
 }
 
@@ -2455,6 +2470,18 @@ const statusMap = {
 
   &:hover {
     background: #ff7f50;
+  }
+
+  // 新增 disabled 狀態樣式
+  &:disabled {
+    background: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    &:hover {
+      background: #cccccc; // 禁用時 hover 不改變顏色
+    }
   }
 }
 

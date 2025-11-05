@@ -149,14 +149,16 @@ onMounted(async () => {
   border-radius: 50px;
   padding: 2rem;
   color: #333;
-  height: 562px;
+  min-height: 562px;
+  height: auto;
   display: flex;
   flex-flow: row;
   gap: 2rem;
+  overflow: hidden; // 防止子元素超出圓角邊界
 
   @media (max-width: 768px) {
     flex-direction: column;
-    height: auto;
+    min-height: auto;
   }
 
   .title {
@@ -169,6 +171,8 @@ onMounted(async () => {
     width: 600px;
     padding: 30px;
     flex-shrink: 0;
+    min-width: 0; // 允許彈性收縮
+
     @media (max-width: 576px) {
       width: 100%;
       padding: 0;
@@ -176,21 +180,26 @@ onMounted(async () => {
   }
 
   &-image {
-    flex-shrink: 0;
+    flex: 1; // 改為彈性布局
+    min-width: 0; // 關鍵：允許收縮到比內容更小
     max-width: 400px;
     display: flex;
-    align-items: center;
+    margin-top: 40px;
+    align-items: start;
     justify-content: center;
+    overflow: hidden; // 防止圖片溢出
 
     @media (max-width: 768px) {
       max-width: 100%;
+      flex: none;
     }
 
     img {
-      max-width: 100%;
+      width: 100%; // 改為 100% 而不是 max-width
       height: auto;
       border-radius: 20px;
       object-fit: cover;
+      display: block; // 移除 inline 元素的底部空白
     }
   }
 }
