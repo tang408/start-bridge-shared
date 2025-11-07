@@ -8,14 +8,14 @@
     @card-click="openDetail"
     @favorite-change="onFavoriteChange"
   />
-  <div class="qa-content">
+  <div id="qa" class="qa-content">
     <div class="qa-content-text">
       <h3>對專案有疑問?</h3>
       <span class="lh-26">
         Lorem ipsum is placeholder text commonly used in the graphic, print, and
         publishing industries for previewing
       </span>
-      <button>創業者QA</button>
+      <button @click="goToQA">創業者QA</button>
     </div>
   </div>
 </template>
@@ -53,6 +53,10 @@ function onFavoriteChange({ id, value }) {
   const target = items.value.find((i) => i.id === id);
   if (target) target.favorite = value;
 }
+
+const goToQA = () => {
+  router.push({ path: "/activity", hash: "#qa" });
+};
 </script>
 
 <style lang="scss" scoped>

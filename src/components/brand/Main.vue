@@ -172,7 +172,7 @@
         <div class="agree-row">
           <label>
             <input type="checkbox" v-model="agree" /> 我已閱讀並同意
-            <RouterLink to="" class="highlight" @click.stop>
+            <RouterLink to="/terms/platform" class="highlight" @click.stop>
               平台合約
             </RouterLink>
             、
