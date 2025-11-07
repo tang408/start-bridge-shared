@@ -14,9 +14,10 @@
       <article
           v-for="p in progress"
           :key="p.id"
-          class="card"
+          class="card mt-2"
           :class="{ expanded: expandedId === p.id }"
       >
+        <!-- Toggle 按鈕：只包含顯示內容 -->
         <button
             type="button"
             class="summary"
@@ -25,21 +26,21 @@
             :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="statusClass(p.status)">
-              {{ statusLabel(p.status) }}</span
-            >
+        <span class="status-pill" :class="statusClass(p.status)">
+          {{ statusLabel(p.status) }}
+        </span>
           </header>
 
           <div class="title">{{ p.title }}</div>
 
           <div class="steps-wrap">
             <div class="steps-bar">
-              <span
-                  v-for="n in 8"
-                  :key="n"
-                  class="steps-step"
-                  :class="{ active: n <= p.progressStep }"
-              ></span>
+          <span
+              v-for="n in 8"
+              :key="n"
+              class="steps-step"
+              :class="{ active: n <= p.progressStep }"
+          ></span>
             </div>
 
             <div class="steps-footer mt-3 flex-column">
@@ -47,71 +48,104 @@
               <span class="status mt-2" v-if="p.remark !== '' && p.status < 0">原因：{{ p.remark }}</span>
             </div>
           </div>
-          <button
-              v-if="p.status < 0 || p.status === 2"
-              type="button"
-              class="btn-upload"
-              @click.stop="handleButtonClick(p)"
-          >
-            審核不通過，請重新上傳資料
-          </button>
-
-          <button
-              v-if="(p.status === 4 || p.status === 5)"
-              type="button"
-              class="btn-upload"
-              :disabled="p.paymentStatus === 1"
-              @click.stop="handleUploadData(p)"
-          >
-            上傳資料
-          </button>
-
-          <!-- 簽約立案按鈕 -->
-          <button
-              v-if="(p.status === 4 || p.status === 5)"
-              type="button"
-              class="btn-upload"
-              :disabled="p.contractStatus === 1"
-              @click.stop="handleSignContract(p)"
-          >
-            簽署平台合約
-          </button>
-
-          <button
-              v-if="p.status === 7"
-              type="button"
-              class="btn-upload"
-              @click.stop="handleButtonClick(p)"
-          >
-            我已簽屬完成
-          </button>
-          <button
-              v-if="p.status === 12"
-              type="button"
-              class="btn-upload"
-              @click.stop="handleButtonClick(p)"
-          >
-            上傳合約並支付服務費
-          </button>
-          <!--並排顯示-->
-          <div v-if="p.status === 10 &isWithinOneWeekBeforeEnd(p.endTime)" class="">
-            <span>專案即將結束，您可以選擇以下操作：</span>
-            <button
-                type="button"
-                class="btn-expand"
-                @click.stop="handleExtendProject(p)"
-            >
-              延長專案
-            </button>
-            <button
-                type="button"
-                class="btn-end"
-                @click.stop="handleEndProject(p)"
-            >
-              結束專案
-            </button>
-          </div>
         </button>
+
+        <!-- 展開內容：在 toggle 按鈕外部 -->
+        <transition name="details-wrapper-transition">
+          <div
+              v-show="expandedId === p.id"
+              class="details-wrapper"
+              :id="`details-${p.id}`"
+              role="region"
+          >
+            <div class="expanded-fields-content">
+              <div class="two-buttons-group mt-3 d-flex gap-4">
+                <button
+                    type="button"
+                    class="text-link"
+                    @click.stop="handleBtn1Click(p.id)"
+                >
+                  創業計劃書
+                </button>
+                <button
+                    type="button"
+                    class="text-link"
+                    @click.stop="handleBtn2Click(p.id)"
+                >
+                  品牌資訊
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- 其他操作按鈕：在 toggle 按鈕外部 -->
+        <button
+            v-if="p.status !== -999 && (p.status < 0 || p.status === 2)"
+            type="button"
+            class="btn-upload"
+            @click.stop="handleButtonClick(p)"
+        >
+          審核不通過，請重新上傳資料
+        </button>
+
+        <button
+            v-if="(p.status === 4 || p.status === 5)"
+            type="button"
+            class="btn-upload"
+            :disabled="p.paymentStatus === 1"
+            @click.stop="handleUploadData(p)"
+        >
+          上傳資料
+        </button>
+
+        <!-- 簽約立案按鈕 -->
+        <button
+            v-if="(p.status === 4 || p.status === 5)"
+            type="button"
+            class="btn-upload"
+            :disabled="p.contractStatus === 1"
+            @click.stop="handleSignContract(p)"
+        >
+          簽署平台合約
+        </button>
+
+        <button
+            v-if="p.status === 7"
+            type="button"
+            class="btn-upload"
+            @click.stop="handleButtonClick(p)"
+        >
+          我已簽屬完成
+        </button>
+
+        <button
+            v-if="p.status === 12"
+            type="button"
+            class="btn-upload"
+            @click.stop="handleButtonClick(p)"
+        >
+          上傳合約並支付服務費
+        </button>
+
+        <!-- 並排顯示 -->
+        <div v-if="p.status === 10 && isWithinOneWeekBeforeEnd(p.endTime)" class="">
+          <span>專案即將結束，您可以選擇以下操作：</span>
+          <button
+              type="button"
+              class="btn-expand"
+              @click.stop="handleExtendProject(p)"
+          >
+            延長專案
+          </button>
+          <button
+              type="button"
+              class="btn-end"
+              @click.stop="handleEndProject(p)"
+          >
+            結束專案
+          </button>
+        </div>
       </article>
     </div>
 
@@ -196,6 +230,7 @@
       </div>
     </div>
   </section>
+
   <!-- 預覽模式 -->
   <section v-else-if="mode === 'preview'">
     <div class="fs-24">
@@ -210,6 +245,197 @@
         @next="goNext"
     />
   </section>
+
+  <!-- PDF 預覽模式 -->
+  <section v-else-if="mode === 'pdf-preview'" class="pdf-preview-section">
+    <div class="pdf-header">
+      <h2 class="fs-24">創業計劃書預覽</h2>
+      <div class="pdf-actions">
+        <button
+            type="button"
+            class="btn-expand mb-2"
+            @click="handleDownloadPDF"
+            :disabled="isGeneratingPDF"
+        >
+          {{ isGeneratingPDF ? '生成中...' : '下載 PDF' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- PDF 內容容器 - 這個會被轉換成 PDF -->
+    <div ref="pdfContent" class="pdf-content">
+      <div class="pdf-page">
+        <!-- Step 1 -->
+        <div class="pdf-section">
+          <h2 class="section-title">一、基本資料</h2>
+          <Step1
+              v-model="formData.step1"
+              :errors="{}"
+              :readonly="true"
+              :step1Budget="formData.step1.budget"
+          />
+        </div>
+
+        <!-- Step 3 -->
+        <div class="pdf-section">
+          <h2 class="section-title">三、創業經驗</h2>
+          <Step3
+              v-model="formData.step3"
+              :errors="{}"
+              :readonly="true"
+              :showBackButton="false"
+          />
+        </div>
+
+        <!-- Step 4 -->
+        <div class="pdf-section">
+          <h2 class="section-title">四、創業計畫</h2>
+          <Step4
+              v-model="formData.step4"
+              :errors="{}"
+              :readonly="true"
+              :step1Budget="formData.step1.budget"
+          />
+        </div>
+
+        <!-- step5 Part 1: 籌備預算 -->
+        <div class="pdf-section">
+          <h2 class="section-title">五、財務規劃（一）籌備預算</h2>
+
+          <div class="budget-section">
+            <h3 class="subsection-title">籌備預算明細</h3>
+
+            <table class="budget-table">
+              <thead>
+              <tr>
+                <th style="width: 60%;">項目</th>
+                <th style="width: 40%; text-align: right;">金額（元）</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                  v-for="(item, index) in formData.step5.prepBudget"
+                  :key="index"
+                  :class="{ 'total-row': item.item === '總計' }"
+              >
+                <td>{{ item.item }}</td>
+                <td style="text-align: right;">
+                  {{ item.amount ? parseInt(item.amount).toLocaleString('zh-TW') : '0' }}
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Part 2: 成本結構與營收目標 -->
+        <div class="pdf-section">
+          <h2 class="section-title">五、財務規劃（二）成本結構與營收目標</h2>
+
+          <!-- 成本結構表 -->
+          <div class="cost-section">
+            <h3 class="subsection-title">成本結構</h3>
+
+            <table class="cost-table">
+              <thead>
+              <tr>
+                <th style="width: 35%;">項目</th>
+                <th style="width: 15%; text-align: center;">佔比（%）</th>
+                <th style="width: 25%; text-align: right;">金額（元）</th>
+                <th style="width: 25%;">備註</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr
+                  v-for="(item, index) in formData.step5.costStruct"
+                  :key="index"
+                  :class="{ 'total-row': item.item === '總計' }"
+              >
+                <td>
+                  <div>{{ item.item }}</div>
+                  <div v-if="item.desc" class="item-desc">{{ item.desc }}</div>
+                </td>
+                <td style="text-align: center;">{{ item.percent || '-' }}</td>
+                <td style="text-align: right;">
+                  {{ item.amount ? parseInt(item.amount).toLocaleString('zh-TW') : '0' }}
+                </td>
+                <td>{{ item.note || '-' }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- 營收目標 -->
+          <div class="revenue-section">
+            <h3 class="subsection-title">營收目標</h3>
+
+            <div class="info-group">
+              <div class="info-item">
+                <span class="info-label">月營業額目標：</span>
+                <span class="info-value">
+          {{ formData.step5.targetRevenue ? parseInt(formData.step5.targetRevenue).toLocaleString('zh-TW') : '0' }} 元
+        </span>
+              </div>
+
+              <!-- 獎勵機制 -->
+              <div v-if="formData.step5.rewardEnabled" class="info-item">
+                <span class="info-label">獎勵機制：</span>
+                <span class="info-value">
+          當月營業額達 {{ parseInt(formData.step5.rewardAmount || 0).toLocaleString('zh-TW') }} 元以上，
+          額外分潤 {{ formData.step5.rewardPercent }}%
+        </span>
+              </div>
+
+              <!-- 資金使用備註 -->
+              <div class="info-item">
+                <span class="info-label">資金使用備註：</span>
+                <span class="info-value">
+          {{ formData.step5.fundNote === 1 ? '依實際需求調整' : formData.step5.fundNote }}
+        </span>
+              </div>
+
+              <!-- 報表提供方式 -->
+              <div class="info-item">
+                <span class="info-label">報表提供方式：</span>
+                <span class="info-value">{{ getStep5ReportText() }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="pdf-section">
+          <h2 class="section-title">六、分潤條款</h2>
+          <Step6
+              v-model="formData.step6"
+              :errors="{}"
+              :readonly="true"
+          />
+        </div>
+
+<!--        &lt;!&ndash; Step 7 &ndash;&gt;-->
+<!--        <div class="pdf-section">-->
+<!--          <h2 class="section-title">七、提交與後續</h2>-->
+<!--          <Step7-->
+<!--              v-model="formData.step7"-->
+<!--              :errors="{}"-->
+<!--              :readonly="true"-->
+<!--          />-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Step 8 &ndash;&gt;-->
+<!--        <div class="pdf-section">-->
+<!--          <h2 class="section-title">八、風險提示與責任聲明</h2>-->
+<!--          <Step8-->
+<!--              v-model="formData.step8"-->
+<!--              :errors="{}"-->
+<!--              :readonly="true"-->
+<!--          />-->
+<!--        </div>-->
+      </div>
+    </div>
+  </section>
+
 
   <section v-else>
     <div class="fs-24">
@@ -414,6 +640,251 @@
       </div>
     </div>
   </SharedModal>
+
+  <div v-if="showPartnerDialog" class="dialog-overlay" @click.self="showPartnerDialog = false">
+    <div class="dialog-content">
+      <!-- 關閉按鈕 -->
+      <button class="dialog-close" @click="showPartnerDialog = false">×</button>
+
+      <!-- 標題 -->
+      <h2>{{ partnerData?.name }}</h2>
+
+      <!-- 內容區域 - 建議用分區塊顯示 -->
+      <div class="dialog-body">
+
+        <!-- 基本資訊 -->
+        <section class="info-section">
+          <h3>基本資訊</h3>
+          <div class="info-item">
+            <label>品牌名稱：</label>
+            <span>{{ partnerData?.name }}</span>
+          </div>
+          <div class="info-item">
+            <label>產業類型：</label>
+            <span>{{ partnerData?.industryType }}</span>
+          </div>
+          <div class="info-item">
+            <label>成立日期：</label>
+            <span>{{ partnerData?.establishedDate }}</span>
+          </div>
+          <!-- ...其他基本資訊 -->
+        </section>
+
+        <!-- 財務資訊 -->
+        <section class="info-section">
+          <h3>財務資訊</h3>
+          <div class="info-item">
+            <label>資本額：</label>
+            <span>{{ partnerData?.capital }} 萬</span>
+          </div>
+          <div class="info-item">
+            <label>加盟金：</label>
+            <span>{{ partnerData?.franchiseFee }} 萬</span>
+          </div>
+          <div class="info-item">
+            <label>保證金：</label>
+            <span>{{ partnerData?.deposit }} 萬</span>
+          </div>
+          <div class="info-item">
+            <label>優惠金額：</label>
+            <span>{{ partnerData?.specialOffer }} 萬</span>
+          </div>
+        </section>
+
+        <!-- HTML 內容區塊（需要 v-html） -->
+        <section class="info-section">
+          <h3>品牌介紹</h3>
+          <div v-html="partnerData?.brandIntro"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>品牌描述</h3>
+          <div v-html="partnerData?.description"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>經營理念</h3>
+          <div v-html="partnerData?.businessPhilosophy"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>品牌優勢</h3>
+          <div v-html="partnerData?.advantages"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>開店條件</h3>
+          <div v-html="partnerData?.storeCondition"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>加盟門檻</h3>
+          <div v-html="partnerData?.threshold"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>目前規模</h3>
+          <div v-html="partnerData?.currentScale"></div>
+        </section>
+
+        <section class="info-section">
+          <h3>聯絡方式</h3>
+          <div v-html="partnerData?.contact"></div>
+        </section>
+
+        <!-- 圖片陣列 -->
+        <section class="info-section">
+          <h3>產品圖片</h3>
+          <div class="image-gallery">
+            <img
+                v-for="(img, index) in JSON.parse(partnerData?.productImages || '[]')"
+                :key="index"
+                :src="img"
+                alt="產品圖片"
+            />
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>品牌形象</h3>
+          <div class="image-gallery">
+            <img
+                v-for="(img, index) in JSON.parse(partnerData?.brandImage || '[]')"
+                :key="index"
+                :src="img"
+                alt="品牌形象"
+            />
+          </div>
+        </section>
+
+        <!-- YouTube 影片 -->
+        <section class="info-section">
+          <h3>相關影片</h3>
+          <div class="video-list">
+            <div
+                v-for="(url, index) in JSON.parse(partnerData?.youtubeUrls || '[]')"
+                :key="index"
+                class="video-item"
+            >
+              <a :href="url" target="_blank">影片 {{ index + 1 }}</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 聯絡資訊 -->
+        <section class="info-section">
+          <h3>網站與社群</h3>
+          <div class="info-item">
+            <label>官方網站：</label>
+            <a :href="partnerData?.website" target="_blank">{{ partnerData?.website }}</a>
+          </div>
+          <div class="info-item">
+            <label>Facebook：</label>
+            <a :href="partnerData?.facebook" target="_blank">{{ partnerData?.facebook }}</a>
+          </div>
+        </section>
+
+        <!-- 合約資訊 -->
+        <section class="info-section">
+          <h3>合約資訊</h3>
+          <div class="info-item">
+            <label>合約日期：</label>
+            <span>{{ partnerData?.contractDate }}</span>
+          </div>
+          <div class="info-item">
+            <label>合約到期日：</label>
+            <span>{{ partnerData?.contractExpirationDate }}</span>
+          </div>
+        </section>
+
+        <!-- 自訂欄位（最複雜的部分） -->
+        <section class="info-section">
+          <h3>創業項目資訊</h3>
+          <div
+              v-for="field in partnerData?.customFields?.startup_projects"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>加盟需求</h3>
+          <div
+              v-for="field in partnerData?.customFields?.franchise_requirements"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>製造時程</h3>
+          <div
+              v-for="field in partnerData?.customFields?.manufacturing_schedule"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>其他資訊</h3>
+          <div
+              v-for="field in partnerData?.customFields?.others"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>商業模式</h3>
+          <div
+              v-for="field in partnerData?.customFields?.business_model"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>加盟訓練</h3>
+          <div
+              v-for="field in partnerData?.customFields?.franchise_training"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span>{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h3>支援服務</h3>
+          <div
+              v-for="field in partnerData?.customFields?.support_services"
+              :key="field.fieldKey"
+              class="info-item"
+          >
+            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
+            <span style="white-space: pre-line;">{{ field.fieldValue }}</span>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -439,8 +910,80 @@ import {userCheckApi} from "@/api/modules/userCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {transactionApi} from "@/api/modules/transaction.js";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
+const router = useRouter();
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
+
+// PDF 相關引入
+import { usePdfGenerator } from "@/composables/usePDFGenerateor.js";
+import {officialPartnerApi} from "@/api/modules/officialPartner.js";
+import {NewAlert} from "@/composables/useAlert.js";
+
+// 2. 更新解構賦值，使用新的函數
+const { generateStepByStepPDF  } = usePdfGenerator();
+const pdfContent = ref(null);
+const isGeneratingPDF = ref(false);
+
+// 加入 PDF 相關函數
+
+// 獲取報表文字
+function getStep5ReportText() {
+  const step5 = formData.step5;
+  if (!step5.reportSelected) return '-';
+
+  if (step5.reportSelected === 'other') {
+    return `其他: ${step5.otherReport?.other || ''}`;
+  }
+
+  const reportOptions = [
+    { value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限" },
+    { value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供" },
+    { value: "season", text: "每季/年度「財務報表」，需於當季後次月 15 日前提供" },
+    { value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供" }
+  ];
+
+  const option = reportOptions.find(opt => opt.value === step5.reportSelected);
+  return option ? option.text : step5.reportSelected;
+}
+
+
+// 下載 PDF
+async function handleDownloadPDF() {
+  if (!pdfContent.value) {
+    alert('找不到 PDF 內容');
+    return;
+  }
+
+  isGeneratingPDF.value = true;
+
+  try {
+    const brandName = formData.step1.brand || '創業計劃';
+    const date = new Date().toLocaleDateString('zh-TW').replace(/\//g, '-');
+    const filename = `${brandName}_創業計劃書_${date}.pdf`;
+
+    // ✅ 使用 generateSectionBasedPDF，根據內容自動分頁
+    const result = await generateStepByStepPDF(pdfContent.value, filename, {
+      scale: 2,
+      quality: 0.95,
+      format: 'a4',
+      orientation: 'portrait',
+      margin: 10,
+      sectionSelector: '.pdf-section',
+      pageBreak: 'auto'
+    });
+
+    if (result.success) {
+      alert(`PDF 下載成功！共 ${result.pageCount} 頁`);
+    } else {
+      alert('PDF 生成失敗：' + result.message);
+    }
+  } catch (error) {
+    console.error('PDF 生成錯誤:', error);
+    alert('PDF 生成失敗，請稍後再試');
+  } finally {
+    isGeneratingPDF.value = false;
+  }
+}
 
 const uploadAccount = computed(() => {
   const userName = currentUserName.value
@@ -541,6 +1084,10 @@ async function toggle(planId) {
   expandedId.value = expandedId.value === planId ? null : planId;
 
   // 如果是展開,則載入該計畫資料並進入預覽模式
+
+}
+
+async function  handleBtn1Click(planId) {
   if (expandedId.value === planId) {
     currentPlanId.value = planId;
     await loadPlanData(planId);
@@ -560,6 +1107,30 @@ async function toggle(planId) {
   }
 }
 
+const showPartnerDialog = ref(false);
+const partnerData = ref(null);
+
+async function handleBtn2Click(planId) {
+  const getPlanFormData = {
+    userId: currentUser.value,
+    planId: planId
+  }
+
+  const planRes = await planApi.getPlan(getPlanFormData)
+  if (planRes.code === 0) {
+    const planData = planRes.data;
+    const officialPartnerId = planData.brand;
+    const formData = {
+      officialPartnerId: officialPartnerId,
+    }
+    const res = await officialPartnerApi.getOfficialPartner(formData)
+    if (res.code === 0) {
+      console.log('官方夥伴資料:', res.data)
+      partnerData.value = res.data;  // 保存資料
+      showPartnerDialog.value = true;  // 顯示 dialog
+    }
+  }
+}
 async function loadPlanData(planId) {
   try {
     const requestData = {
@@ -630,16 +1201,7 @@ async function loadPlanData(planId) {
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
           {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
           {
-            item: "總計", amount: planData.franchiseFee &&
-            planData.decorationCosts &&
-            planData.equipmentCosts &&
-            planData.firstMaterialCost &&
-            planData.paySalaryBudget &&
-            planData.otherPersonnelCosts &&
-            planData.marketingExpenses &&
-            planData.cashFlow &&
-            planData.otherCosts
-                ? String(
+            item: "總計", amount:  String(
                     Number(planData.franchiseFee || 0) +
                     Number(planData.decorationCosts || 0) +
                     Number(planData.equipmentCosts || 0) +
@@ -649,8 +1211,7 @@ async function loadPlanData(planId) {
                     Number(planData.marketingExpenses || 0) +
                     Number(planData.cashFlow || 0) +
                     Number(planData.otherCosts || 0)
-                )
-                : '',
+                ),
           },
         ],
         costStruct: [
@@ -736,6 +1297,11 @@ async function loadPlanData(planId) {
         sharePay: parseProfitPay(planData.profitPaymentMethod).value,
         sharePayOther: parseProfitPay(planData.profitPaymentMethod).other,
         agree: '',
+      });
+
+      // Step8 - 風險提示與責任聲明
+      Object.assign(formData.step8, {
+        agree: "agree"
       });
 
       await nextTick();
@@ -1175,7 +1741,6 @@ function goNext(nextStep) {
   }
 }
 
-const router = useRouter();
 const route = useRoute();
 const activeTab = ref("progress");
 const mode = ref("account");
@@ -1220,14 +1785,20 @@ watch(
     {immediate: true}
 );
 
-
 watch(
     () => route.query,
     async (query) => {
       // 判斷模式
       if (query.source === 'account' && query.planId) {
-        mode.value = 'preview';
         currentPlanId.value = parseInt(query.planId);
+
+        // ✅ 檢查 URL 中的 mode 參數
+        if (query.mode === 'pdf-preview') {
+          mode.value = 'pdf-preview';
+        } else {
+          mode.value = 'preview';
+        }
+
         // 如果有 planId,載入資料
         if (currentPlanId.value && !formData.step1.brand) {
           await loadPlanData(currentPlanId.value);
@@ -1647,16 +2218,28 @@ async function createPlan() {
   } else {
     // 新建計劃
     response = await planApi.createPlan(data);
+
   }
 
   if (response.code === 0) {
-    alert(isEditMode.value ? "創業計劃書更新成功！" : "創業計劃書提交成功！");
+    if (!isEditMode.value) {
+
+      // 前往個人頁面上傳文件
+      const result = await NewAlert.confirm("創業計劃書提交成功","請前往「個人專區」上傳相關文件。")
+      if (result) {
+        await router.push({ path: "/account/profile" });
+      }
+    }
+    else {
+      // 編輯模式下的提示
+      await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
+    }
 
     // 重置編輯狀態
     isEditMode.value = false;
     editPlanId.value = null;
 
-    router.push("/account/startup");
+    await router.push("/account/startup");
     await getAllPlanByUser();
   } else {
     alert(isEditMode.value ? "創業計劃書更新失敗，請稍後再試。" : "創業計劃書提交失敗，請稍後再試。");
@@ -2650,6 +3233,801 @@ hr {
       margin-left: 32px;
     }
   }
+}
+
+
+.pdf-content {
+  background: #fff;
+  padding: 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+
+  /* ✅ 關鍵：設定行高和字體大小，避免分頁時文字被切斷 */
+  line-height: 1.6;
+  font-size: 14px;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.pdf-page {
+  max-width: 800px;
+  margin: 0 auto;
+
+  /* ✅ 設定最小高度，確保內容有足夠空間 */
+  min-height: 1000px;
+}
+
+.pdf-title {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px 0;
+  border-bottom: 3px solid #ffcc41;
+
+  /* ✅ 標題頁後強制分頁 */
+  page-break-after: always;
+  break-after: page;
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .pdf-meta {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.8;
+
+    p {
+      margin: 8px 0;
+    }
+  }
+}
+
+.pdf-section {
+  /* ✅ 增加底部邊距，避免內容緊貼頁面底部 */
+  margin-bottom: 60px;
+  padding-bottom: 20px;
+
+  /* ✅ 防止 section 被切斷 */
+  page-break-inside: avoid;
+  break-inside: avoid;
+
+  /* ✅ 可選：每個 section 強制從新頁開始 */
+  /* 取消註解下面這行可以啟用 */
+  /* page-break-before: always; */
+  /* break-before: page; */
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e9ece8;
+    line-height: 1.4;
+
+    /* ✅ 標題後不要分頁 */
+    page-break-after: avoid;
+    break-after: avoid;
+
+    /* ✅ 確保標題和下一個元素不分開 */
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* ✅ section 內的段落樣式 */
+  p {
+    margin-bottom: 4px;
+    line-height: 1.2;
+
+    /* ✅ 防止段落被切斷 */
+    page-break-inside: avoid;
+    break-inside: avoid;
+
+    /* ✅ 控制孤行和寡行 */
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* ✅ 列表樣式 */
+  ul, ol {
+    margin-bottom: 8px;
+    padding-left: 24px;
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+
+  /* ✅ 表格樣式 */
+  table {
+    width: 100%;
+    margin-bottom: 12px;
+    border-collapse: collapse;
+
+    /* ✅ 防止表格被切斷 */
+    page-break-inside: avoid;
+    break-inside: avoid;
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+      line-height: 1.5;
+    }
+
+    th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+    }
+  }
+
+  /* ✅ 輸入框和表單元素（唯讀模式） */
+  input[readonly],
+  textarea[readonly],
+  select[disabled] {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    width: 100%;
+    margin-bottom: 4px;
+    line-height: 1.5;
+  }
+
+  /* ✅ 標籤樣式 */
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333;
+    line-height: 1.4;
+
+    /* ✅ 標籤和輸入框不分開 */
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* ✅ 表單組樣式 */
+  .form-group {
+    margin-bottom: 16px;
+
+    /* ✅ 防止表單組被切斷 */
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+/* ✅ 隱藏 PDF 中不需要的元素 */
+.pdf-content {
+  ::v-deep(.form) {
+    .btn-back,
+    .btn-next,
+    .btn-prev,
+    .btn-submit,
+    button[type="button"],
+    button[type="submit"] {
+      display: none !important;
+    }
+  }
+
+  /* ✅ 隱藏互動元素 */
+  ::v-deep(.interactive),
+  ::v-deep(.clickable),
+  ::v-deep(.hover-effect) {
+    pointer-events: none;
+  }
+}
+
+/* ✅ 特殊內容類型的樣式 */
+.pdf-content {
+  /* 引用文字 */
+  ::v-deep(blockquote) {
+    margin: 16px 0;
+    padding: 12px 20px;
+    border-left: 4px solid #ffcc41;
+    background-color: #f9f9f9;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 代碼塊 */
+  ::v-deep(pre),
+  ::v-deep(code) {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 圖片 */
+  ::v-deep(img) {
+    max-width: 100%;
+    height: auto;
+    margin: 16px 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 標題層級 */
+  ::v-deep(h3) {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    color: #333;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  ::v-deep(h4) {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #444;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}
+
+/* ✅ 打印和 PDF 專用樣式 */
+@media print {
+  .pdf-content {
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .pdf-section {
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    page-break-after: avoid;
+  }
+
+  /* 確保頁面邊距 */
+  @page {
+    margin: 10mm;
+  }
+}
+
+/* ✅ 響應式設計 */
+@media (max-width: 768px) {
+  .pdf-content {
+    padding: 20px;
+  }
+
+  .pdf-title h1 {
+    font-size: 24px;
+  }
+
+  .section-title {
+    font-size: 20px;
+  }
+
+  .pdf-section {
+    margin-bottom: 40px;
+  }
+}
+
+/* ✅ 改進表格在 PDF 中的顯示 */
+.pdf-content table {
+  /* 防止表格跨頁時內容丟失 */
+  thead {
+    display: table-header-group;
+  }
+
+  tbody {
+    display: table-row-group;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+/* ✅ 改進列表的顯示 */
+.pdf-content {
+  ::v-deep(ul),
+  ::v-deep(ol) {
+    li {
+      position: relative;
+      padding-left: 4px;
+
+      /* 防止列表項被切斷 */
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+}
+
+/* ✅ Step 組件特殊樣式調整 */
+.pdf-section {
+  /* 確保 Step 組件內的內容有適當間距 */
+  ::v-deep(.form) {
+    > div {
+      margin-bottom: 8px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  /* 輸入欄位組 */
+  ::v-deep(.input-group) {
+    margin-bottom: 5px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 選項組 */
+  ::v-deep(.radio-group),
+  ::v-deep(.checkbox-group) {
+    margin-bottom: 5px;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+/* ✅ 財務表格特殊處理 */
+.pdf-section {
+  ::v-deep(.budget-table),
+  ::v-deep(.cost-table) {
+    width: 100%;
+    margin: 20px 0;
+
+    table {
+      width: 100%;
+
+      /* 表格標題行固定 */
+      thead tr {
+        background-color: #f5f5f5;
+      }
+
+      /* 總計行加粗 */
+      tfoot tr,
+      tr.total {
+        font-weight: 700;
+        background-color: #f9f9f9;
+      }
+    }
+  }
+}
+
+// 營收目標資訊區
+.revenue-section {
+  .info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .info-item {
+    display: flex;
+    padding: 12px 16px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #ffcc41;
+    border-radius: 4px;
+
+    .info-label {
+      font-weight: 600;
+      color: #333;
+      min-width: 150px;
+      flex-shrink: 0;
+    }
+
+    .info-value {
+      color: #555;
+      flex: 1;
+    }
+  }
+}
+
+// 確保在 PDF 中表格不被切斷
+@media print {
+  .budget-table,
+  .cost-table {
+    page-break-inside: avoid;
+
+    tr {
+      page-break-inside: avoid;
+    }
+  }
+}
+
+/* Dialog 遮罩層 */
+.dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog 內容容器 */
+.dialog-content {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 900px;
+  width: 100%;
+  max-height: 85vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Dialog 標題區 */
+.dialog-content h2 {
+  margin: 0;
+  padding: 24px 60px 24px 32px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(to bottom, #ffffff, #fafafa);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 關閉按鈕 */
+.dialog-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+  font-size: 28px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 11;
+  line-height: 1;
+  padding: 0;
+}
+
+.dialog-close:hover {
+  background: #e74c3c;
+  color: white;
+  transform: rotate(90deg);
+}
+
+/* Dialog 主體內容 */
+.dialog-body {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* 自定義滾動條 */
+.dialog-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dialog-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.dialog-body::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* 區塊樣式 */
+.info-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.2s ease;
+}
+
+.info-section:hover {
+  background: #f5f5f5;
+  border-color: #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
+}
+
+/* 區塊標題 */
+.info-section h3 {
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
+}
+
+/* 資訊項目 */
+.info-item {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.6;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item label {
+  font-weight: 600;
+  color: #555;
+  min-width: 120px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.info-item span {
+  color: #333;
+  flex: 1;
+}
+
+/* 連結樣式 */
+.info-item a {
+  color: #3498db;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.info-item a:hover {
+  color: #2980b9;
+  border-bottom-color: #2980b9;
+}
+
+/* HTML 內容區域 */
+.info-section > div[v-html] {
+  color: #444;
+  line-height: 1.8;
+}
+
+.info-section p {
+  margin: 8px 0;
+}
+
+.info-section strong {
+  color: #2c3e50;
+}
+
+.info-section em {
+  color: #7f8c8d;
+}
+
+/* 圖片畫廊 */
+.image-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.image-gallery img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.image-gallery img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border-color: #3498db;
+}
+
+/* 品牌照片（大圖） */
+.info-item img {
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  margin-top: 8px;
+}
+
+/* 影片列表 */
+.video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.video-item {
+  padding: 12px 16px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s ease;
+}
+
+.video-item:hover {
+  border-color: #3498db;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+}
+
+.video-item a {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.video-item a:before {
+  content: "▶";
+  margin-right: 8px;
+  font-size: 12px;
+}
+
+.video-item a:hover {
+  color: #2980b9;
+}
+
+/* 必填標記 */
+.info-item label:has(+ span):after {
+  content: "";
+}
+
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .dialog-content {
+    max-width: 100%;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .dialog-content h2 {
+    font-size: 20px;
+    padding: 20px 50px 20px 20px;
+  }
+
+  .dialog-body {
+    padding: 20px;
+  }
+
+  .info-section {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+
+  .info-item {
+    flex-direction: column;
+  }
+
+  .info-item label {
+    min-width: auto;
+    margin-bottom: 4px;
+  }
+
+  .image-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .image-gallery img {
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dialog-overlay {
+    padding: 10px;
+  }
+
+  .dialog-content h2 {
+    font-size: 18px;
+    padding: 16px 45px 16px 16px;
+  }
+
+  .dialog-close {
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+
+  .dialog-body {
+    padding: 16px;
+  }
+
+  .info-section {
+    padding: 12px;
+  }
+
+  .info-section h3 {
+    font-size: 16px;
+  }
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #3498db;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.text-link:hover {
+  color: #2980b9;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.text-link:active {
+  color: #1c5985;
 }
 
 </style>

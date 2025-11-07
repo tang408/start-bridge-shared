@@ -62,6 +62,7 @@
           :store-name="mode === 'store' ? item.name : undefined"
           :store-address="mode === 'store' ? item.address : undefined"
           :store-phone="mode === 'store' ? item.contactNumber : undefined"
+          :show-download-button="false"
           @card-click="handleCardClick"
           @favorite-toggle="item.favorite = $event"
         />

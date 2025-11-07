@@ -54,6 +54,11 @@ export const userApi = {
         return api.post('/f/private/user/get-user-info', finalParams);
     },
 
+    async updateUserInfo(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/private/user/update-user-info', finalParams);
+    },
+
     /**
      * 更新使用者創創者+公司資訊
      * @param {{}} params - 參數物件

@@ -13,6 +13,7 @@
             type="checkbox"
             :id="`${uid}-${opt.key}`"
             :checked="model[opt.key]?.checked || false"
+            :disabled="readonly"
             @change="onToggle(opt.key, $event.target.checked)"
         />
         <label class="option-label" :for="`${uid}-${opt.key}`">
@@ -27,7 +28,8 @@
               min="0"
               max="24"
               :value="model[opt.key]?.from || ''"
-              :disabled="!model[opt.key]?.checked"
+              :disabled="readonly || !model[opt.key]?.checked"
+              :readonly="readonly"
               @input="onInput(opt.key, 'from', $event.target.value)"
           />
           <span>點至</span>
@@ -37,7 +39,8 @@
               min="0"
               max="24"
               :value="model[opt.key]?.to || ''"
-              :disabled="!model[opt.key]?.checked"
+              :disabled="readonly || !model[opt.key]?.checked"
+              :readonly="readonly"
               @input="onInput(opt.key, 'to', $event.target.value)"
           />
           <span>點</span>
@@ -49,7 +52,8 @@
               class="textline text-input"
               type="text"
               :value="model[opt.key]?.value || ''"
-              :disabled="!model[opt.key]?.checked"
+              :disabled="readonly || !model[opt.key]?.checked"
+              :readonly="readonly"
               @input="onInput(opt.key, 'value', $event.target.value)"
           />
         </template>
@@ -70,6 +74,7 @@ const props = defineProps({
   label: {type: String, default: ""},
   options: {type: Array, default: () => []},
   error: {type: String, default: ""},
+  readonly: {type: Boolean, default: false}, // ✅ 新增
 });
 
 const uid = computed(() => `tp-${Math.random().toString(36).slice(2, 9)}`);
@@ -79,6 +84,8 @@ function ensureKey(key) {
 }
 
 function onToggle(key, checked) {
+  if (props.readonly) return; // ✅ readonly 時不處理
+
   const newModel = {};
   for (const k of Object.keys(model.value)) {
     newModel[k] = {...model.value[k], checked: false};
@@ -91,6 +98,8 @@ function onToggle(key, checked) {
 }
 
 function onInput(key, field, val) {
+  if (props.readonly) return; // ✅ readonly 時不處理
+
   ensureKey(key);
 
   // 如果是時間欄位，進行即時驗證
@@ -137,6 +146,12 @@ function onInput(key, field, val) {
 
   input[type="checkbox"] {
     flex-shrink: 0;
+
+    /* ✅ readonly 樣式 */
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   .option-label {
@@ -162,9 +177,11 @@ function onInput(key, field, val) {
   border-radius: 4px;
   box-sizing: border-box;
 
-  &:disabled {
+  &:disabled,
+  &[readonly] {
     background-color: #f5f5f5;
     cursor: not-allowed;
+    opacity: 0.8;
   }
 }
 

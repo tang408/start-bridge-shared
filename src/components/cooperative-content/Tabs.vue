@@ -150,6 +150,7 @@ import {useAuth} from "@/composables/useAuth.js";
 import {userApi} from "@/api/modules/user.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 import {planApi} from "@/api/modules/plan.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const {isLoggedIn, currentUser} = useAuth();
 const router = useRouter();
@@ -254,7 +255,6 @@ const supportData = computed(() => {
       label: "加盟主培訓資訊",
       list: extraFields.franchise_training?.map(item => `${item.displayName}：${item.value}`) || [],
     },
-    {label: "加盟主門檻要求", html: `${props.projectData.threshold}`},
     {
       label: "總部支援綱要",
       list: extraFields.support_services?.map(item => `${item.displayName}：${item.value}`) || [],
@@ -292,34 +292,60 @@ const userData = ref({})
 
 async function goToStartup() {
   if (!isLoggedIn.value) {
-    alert("請先登入會員");
-    await router.push({path: "/login"});
+    await NewAlert.show("請先登入", "請先登入會員以繼續操作");
+    await router.push({ path: "/login" });
     return;
-  } else {
-    const formData = {
-      userId: currentUser.value,
-    }
-    const response = await userApi.getUserInfo(formData);
-    if (response.code === 0) {
-      userData.value = response.data;
+  }
 
-      // 檢查 founderInfoData 是否存在且完整
-      if (userData.value.founderInfoData) {
-        const founderInfo = userData.value.founderInfoData;
-        if (founderInfo.status === 0) {
-          alert("資料審核中，待審核通過後再進行申請。");
-          await router.push({path: "/account/profile"});
+  const formData = {
+    userId: currentUser.value,
+  };
+
+  const response = await userApi.getUserInfo(formData);
+
+  if (response.code === 0) {
+    userData.value = response.data;
+
+    // 檢查創業者資料
+    if (userData.value.founderInfoData) {
+      const founderInfo = userData.value.founderInfoData;
+      const userInfo = userData.value.userInfoData;
+
+      if (
+          founderInfo.city === 0 ||
+          founderInfo.workStatus === "" ||
+          founderInfo.expectIndustryType === 0 ||
+          userInfo.lineId === ""
+      ) {
+        // ✅ 使用 favorite 模式彈窗
+        const result = await NewAlert.favorite(
+            "資料不齊全",
+            "請完善會員資料(其他聯繫方式、所在的區域、工作狀態、預計加盟產業)後，再申請創業計畫，您可以選擇先收藏此計畫或前往完善資料"
+        );
+
+        if (result === 'favorite') {
+          // 用戶選擇收藏
+          await handleUserFavoritePlan();
+          return;
+        } else if (result === 'push') {
+          // 用戶選擇前往完善資料
+          await router.push({ path: "/account/profile" });
           return;
         }
+        // result === false 表示用戶關閉彈窗，不做任何操作
+        return;
       }
     }
-
-    const res = await planApi.checkCreatePlanStatus(formData);
-    if (res.code === 0 && res.data.canCreatePlan === false) {
-      alert("您已有一筆創業申請正在審核中，請勿重複申請。");
-      return;
-    }
   }
+
+  // 檢查是否已有申請中的計畫
+  const res = await planApi.checkCreatePlanStatus(formData);
+  if (res.code === 0 && res.data.canCreatePlan === false) {
+    await NewAlert.show("無法重複申請", "您已有一筆創業申請正在審核中，請勿重複申請");
+    return;
+  }
+
+  // 所有檢查通過，跳轉到創業申請頁面
   await router.push({
     path: "/account/startup",
     query: {

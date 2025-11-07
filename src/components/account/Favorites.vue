@@ -19,6 +19,7 @@
           :showInfo="true"
           @favorite-toggle="handleFavoriteToggle"
           @card-click="handlePlanClick"
+          @download-plan="handleDownloadClick(c)"
       />
     </div>
 
@@ -30,6 +31,7 @@
           mode="userFavorites"
           :showProgress="false"
           :showInfo="false"
+          :showBrandInfo="true"
           @favorite-toggle="handleFavoriteToggle"
           @card-click="handleBrandClick"
       />
@@ -69,6 +71,9 @@ const entCards = computed(() => {
     id: partner.officialPartnerId,
     img: partner.officialPartnerImage,
     title: partner.officialPartnerName,
+    industryType: partner.industryType,
+    franchiseFee: partner.franchiseFee,
+    specialOffer: partner.specialOffer,
     favorite: true, // 在收藏頁面中預設為已收藏
   }));
 });
@@ -99,6 +104,11 @@ function handleBrandClick(card) {
   window.open(`/cooperative-brand/${card.id}`, '_blank');
 }
 
+function handleDownloadClick(card) {
+  // 假設有一個 API 可以根據計劃 ID 獲取下載連結
+  window.open(`/account/startup?source=account&planId=${card.id}&mode=pdf-preview`, '_blank');
+}
+
 async function getUserFavoritePlans() {
   if (!isLoggedIn.value) {
     return;
@@ -120,6 +130,7 @@ async function getUserFavoritePlans() {
 onMounted(() => {
   getUserFavoritePlans();
 });
+
 </script>
 
 <style scoped lang="scss">

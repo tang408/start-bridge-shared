@@ -90,9 +90,12 @@
           </ul>
           <p class="title">詳細介紹</p>
 
-          <p v-if="props.brandData?.brandIntro" class="mt-4 mb-4">
-            {{ props.brandData?.brandIntro }}
-          </p>
+          <!-- ✅ 使用 v-html 渲染 HTML 內容 -->
+          <div
+              v-if="props.brandData?.description"
+              class="mt-4 mb-4"
+              v-html="props.brandData?.description"
+          ></div>
           <p v-else class="mt-4 mb-4">
             於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。
             【一杯顏太煮 生活不會苦】。
@@ -100,26 +103,29 @@
 
 
           <p class="title">經營理念</p>
-          <p v-if="props.brandData?.businessPhilosophy" class="mt-4 mb-4">
-            {{ props.brandData?.businessPhilosophy }}
-          </p>
+          <div
+              v-if="props.brandData?.businessConcept"
+              class="mt-4 mb-4"
+              v-html="props.brandData?.businessConcept"
+          ></div>
           <p v-else class="">品牌核心 — 「以人為本，從心出發」</p>
           <p v-else class="">「堅持力」：堅持最好的服務、品質。</p>
           <p v-else class="">「專業力」：將每個最細微的地方做到最好</p>
         </template>
 
         <div v-else-if="t.key === 'joinInfo'">
-            <div class="join-info">
-              <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
-                <div class="ji-label">{{ row.label }}</div>
-                <div class="ji-value">
-                  <template v-if="row.value">{{ row.value }}</template>
-                  <ul v-else-if="row.list?.length" class="ji-list">
-                    <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
-                  </ul>
-                </div>
+          <div class="join-info">
+            <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
+              <div class="ji-label">{{ row.label }}</div>
+              <div class="ji-value">
+                <!-- ✅ 使用 v-html 渲染 HTML 內容 -->
+                <div v-if="row.value" v-html="row.value"></div>
+                <ul v-else-if="row.list?.length" class="ji-list">
+                  <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
+                </ul>
               </div>
             </div>
+          </div>
           <div class="tabs-2-content d-flex-block justify-content-between mt-4">
             <div class="col-2">
               <img src="/src/assets/images/project-tabs-icon1.png" class="" />
@@ -190,6 +196,11 @@ import {computed, onMounted, ref} from "vue";
 import { useRouter } from "vue-router";
 import Tab from "bootstrap/js/dist/tab";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {NewAlert} from "@/composables/useAlert.js";
+import {userApi} from "@/api/modules/user.js";
+import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
+import {useAuth} from "@/composables/useAuth.js";
+const {isLoggedIn, currentUser} = useAuth();
 
 const props = defineProps({
   brandData: {
@@ -231,9 +242,79 @@ onMounted(() => {
   getIndustryTypeName();
 });
 
-function goToParticipation() {
+const userData = ref({})
 
-  router.push({
+async function goToParticipation() {
+  if (!isLoggedIn.value) {
+    await NewAlert.show("請先登入", "請先登入會員以繼續操作");
+    await router.push({ path: "/login" });
+    return;
+  }
+
+  const formData = {
+    userId: currentUser.value,
+  };
+
+  const response = await userApi.getUserInfo(formData);
+
+  if (response.code === 0) {
+    userData.value = response.data;
+
+    // ✅ 檢查用戶基本資料
+    if (userData.value.userInfoData) {
+      const userInfo = userData.value.userInfoData;
+
+      if (!userInfo.lineId || userInfo.lineId === "") {
+        const result = await NewAlert.favorite(
+            "資料不齊全",
+            "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+        );
+
+        if (result === 'favorite') {
+          await handleUserFavoritePlan();
+          return;
+        } else if (result === 'push') {
+          await router.push({ path: "/account/profile" });
+          return;
+        }
+        return;
+      }
+    }
+
+    // ✅ 檢查創業者資料（修正欄位名稱和判斷邏輯）
+    if (userData.value.coreFounderData) {
+      const coreFounderInfo = userData.value.coreFounderData;
+
+      // ✅ 修正：移除字串檢查，只檢查數字和 0
+      if (
+          !coreFounderInfo.city ||
+          coreFounderInfo.city === 0 ||
+          !coreFounderInfo.workStatus ||
+          coreFounderInfo.workStatus === "" ||
+          !coreFounderInfo.minBudget ||
+          coreFounderInfo.minBudget === 0 ||
+          !coreFounderInfo.maxBudget ||
+          coreFounderInfo.maxBudget === 0
+      ) {
+        const result = await NewAlert.favorite(
+            "資料不齊全",
+            "請完善會員資料（所在區域、工作狀態、最低、最高可投入資源、預計參與產業）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+        );
+
+        if (result === 'favorite') {
+          await handleUserFavoritePlan();
+          return;
+        } else if (result === 'push') {
+          await router.push({ path: "/account/profile" });
+          return;
+        }
+        return;
+      }
+    }
+  }
+
+  // ✅ 所有檢查通過，跳轉到參與頁面
+  await router.push({
     name: "participation",
     query: {
       source: "brand",
@@ -243,6 +324,26 @@ function goToParticipation() {
       planId: props.planData?.id,
     },
   });
+}
+
+async function handleUserFavoritePlan() {
+  if (!isLoggedIn.value) {
+    alert("請先登入會員");
+    await router.push({path: "/login"});
+    return;
+  }
+  const formData = {
+    userId: currentUser.value,
+    planId: props.planData?.id,
+    planType: 1
+  }
+  const response = await userFavoritePlanApi.createUserFavoritePlan(formData);
+  if (response.code === 0) {
+    alert("已加入收藏");
+  } else {
+    alert(response.message || "操作失敗，請稍後再試");
+  }
+
 }
 
 const industryTypesData = ref([]);

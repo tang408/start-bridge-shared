@@ -422,6 +422,7 @@ import {useAuth} from "@/composables/useAuth.js";
 import {planApi} from "@/api/modules/plan.js";
 import {userCheckApi} from "@/api/modules/userCheck.js";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
 const router = useRouter();
@@ -794,9 +795,13 @@ async function participate(p) {
     });
 
     if (response.code === 0) {
-      alert('參與成功');
-      await router.push('/account/participation');
-      await refreshAllData();
+      const result = await NewAlert.confirm("共創專案提交成功","請前往「個人專區」上傳相關文件。")
+      if (result) {
+        await router.push({ path: "/account/profile" });
+      } else {
+        await router.push('/account/participation');
+        await refreshAllData();
+      }
     } else {
       alert(response.message || '參與失敗');
     }

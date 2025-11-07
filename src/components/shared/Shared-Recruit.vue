@@ -5,27 +5,29 @@
       <label class="fg-label" v-if="type === 'recruit'"> 招聘管道：</label>
 
       <div
-        class="option"
-        v-for="opt in options"
-        :key="opt.key"
-        :for="`${uid}-${opt.key}`"
+          class="option"
+          v-for="opt in options"
+          :key="opt.key"
+          :for="`${uid}-${opt.key}`"
       >
         <input
-          type="checkbox"
-          :id="`${uid}-${opt.key}`"
-          :checked="model[opt.key]?.checked || false"
-          @change="onToggle(opt.key, $event.target.checked)"
+            type="checkbox"
+            :id="`${uid}-${opt.key}`"
+            :checked="model[opt.key]?.checked || false"
+            :disabled="readonly"
+            @change="onToggle(opt.key, $event.target.checked)"
         />
         <label class="option-label" :for="`${uid}-${opt.key}`">
           {{ opt.text }}
         </label>
         <input
-          v-if="opt.key === 'other'"
-          class="textline ms-2"
-          type="text"
-          :value="model[opt.key]?.value || ''"
-          :disabled="!model[opt.key]?.checked"
-          @input="onInput(opt.key, $event.target.value)"
+            v-if="opt.key === 'other'"
+            class="textline ms-2"
+            type="text"
+            :value="model[opt.key]?.value || ''"
+            :disabled="readonly || !model[opt.key]?.checked"
+            :readonly="readonly"
+            @input="onInput(opt.key, $event.target.value)"
         />
       </div>
     </div>
@@ -45,6 +47,7 @@ const props = defineProps({
   options: { type: Array, default: () => [] },
   error: { type: String, default: "" },
   type: { type: String, default: "" },
+  readonly: { type: Boolean, default: false }, // ✅ 新增
 });
 
 const uid = computed(() => `rc-${Math.random().toString(36).slice(2, 9)}`);
@@ -52,11 +55,17 @@ const uid = computed(() => `rc-${Math.random().toString(36).slice(2, 9)}`);
 function ensureKey(key) {
   if (!model.value[key]) model.value[key] = { checked: false, value: "" };
 }
+
 function onToggle(key, checked) {
+  if (props.readonly) return; // ✅ readonly 時不處理
+
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], checked } };
 }
+
 function onInput(key, val) {
+  if (props.readonly) return; // ✅ readonly 時不處理
+
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], value: val } };
 }
@@ -84,6 +93,12 @@ function onInput(key, val) {
 
   input[type="checkbox"] {
     flex-shrink: 0;
+
+    /* ✅ readonly 樣式 */
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   }
 
   .option-label {
@@ -99,6 +114,26 @@ function onInput(key, val) {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+
+    /* ✅ readonly 樣式 */
+    &:disabled,
+    &[readonly] {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
   }
+}
+
+.error-msg {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.fg-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
 }
 </style>
