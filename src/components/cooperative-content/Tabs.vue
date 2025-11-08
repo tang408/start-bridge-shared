@@ -358,7 +358,7 @@ async function goToStartup() {
 
 async function handleUserFavoritePlan() {
   if (!isLoggedIn.value) {
-    alert("請先登入會員");
+    await NewAlert.show("請先登入", "請先登入會員以繼續操作");
     await router.push({path: "/login"});
     return;
   }
@@ -369,9 +369,9 @@ async function handleUserFavoritePlan() {
   }
   const response = await userFavoritePlanApi.createUserFavoritePlan(formData);
   if (response.code === 0) {
-    alert("已加入收藏");
+    await NewAlert.show("操作成功", "已將此品牌加入您的收藏");
   } else {
-    alert(response.message || "操作失敗，請稍後再試");
+    await NewAlert.show("操作失敗", response.message + " ,無法將此品牌加入您的收藏，請洽客服人員");
   }
 
 }

@@ -118,6 +118,7 @@ import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 import {onMounted} from "vue";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const props = defineProps({
   card: {type: Object, required: true},
@@ -180,7 +181,7 @@ onMounted(() => {
 
 async function toggleFavorite(newVal) {
   if (currentUser.value === null) {
-    alert("請先登入會員");
+    await NewAlert.show("請先登入","請先登入以使用收藏功能");
     return;
   }
 
@@ -204,7 +205,7 @@ async function toggleFavorite(newVal) {
 
     const response = await userFavoritePlanApi.deleteUserFavoritePlan(formData)
     if (response.code !== 0) {
-      alert("取消收藏失敗，請稍後再試");
+      await NewAlert.show("注意！", response.message + ",取消收藏失敗，請洽客服人員。");
       return;
     }
 
@@ -219,7 +220,7 @@ async function toggleFavorite(newVal) {
     const response = await userFavoritePlanApi.createUserFavoritePlan(formData)
     emit("favorite-toggle", newVal);
     if (response.code !== 0) {
-      alert("加入收藏失敗，請稍後再試");
+      await NewAlert.show("注意！", response.message + ",收藏失敗，請洽客服人員。");
       return;
     }
   }

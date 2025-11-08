@@ -636,7 +636,7 @@ async function getUserInfo() {
     } else {
       await NewAlert.show(
           "錯誤",
-          "獲取用戶資料失敗，請稍後再試。",
+          "獲取用戶資料失敗，請洽客服人員。",
       );
     }
   } finally {

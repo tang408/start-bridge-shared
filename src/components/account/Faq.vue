@@ -50,6 +50,7 @@ import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {helpCenterFaqApi} from "@/api/modules/helpCenterFaq.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const { isLoggedIn, currentUser } = useAuth();
 
@@ -127,14 +128,15 @@ async function handleForm() {
 
     const response = await helpCenterFaqApi.createHelpCenterFaq(payload);
     if (response.code === 0) {
-      alert("您的詢問已送出，我們會盡快與您聯繫。");
+      await NewAlert.show("操作成功", "您的詢問已送出，我們將盡快與您聯繫。");
       // Reset form
       formEnt.question = "";
       formEnt.content = "";
       formEnt.contactTime = "";
       formEnt.contactFunc = "";
     } else {
-      alert("送出失敗，請稍後再試。");
+      await NewAlert.show("送出失敗", response.message + " ,請洽客服人員。");
+
     }
   } catch (error) {
     if (error.response && error.response.data && error.response.data.errors) {
@@ -145,7 +147,7 @@ async function handleForm() {
         }
       }
     } else {
-      alert("送出失敗，請稍後再試。");
+      await NewAlert.show("送出失敗", "發生未知錯誤，請洽客服人員。");
     }
 
   }

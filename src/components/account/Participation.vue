@@ -764,7 +764,7 @@ async function getParticipantPlan() {
         increaseAmount: 0,
       }];
     } else {
-      alert(response.message || '取得專案失敗');
+      await NewAlert.show("獲取品牌計畫失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('獲取品牌計畫錯誤:', error);
@@ -778,7 +778,7 @@ async function participate(p) {
   errors.agree = "";
 
   if (!p.increaseAmount || p.increaseAmount <= 0) {
-    alert('請輸入參與金額');
+    await NewAlert.show("輸入錯誤", "請輸入有效的參與金額。");
     return;
   }
 
@@ -803,11 +803,11 @@ async function participate(p) {
         await refreshAllData();
       }
     } else {
-      alert(response.message || '參與失敗');
+      await NewAlert.show("參與失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('參與共創錯誤:', error);
-    alert('參與失敗，請稍後再試');
+    await NewAlert.show("參與失敗", "請洽客服人員。");
   }
 }
 
@@ -816,7 +816,7 @@ async function handleIncrease(plan) {
   const amount = parseFloat(plan.increaseAmountStr);
 
   if (!amount || amount <= 0 || isNaN(amount)) {
-    alert('請輸入有效的追加金額');
+    await NewAlert.show("輸入錯誤", "請輸入有效的追加金額。");
     return;
   }
 
@@ -828,15 +828,15 @@ async function handleIncrease(plan) {
     });
 
     if (response.code === 0) {
-      alert('追加成功');
+      await NewAlert.show("追加成功", "您的追加金額已成功提交。");
       plan.increaseAmountStr = '';
       await refreshAllData();
     } else {
-      alert(response.message || '追加失敗');
+      await NewAlert.show("追加失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('追加金額錯誤:', error);
-    alert('追加失敗，請稍後再試');
+    await NewAlert.show("追加失敗", "請洽客服人員。");
   }
 }
 
@@ -845,7 +845,7 @@ async function handleSignCoreContract(transaction, plan) {
   const signUrl = coreFounderSignUrl.value
 
   if (!signUrl) {
-    alert('簽署合約 URL 未設定，請聯繫管理員')
+   await NewAlert.show("系統錯誤", "簽署連結未設定，請聯繫管理員。")
     return
   }
 
@@ -862,7 +862,7 @@ async function handleSignCoreContract(transaction, plan) {
   if (res.code === 0) {
     await refreshAllData()
   } else {
-    alert(res.message || '簽署合約失敗，請稍後再試')
+    await NewAlert.show("操作失敗", res.message + ",請洽客服人員。")
   }
 }
 
@@ -875,10 +875,10 @@ async function handleSignCoreContractSubmit(transaction, plan) {
 
   const res = await userCheckApi.signCoreContractSubmitByUser(formData)
   if (res.code === 0) {
-    alert('已通知管理員審核，感謝您的配合')
+    await NewAlert.show("提交成功", "簽署完成提交成功")
     await refreshAllData()
   } else {
-    alert(res.message || '提交簽署失敗，請稍後再試')
+    await NewAlert.show("操作失敗", res.message + ",請洽客服人員。")
   }
 }
 
@@ -955,15 +955,15 @@ async function handlePaymentSubmit() {
     });
 
     if (response.code === 0) {
-      alert("支付資料上傳成功");
+      await NewAlert.show("上傳成功", "您的支付資料已成功上傳。");
       showPaymentDialog.value = false;
       await refreshAllData();
     } else {
-      alert(response.message || "上傳失敗");
+      await NewAlert.show("上傳失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('提交支付資料錯誤:', error);
-    alert("上傳失敗，請稍後再試");
+    await NewAlert.show("上傳失敗", "請洽客服人員。");
   }
 }
 
@@ -1054,13 +1054,13 @@ async function handleCorePlanFinalContractSubmit() {
 
   const res = await userCheckApi.uploadCorePlanFinalContractByUser(formData)
   if (res.code === 0) {
-    alert('最終合約文件上傳成功，感謝您的配合')
+    await NewAlert.show("上傳成功", "最終合約文件已成功上傳。");
     showCorePlanFinalContractDialog.value = false
     corePlanFinalContractFileName.value = ''
     corePlanFinalContractError.value = ''
     await refreshAllData()
   } else {
-    alert(res.message || '上傳失敗，請稍後再試')
+    await NewAlert.show("上傳失敗", res.message + " ,請洽客服人員。");
   }
 }
 

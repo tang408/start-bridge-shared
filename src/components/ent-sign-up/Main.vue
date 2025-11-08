@@ -125,6 +125,7 @@ import SharedBirthday from "@/components/shared/Shared-Birthday.vue";
 import {userApi} from "@/api/modules/user.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 import {useRouter} from "vue-router";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const form = reactive({
   phone: "",
@@ -368,16 +369,16 @@ async function handleRegister() {
     const response = await userApi.founderRegister(params);
 
     if (response.code === 0) {
-      alert('註冊完成，請使用您的帳號密碼登入');
-      router.push('/login');
+      await NewAlert.show("操作成功", "註冊成功，請使用您的帳號密碼登入");
+      await router.push('/login');
     } else {
       console.error('註冊失敗:', response);
-      alert(response.message || '註冊失敗，請稍後再試');
+      await NewAlert.show("註冊失敗", response.message + ' ,註冊失敗，請洽客服人員');
     }
 
   } catch (error) {
     console.error('註冊過程發生錯誤:', error);
-    alert('註冊過程發生錯誤，請稍後再試');
+    await NewAlert.show("註冊失敗", "註冊過程發生錯誤，請洽客服人員。");
   } finally {
     loading.value = false;
   }
@@ -396,13 +397,13 @@ async function sendPhoneOTP() {
   try {
     const response = await userApi.sendVerificationCode({ phone: form.phone });
     if (response.code !== 0) {
-      alert(response.message || '發送手機驗證碼失敗，請稍後再試');
+      await NewAlert.show("注意！", response.message + "，請洽客服人員。");
     } else {
       startTimer(phoneOtp, 100);
     }
   } catch (error) {
     console.error('發送手機驗證碼過程發生錯誤:', error);
-    alert('發送手機驗證碼過程發生錯誤，請稍後再試');
+    await NewAlert.show("注意！", "發送手機驗證碼過程發生錯誤，請洽客服人員。");
   }
 }
 

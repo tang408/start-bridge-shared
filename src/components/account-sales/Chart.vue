@@ -34,6 +34,7 @@ import ChartNode from "./ChartNode.vue";
 import { useAuth } from "@/composables/useAuth.js";
 import { salesApi } from "@/api/modules/sales.js";
 import { salesLevelApi as saleslevelApi } from "@/api/modules/salesLevel.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const { isLoggedIn, currentSales } = useAuth();
 
@@ -103,12 +104,12 @@ const exporting = ref(false);
 
 async function exportPic() {
   if (!chartContainer.value) {
-    alert('找不到組織圖元素');
+    await NewAlert.show("注意！", "找不到組織圖區域，無法匯出。");
     return;
   }
 
   if (!rootNode.value) {
-    alert('尚未載入組織資料');
+    await NewAlert.show("注意！", "組織圖資料不存在，無法匯出。");
     return;
   }
 
@@ -132,10 +133,10 @@ async function exportPic() {
     link.click();
     document.body.removeChild(link);
 
-    alert('組織圖匯出成功！');
+    await NewAlert.show("成功！", "組織圖已成功匯出。");
   } catch (error) {
     console.error('匯出失敗:', error);
-    alert('匯出失敗，請稍後再試');
+    await NewAlert.show("注意！", error + " ,匯出組織圖失敗，請洽客服人員。");
   } finally {
     exporting.value = false;
   }

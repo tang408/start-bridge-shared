@@ -93,6 +93,7 @@ import icon from "@/assets/icon/btn-icon2.svg";
 import iconActive from "@/assets/icon/btn-icon.svg";
 import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
 import {useAuth} from "@/composables/useAuth.js";
+import {NewAlert} from "@/composables/useAlert.js";
 const route = useRoute();
 const router = useRouter();
 const { isLoggedIn, currentSales } = useAuth();
@@ -117,7 +118,7 @@ watch(
 
 const goToRegister = () => {
   if (isLoggedIn.value) {
-    alert("您已完成註冊。");
+     NewAlert.show("注意！", "您已是會員，無需重複註冊喔！");
   } else{
     router.push("/entSignUp");
   }

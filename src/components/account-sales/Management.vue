@@ -402,6 +402,7 @@ import {useAuth} from "@/composables/useAuth.js";
 import {useRoute, useRouter} from 'vue-router';
 import {salesCheckApi} from "@/api/modules/salesCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -674,40 +675,40 @@ async function handleApprove(data, approved) {
   if (data.planType === 1 && data.currentStep === 1) {
     const res = await salesCheckApi.checkPlanBySales(formData);
     if (res.code === 0) {
-      alert('審核成功');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
   if (data.planType === 1 && data.currentStep === 13) {
     const res = await salesCheckApi.checkResourceBySales(formData);
     if (res.code === 0) {
-      alert('審核成功');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
   if (data.planType === 1 && data.currentStep === 15) {
     const res = await salesCheckApi.checkFranchiseBySales(formData);
     if (res.code === 0) {
-      alert('審核成功');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
   if (data.planType === 1 && data.currentStep === 17) {
@@ -717,14 +718,14 @@ async function handleApprove(data, approved) {
   if (data.planType === 1 && data.currentStep === 19) {
     const res = await salesCheckApi.finishPlanBySales(formData);
     if (res.code === 0) {
-      alert('審核成功');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
 
@@ -732,28 +733,28 @@ async function handleApprove(data, approved) {
   if (data.planType === 2 && data.participantPlanStep === 1) {
     const res = await salesCheckApi.checkCoreMoneyBySales(formData);
     if (res.code === 0) {
-      alert('審核成功');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
 
   if (data.planType === 2 && data.participantPlanStep === 10) {
     const res = await salesCheckApi.contactUserBySales(formData);
     if (res.code === 0) {
-      alert('已通知用戶');
+      await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
     } else {
-      alert('審核失敗：' + res.message);
+      await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
 }
@@ -835,7 +836,7 @@ async function openPlanDetailDialog(plan) {
       planDetail.value = response.data;
 
     } else {
-      alert('獲取創業計劃書詳情失敗:' + response.message);
+      await NewAlert.show('注意！', '獲取創業計劃書詳情失敗:' + response.message);
     }
   } catch (error) {
     console.error('獲取創業計劃書詳情失敗:', error);
@@ -860,7 +861,7 @@ async function openPlanContractDialog(plan) {
       window.open(planContractInfo.value.finalContractUrl, '_blank')
 
     } else {
-      alert('獲取合約詳情失敗:' + response.message);
+      await NewAlert.show('注意！', '獲取合約詳情失敗:' + response.message);
     }
   } catch (error) {
     console.error('獲取合約詳情失敗:', error);
@@ -962,7 +963,7 @@ async function handleAddressSubmit() {
     addressForm.address = ''
 
   } catch (error) {
-    alert('提交失敗，請稍後再試')
+   await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
   }
 }
 

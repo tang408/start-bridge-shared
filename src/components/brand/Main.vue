@@ -204,6 +204,7 @@ import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
 import {brandFormApi} from "@/api/modules/brandForm.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 import {cityApi} from "@/api/modules/city.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 // 選中的方案 ID
 const selectedPlan = ref({});
@@ -279,7 +280,7 @@ async function onSubmit() {
   }
 
   if (!agree.value) {
-    alert("請勾選同意條款");
+    await NewAlert.show("注意！", "請同意平台合約、免責聲明、服務條款及隱私權政策等相關條款內容。")
     return;
   }
 
@@ -297,7 +298,7 @@ async function onSubmit() {
 
   const result = await brandFormApi.createBrandForm(formData);
   if (result.code === 0) {
-    alert('表單提交成功！');
+    await NewAlert.show("成功！", "表單提交成功，我們將盡快與您聯絡。");
     // 重置表單
     form.value = {
       type: "",
@@ -309,7 +310,7 @@ async function onSubmit() {
       region: "",
     };
   } else {
-    alert('表單提交失敗，請稍後再試。');
+    await NewAlert.show("錯誤！", "表單提交失敗，請洽詢客服人員。");
   }
 }
 const accordionItems = [

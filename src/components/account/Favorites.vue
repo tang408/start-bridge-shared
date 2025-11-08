@@ -45,6 +45,7 @@ import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedCard from "@/components/shared/Shared-Card.vue";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 import {useAuth} from "@/composables/useAuth.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const {isLoggedIn, currentUser} = useAuth();
 const activeTab = ref(1);
@@ -89,7 +90,7 @@ async function handleFavoriteToggle(newValue) {
   console.log(formData)
   const response = await userFavoritePlanApi.deleteUserFavoritePlan(formData)
   if (response.code !== 0) {
-    alert("取消收藏失敗，請稍後再試");
+    await NewAlert.show("注意！", "操作失敗，請洽客服人員。");
     return;
   }
   // 重新獲取收藏列表

@@ -27,6 +27,7 @@
 import { ref } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {userApi} from "@/api/modules/user.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const step = ref(1);
 const account = ref("");
@@ -53,9 +54,9 @@ async function sendResetLink() {
 
   const res = await userApi.sendResetPasswordUrl(params)
   if (res.code === 0) {
-    alert("重設連結已發送，請至信箱或手機獲取連結");
+    await NewAlert.show("成功！", "重設密碼連結已發送至您的信箱或手機，請前往查看。");
   } else {
-    errors.value.account = res.message || "發送失敗，請稍後再試";
+    await NewAlert.show("錯誤！", res.message + ",發送重設密碼連結失敗，請洽客服人員。");
     return;
   }
 

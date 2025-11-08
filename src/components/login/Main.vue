@@ -125,7 +125,7 @@ async function handleLogin(title, content) {
   } catch (error) {
     await NewAlert.show(
         "登入失敗",
-        "登入失敗，請稍後再試。"
+        "登入失敗，請洽客服人員。"
     );
   }
 }

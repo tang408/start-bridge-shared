@@ -35,6 +35,7 @@ import {onMounted, ref} from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {useRoute, useRouter} from "vue-router";
 import {userApi} from "@/api/modules/user.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 
 const route = useRoute();
@@ -55,7 +56,7 @@ onMounted(() => {
   console.log(token.value)
   // 如果沒有 token，跳轉到錯誤頁面或登入頁面
   if (!token.value) {
-    alert("無效的重設密碼連結");
+    NewAlert.show("注意！", "無效的重設密碼連結，請重新申請重設密碼。");
     router.push("/login");
   }
 });
@@ -81,10 +82,10 @@ async function resetPassword() {
 
   const res = await userApi.resetPassword(formData);
   if (res.code === 0) {
-    alert("密碼已成功重設，請重新登入！");
+    await NewAlert.show("成功！", "密碼重設成功，請使用新密碼登入。");
     await router.push("/login");
   } else {
-    alert(res.message || "密碼重設失敗，請稍後再試");
+    await NewAlert.show("注意！", res.message + ",密碼重設失敗，請洽客服人員。");
     return;
   }
 }

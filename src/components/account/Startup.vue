@@ -128,6 +128,16 @@
           上傳合約並支付服務費
         </button>
 
+        <button
+            v-if="p.status === 12 "
+            type="button"
+            class="btn-upload"
+            :disabled="p.companyStatus === 1"
+            @click.stop="handleCompanyButtonClick(p)"
+        >
+          上傳公司資料
+        </button>
+
         <!-- 並排顯示 -->
         <div v-if="p.status === 10 && isWithinOneWeekBeforeEnd(p.endTime)" class="">
           <span>專案即將結束，您可以選擇以下操作：</span>
@@ -611,6 +621,120 @@
     </div>
   </SharedModal>
 
+  <SharedModal
+      v-model="showCompanyDialog"
+      title="上傳公司資料"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleCompanySubmit"
+  >
+    <SharedInput
+        id="companyName"
+        label="公司名稱*"
+        type="textarea"
+        placeholder="請填寫公司名稱"
+        v-model="companyForm.companyName"
+        :error="paymentErrors.companyName"
+    />
+    <SharedInput
+        id="companyNameEn"
+        label="公司名稱(英文)"
+        type="textarea"
+        placeholder="請填寫公司名稱(英文)"
+        v-model="companyForm.companyNameEn"
+        :error="paymentErrors.companyNameEn"
+    />
+    <SharedInput
+        id="businessId"
+        label="統一編號*"
+        type="textarea"
+        placeholder="請填寫統一編號"
+        v-model="companyForm.businessId"
+        :error="paymentErrors.businessId"
+    />
+
+    <SharedUpload
+        label="上傳公司LOGO"
+        accept=".pdf,.jpg,.jpeg,.png"
+        :max-size="5"
+        name="companyLogo"
+        v-model="companyForm.companyLogo"
+        :error="paymentErrors.companyLogo"
+        @upload-success="(result) => handleUploadSuccess('companyLogo', result)"
+        required
+        :account="uploadAccount"
+        :type="'公司LOGO'"
+        :id="currentUser.value"/>
+
+    <SharedInput
+        id="slogan"
+        label="公司標語"
+        type="textarea"
+        placeholder="請填寫公司標語"
+        v-model="companyForm.slogan"
+        :error="paymentErrors.slogan"
+    />
+    <SharedInput
+        id="bankAccountName"
+        label="銀行帳戶名稱"
+        type="textarea"
+        placeholder="請填寫銀行帳戶名稱"
+        v-model="companyForm.bankAccountName"
+        :error="paymentErrors.bankAccountName"
+    />
+    <SharedInput
+        id="bankAccountNumber"
+        label="銀行帳戶號碼"
+        type="textarea"
+        placeholder="請填寫銀行帳戶號碼"
+        v-model="companyForm.bankAccountNumber"
+        :error="paymentErrors.bankAccountNumber"
+    />
+    <SharedInput
+        id="profile"
+        label="公司簡介"
+        type="textarea"
+        placeholder="請填寫公司簡介"
+        v-model="companyForm.profile"
+        :error="paymentErrors.profile"
+    />
+    <SharedInput
+        id="info"
+        label="公司詳細介紹"
+        type="textarea"
+        placeholder="請填寫公司詳細介紹"
+        v-model="companyForm.info"
+        :error="paymentErrors.info"
+    />
+    <SharedInput
+        id="officialUrl"
+        label="公司官方網站"
+        type="textarea"
+        placeholder="請填寫公司官方網站"
+        v-model="companyForm.officialUrl"
+        :error="paymentErrors.officialUrl"
+    />
+    <SharedInput
+        id="facebookUrl"
+        label="公司 Facebook 網址"
+        type="textarea"
+        placeholder="請填寫公司 Facebook 網址"
+        v-model="companyForm.facebookUrl"
+        :error="paymentErrors.facebookUrl"
+    />
+    <SharedInput
+        id="instagramUrl"
+        label="公司 Instagram 網址"
+        type="textarea"
+        placeholder="請填寫公司 Instagram 網址"
+        v-model="companyForm.instagramUrl"
+        :error="paymentErrors.instagramUrl"
+    />
+  </SharedModal>
+
+
   <!-- 合約確認 Dialog -->
   <SharedModal
       v-model="showContractConfirmDialog"
@@ -950,7 +1074,7 @@ function getStep5ReportText() {
 // 下載 PDF
 async function handleDownloadPDF() {
   if (!pdfContent.value) {
-    alert('找不到 PDF 內容');
+    await NewAlert.show('注意！', 'PDF 內容尚未準備好，請洽客服人員。');
     return;
   }
 
@@ -973,13 +1097,13 @@ async function handleDownloadPDF() {
     });
 
     if (result.success) {
-      alert(`PDF 下載成功！共 ${result.pageCount} 頁`);
+      await NewAlert.show('成功！', 'PDF 已成功生成並下載。');
     } else {
-      alert('PDF 生成失敗：' + result.message);
+      await NewAlert.show('錯誤！', 'PDF 生成失敗，請洽客服人員。');
     }
   } catch (error) {
     console.error('PDF 生成錯誤:', error);
-    alert('PDF 生成失敗，請稍後再試');
+    await NewAlert.show('錯誤！', 'PDF 生成過程中發生錯誤，請洽客服人員。');
   } finally {
     isGeneratingPDF.value = false;
   }
@@ -1024,14 +1148,14 @@ async function handleExtendSubmit() {
   });
 
   if (response.code === 0) {
-    alert("專案延長成功");
+    await NewAlert.show('成功！', '專案延長成功');
     showExtendDialog.value = false;
     // 重新載入頁面或更新資料
     setTimeout(() => {
       window.location.reload();
     }, 1000);
   } else {
-    alert(response.message || "專案延長失敗，請稍後再試");
+    await NewAlert.show('錯誤！', response.message + ' ,專案延長失敗，請洽客服人員');
   }
 }
 
@@ -1052,14 +1176,14 @@ async function handleEndPlanSubmit() {
   });
 
   if (response.code === 0) {
-    alert("專案結束成功");
+    await NewAlert.show('成功！', '專案結束成功');
     showEndPlanDialog.value = false;
     // 重新載入頁面或更新資料
     setTimeout(() => {
       window.location.reload();
     }, 1000);
   } else {
-    alert(response.message || "專案結束失敗，請稍後再試");
+    await NewAlert.show('錯誤！', response.message + ' ,專案結束失敗，請洽客服人員');
   }
 }
 
@@ -1308,11 +1432,11 @@ async function loadPlanData(planId) {
       console.log('載入計畫資料成功');
       console.log('formData:', formData);
     } else {
-      alert('載入計畫資料失敗');
+      await NewAlert.show('錯誤！', '載入計畫資料失敗，請洽客服人員。');
     }
   } catch (error) {
     console.error('載入計畫資料錯誤:', error);
-    alert('載入計畫資料失敗');
+    await NewAlert.show('錯誤！', '載入計畫資料過程中發生錯誤，請洽客服人員。');
   }
 }
 
@@ -1831,6 +1955,7 @@ const progress = ref([
     endTime: "2024-12-15",
     paymentStatus: 1,
     contractStatus: 1,
+    companyStatus:1,
   },
 ]);
 const records = reactive([
@@ -2242,7 +2367,7 @@ async function createPlan() {
     await router.push("/account/startup");
     await getAllPlanByUser();
   } else {
-    alert(isEditMode.value ? "創業計劃書更新失敗，請稍後再試。" : "創業計劃書提交失敗，請稍後再試。");
+    await NewAlert.show("操作失敗，請洽客服人員。");
   }
 }
 
@@ -2308,9 +2433,10 @@ async function getAllPlanByUser() {
       endTime: plan.endTime || null,
       paymentStatus: plan.paymentStatus || 0,
       contractStatus: plan.contractStatus || 0,
+      companyStatus: plan.companyStatus || 0,
     }))
   } else {
-    alert("取得創業計劃書列表失敗，請稍後再試。")
+    await NewAlert.show("注意！", response.message + " ,取得創業計劃列表失敗，請洽客服人員。");
     return;
   }
 }
@@ -2335,6 +2461,7 @@ const isWithinOneWeekBeforeEnd = (endTime) => {
 const showReleaseChargeDialog = ref(false);
 const showSignContractDialog = ref(false);
 const showPaymentDialog = ref(false);
+const showCompanyDialog = ref(false);
 
 // 表單資料
 const paymentForm = reactive({
@@ -2345,8 +2472,26 @@ const paymentForm = reactive({
   contractFile: null,
   paymentProof: null,
   contractFileName: '',
-  paymentProofName: ''
+  paymentProofName: '',
+
 });
+
+const companyForm = reactive({
+  // 公司資料
+  companyName: '',
+  companyNameEn: '',
+  businessId : '',
+  companyLogo: '',
+  companyLogoId: '',
+  slogan: '',
+  bankAccountName: '',
+  bankAccountNumber: '',
+  profile: '',
+  info: '',
+  officialUrl: '',
+  facebookUrl: '',
+  instagramUrl: '',
+})
 
 const contractForm = reactive({
   id: null,
@@ -2358,7 +2503,8 @@ const contractForm = reactive({
 const paymentErrors = reactive({
   contractFile: '',
   paymentProof: '',
-  accountLast5: ''
+  accountLast5: '',
+
 });
 
 // 格式化金額
@@ -2437,6 +2583,40 @@ async function handleButtonClick(plan) {
   }
 }
 
+async function handleCompanyButtonClick(plan) {
+  currentPlan.value = plan
+  showCompanyDialog.value = true;
+}
+
+async function handleCompanySubmit() {
+  console.log(companyForm)
+  const formData = {
+    userId: currentUser.value,
+    planId: currentPlan.value.id,
+    companyName: companyForm.companyName,
+    companyNameEn: companyForm.companyNameEn,
+    businessId : companyForm.businessId,
+    companyLogo: companyForm.companyLogo.id,
+    slogan: companyForm.slogan,
+    bankAccountName: companyForm.bankAccountName,
+    bankAccountNumber: companyForm.bankAccountNumber,
+    profile: companyForm.profile,
+    info: companyForm.info,
+    officialUrl: companyForm.officialUrl,
+    facebookUrl: companyForm.facebookUrl,
+    instagramUrl: companyForm.instagramUrl,
+  }
+
+  const response = await userCheckApi.updateCompanyInfoByUser(formData)
+  if (response.code === 0) {
+    await NewAlert.show('成功', '公司資料提交成功');
+    await getAllPlanByUser()
+  } else {
+    await NewAlert.show('失敗', response.message + ',提交失敗，請洽客服人員。');
+  }
+  showCompanyDialog.value = false;
+}
+
 async function handleUploadData(plan) {
   paymentForm.planId = plan.id;
   paymentForm.userId = currentUser.value;
@@ -2453,7 +2633,7 @@ async function handleSignContract(plan) {
   const signUrl = founderSignUrl.value;
 
   if (!signUrl) {
-    alert('簽署合約 URL 未設定，請聯繫管理員');
+    await NewAlert.show("注意！", "系統尚未設定合約簽署連結，請聯繫管理員。");
     return;
   }
 
@@ -2468,7 +2648,7 @@ async function handleSignContract(plan) {
   if (res.code === 0) {
     await getAllPlanByUser();
   } else {
-    alert(res.message || '合約簽署失敗，請稍後再試');
+    await NewAlert.show("注意！", res.message + " ,取得合約資料失敗，請洽客服人員。");
   }
 }
 
@@ -2493,15 +2673,15 @@ async function handleContractConfirm() {
   try {
     const res = await userCheckApi.signContractSubmitByUser(formData)
     if (res.code === 0) {
-      alert('已提交完成，請等待審核結果。')
+      await NewAlert.show('合約提交成功！', '您的合約已成功提交。')
       showContractConfirmDialog.value = false
       await getAllPlanByUser()
     } else {
-      alert(res.message || '合約提交失敗，請稍後再試')
+      await NewAlert.show('注意！', res.message + ' ,合約提交失敗，請洽客服人員。')
     }
   } catch (error) {
     console.error('提交合約失敗:', error)
-    alert('合約提交失敗，請稍後再試')
+    await NewAlert.show('注意！', '合約提交失敗，請洽客服人員。')
   }
 }
 
@@ -2573,11 +2753,11 @@ async function handleReleaseChargeSubmit() {
   const response = await userCheckApi.createReleaseChargeInfoByUser(formData)
 
   if (response.code === 0) {
-    alert('成功');
+    await NewAlert.show('成功', '上傳成功');
     showReleaseChargeDialog.value = false;
     await getAllPlanByUser()
   } else {
-    alert(response.message || '上傳失敗');
+    await NewAlert.show('失敗', response.message + ',上傳失敗，請洽客服人員。');
   }
 }
 
@@ -2604,15 +2784,15 @@ async function handleContractPaymentSubmit() {
     // console.log(response)
 
     if (response.code === 0) {
-      alert('成功');
+      await NewAlert.show('成功', '上傳成功');
       showPaymentDialog.value = false;
       await getAllPlanByUser()
     } else {
-      alert(response.message || '上傳失敗');
+      await NewAlert.show('失敗', response.message + ' ,上傳失敗，請洽客服人員。');
     }
   } catch (error) {
     console.error('上傳失敗:', error);
-    alert('上傳失敗，請稍後再試');
+    await NewAlert.show('失敗', '上傳失敗，請洽客服人員。');
   }
 }
 
@@ -2693,6 +2873,9 @@ function handleUploadSuccess(fileType, result) {
     } else if (fileType === 'userPaymentProofFile') {
       paymentForm.paymentProof = fileId;
       paymentForm.paymentProofName = fileName;
+    } else if (fileType === 'companyLogo') {
+      paymentForm.companyLogoId = fileId;
+      paymentForm.companyLogo = fileName;
     }
   }
 }
@@ -2732,11 +2915,11 @@ async function getTransactionByUser() {
 
       console.log('處理後的交易記錄:', records)
     } else {
-      alert("取得交易紀錄失敗，請稍後再試。")
+      await NewAlert.show("注意！", response.message + " ,取得交易紀錄失敗，請洽客服人員。")
     }
   } catch (error) {
     console.error('取得交易紀錄錯誤:', error)
-    alert("取得交易紀錄失敗，請稍後再試。")
+    await NewAlert.show("注意！", "取得交易紀錄失敗，請洽客服人員。")
   }
 }
 

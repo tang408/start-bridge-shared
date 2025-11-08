@@ -84,6 +84,7 @@ import { onMounted, ref, watch, computed } from "vue";
 import SharedSalesCard from "@/components/shared/Shared-Sales-Card.vue";
 import { useAuth } from "@/composables/useAuth.js";
 import { salesBonusApi } from "@/api/modules/salesBonus.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const { isLoggedIn, currentSales } = useAuth();
 
@@ -205,11 +206,12 @@ async function getAllSalesBonusBySales() {
           totalNetAmount: 0
         }
       };
-      alert(response.message || '獎金資料取得失敗');
+      await NewAlert.show("注意！", response.message + ",獎金資料取得失敗，請洽客服人員。");
+
     }
   } catch (error) {
     console.error('獲取獎金資料失敗:', error);
-    alert('獎金資料取得失敗，請稍後再試');
+    await NewAlert.show("注意！", error + ",發生未知錯誤，請洽客服人員。");
   } finally {
     loading.value = false;
   }

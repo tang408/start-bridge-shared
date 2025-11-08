@@ -111,6 +111,7 @@ import {onMounted, ref} from "vue";
 import {salesApi} from "@/api/modules/sales.js";
 import {salesLevelApi} from "@/api/modules/salesLevel.js";
 import { useNotifications } from '@/composables/useNotifications.js';
+import {NewAlert} from "@/composables/useAlert.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -252,14 +253,15 @@ async function handleResetPassword() {
     const response = await salesApi.resetPassword(params);
 
     if (response.code === 0) {
-      alert("密碼修改成功");
+      await NewAlert.show("成功！", "密碼修改成功，請使用新密碼登入。");
+
       showResetPasswordDialog.value = false;
     } else {
-      alert(response.message || "密碼修改失敗");
+     await NewAlert.show("注意！", response.message + "，密碼修改失敗，請洽客服人員。");
     }
   } catch (error) {
     console.error('Reset password error:', error);
-    alert('密碼修改失敗，請稍後再試');
+    await NewAlert.show("注意！", "發生未知錯誤，請洽客服人員。");
   }
 }
 </script>

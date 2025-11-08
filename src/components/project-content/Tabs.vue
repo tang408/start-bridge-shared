@@ -3,21 +3,21 @@
     <ul class="nav nav-pills gap-2" role="tablist">
       <li class="nav-item" role="presentation" v-for="t in tabs" :key="t.key">
         <button
-          class="nav-link d-flex align-items-center gap-2"
-          :class="{ active: t.key === activeTab }"
-          :id="`tab-${t.key}`"
-          data-bs-toggle="tab"
-          :data-bs-target="`#panel-${t.key}`"
-          type="button"
-          role="tab"
-          :aria-controls="`panel-${t.key}`"
-          :aria-selected="t.key === activeTab ? 'true' : 'false'"
+            class="nav-link d-flex align-items-center gap-2"
+            :class="{ active: t.key === activeTab }"
+            :id="`tab-${t.key}`"
+            data-bs-toggle="tab"
+            :data-bs-target="`#panel-${t.key}`"
+            type="button"
+            role="tab"
+            :aria-controls="`panel-${t.key}`"
+            :aria-selected="t.key === activeTab ? 'true' : 'false'"
         >
           <img
-            v-if="t.key === activeTab"
-            src="@/assets/images/arrow-right.png"
-            alt="active icon"
-            class="tab-icon"
+              v-if="t.key === activeTab"
+              src="@/assets/images/arrow-right.png"
+              alt="active icon"
+              class="tab-icon"
           />
           {{ t.label }}
         </button>
@@ -32,85 +32,106 @@
 
     <div class="tab-content mt-3">
       <div
-        v-for="t in tabs"
-        :key="`panel-${t.key}`"
-        class="tab-pane fade"
-        :class="{ 'show active': t.key === activeTab }"
-        :id="`panel-${t.key}`"
-        role="tabpanel"
-        :aria-labelledby="`tab-${t.key}`"
+          v-for="t in tabs"
+          :key="`panel-${t.key}`"
+          class="tab-pane fade"
+          :class="{ 'show active': t.key === activeTab }"
+          :id="`panel-${t.key}`"
+          role="tabpanel"
+          :aria-labelledby="`tab-${t.key}`"
       >
         <template v-if="t.key === 'brand'">
-          <ul class="row list-unstyled small text-body">
-            <li class="col-12 col-md-6">
-              <div class="title">公司成立狀態</div>
-              <div v-if="props.brandData?.companyStatus" class="title-content">
-                {{ getCompanyStatusName(props.brandData?.companyStatus) }} ({{ props.brandData.establishedDate }})
-              </div>
-              <div v-else class="title-content">
-                已成立 (2022-06-15)
-              </div>
-            </li>
-            <li class="col-12 col-md-6">
-              <div class="title">公司網址</div>
-              <div v-if="props.brandData?.website" class="title-content">
-                {{ props.brandData?.website }}
+          <!-- 品牌名稱 -->
+          <div class="brand-header">
+            <h2 class="brand-name">{{ props.planData?.planDetail.brandName || '品牌名稱' }}</h2>
+          </div>
+
+          <!-- 品牌介紹 -->
+          <div class="brand-intro-section">
+            <h3 class="section-title">品牌介紹</h3>
+            <div
+                v-if="props.planData?.planDetail.brandIntro"
+                class="brand-intro-content"
+                v-html="props.planData?.planDetail.brandIntro"
+            ></div>
+            <p v-else class="text-muted">暫無品牌介紹</p>
+          </div>
+
+          <!-- 專案進度 -->
+          <div class="project-progress-section">
+            <h3 class="section-title">專案進度</h3>
+
+            <!-- 進度條 -->
+            <div class="progress-bar-container">
+              <div class="progress-bar-wrapper">
+                <div
+                    class="progress-bar-fill"
+                    :style="{
+              width: `${props.planData?.planDetail.planProgress || 0}%`,
+              backgroundColor: progressColor
+            }"
+                >
+                  <span class="progress-text">{{ props.planData?.planDetail.planProgress || 0 }}%</span>
                 </div>
-              <div v-else class="title-content">
-                https://www.super-milk-tea.com/
               </div>
-            </li>
-            <li class="col-12 col-md-6">
-              <div class="title">領域別</div>
-              <div v-if="props.brandData?.industryType" class="title-content">
-                {{ industryTypesData.find(item => item.id === props.brandData?.industryType)?.name || '未知' }}
-              </div>
-              <div v-else class="title-content">飲料店業</div>
-            </li>
-            <li class="col-12 col-md-6">
-              <div class="title">FB粉絲團</div>
-              <div v-if="props.brandData?.facebook" class="title-content">
-                {{ props.brandData?.facebook }}
-              </div>
-              <div v-else class="title-content">
-                https://www.facebook.com/super.milk.tea2022
-              </div>
-            </li>
-            <li class="col-12">
-              <div class="title">公司規模</div>
-              <div class="title-content">暫不提供</div>
-            </li>
-            <li class="col-12">
-              <div class="title">資本額</div>
-              <div v-if="props.brandData?.capital" class="title-content">
-                {{ props.brandData?.capital }}萬元
-              </div>
-              <div v-else class="title-content">100萬元 經濟部商業司查詢</div>
-            </li>
-          </ul>
-          <p class="title">詳細介紹</p>
+            </div>
 
-          <!-- ✅ 使用 v-html 渲染 HTML 內容 -->
-          <div
-              v-if="props.brandData?.description"
-              class="mt-4 mb-4"
-              v-html="props.brandData?.description"
-          ></div>
-          <p v-else class="mt-4 mb-4">
-            於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。
-            【一杯顏太煮 生活不會苦】。
-          </p>
+            <!-- 進度數據 -->
+            <div class="progress-stats">
+              <div class="stat-card">
+                <div class="stat-label">媒合總額</div>
+                <div class="stat-value">
+                  $ {{ formatAmount(props.planData?.planDetail.totalParticipantAmount || 0) }}
+                </div>
+              </div>
 
+              <div class="stat-card">
+                <div class="stat-label">媒合人數</div>
+                <div class="stat-value">
+                  {{ props.planData?.planDetail.totalParticipants || 0 }} 人
+                </div>
+              </div>
 
-          <p class="title">經營理念</p>
-          <div
-              v-if="props.brandData?.businessConcept"
-              class="mt-4 mb-4"
-              v-html="props.brandData?.businessConcept"
-          ></div>
-          <p v-else class="">品牌核心 — 「以人為本，從心出發」</p>
-          <p v-else class="">「堅持力」：堅持最好的服務、品質。</p>
-          <p v-else class="">「專業力」：將每個最細微的地方做到最好</p>
+              <div class="stat-card highlight">
+                <div class="stat-label">還缺金額</div>
+                <div class="stat-value">
+                  $ {{ formatAmount(props.planData?.planDetail.remainingAmount || 0) }}
+                </div>
+              </div>
+
+              <div class="stat-card highlight">
+                <div class="stat-label">還缺人數</div>
+                <div class="stat-value">
+                  {{ props.planData?.planDetail.remainingParticipants || 0 }} 人
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 創業者介紹 -->
+          <div class="founder-section">
+            <h3 class="section-title">創業者介紹</h3>
+            <div class="founder-intro">
+              <p v-if="props.planData?.planDetail.founderIntro">
+                {{ props.planData?.planDetail.founderIntro }}
+              </p>
+              <p v-else class="text-muted">暫無創業者介紹</p>
+            </div>
+          </div>
+          <!-- 創業計劃書跳轉 -->
+          <div class="founder-section mt-4">
+            <h3 class="section-title">創業計劃書</h3>
+            <div class="founder-intro">
+              <a
+                  href="#"
+                  @click.prevent="handleViewBusinessPlan"
+                  class="business-plan-link"
+              >
+                點此查看創業計劃書
+              </a>
+            </div>
+          </div>
+
         </template>
 
         <div v-else-if="t.key === 'joinInfo'">
@@ -128,23 +149,23 @@
           </div>
           <div class="tabs-2-content d-flex-block justify-content-between mt-4">
             <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon1.png" class="" />
+              <img src="/src/assets/images/project-tabs-icon1.png" class=""/>
               <span>免加盟金</span>
             </div>
             <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon2.png" class="" />
+              <img src="/src/assets/images/project-tabs-icon2.png" class=""/>
               <span>含生財器具</span>
             </div>
             <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon3.png" class="" />
+              <img src="/src/assets/images/project-tabs-icon3.png" class=""/>
               <span>含裝潢</span>
             </div>
             <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon4.png" class="" />
+              <img src="/src/assets/images/project-tabs-icon4.png" class=""/>
               <span>含教育訓練</span>
             </div>
             <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon5.png" class="" />
+              <img src="/src/assets/images/project-tabs-icon5.png" class=""/>
               <span>含廣告行銷</span>
             </div>
           </div>
@@ -193,13 +214,14 @@
 
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import { useRouter } from "vue-router";
+import {useRouter} from "vue-router";
 import Tab from "bootstrap/js/dist/tab";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 import {NewAlert} from "@/composables/useAlert.js";
 import {userApi} from "@/api/modules/user.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 import {useAuth} from "@/composables/useAuth.js";
+
 const {isLoggedIn, currentUser} = useAuth();
 
 const props = defineProps({
@@ -214,10 +236,10 @@ const props = defineProps({
 });
 const router = useRouter();
 const tabs = [
-  { key: "brand", label: "品牌資訊" },
-  { key: "joinInfo", label: "加盟資訊" },
-  { key: "terms", label: "加盟條件" },
-  { key: "project", label: "相關報表" },
+  {key: "brand", label: "專案詳情"},
+  {key: "joinInfo", label: "加盟資訊"},
+  {key: "terms", label: "加盟條件"},
+  {key: "project", label: "相關報表"},
 ];
 
 const activeTab = ref(tabs[0].key);
@@ -232,11 +254,11 @@ onMounted(() => {
   if (triggerEl) new Tab(triggerEl).show();
 
   document.querySelectorAll('[data-bs-toggle="tab"]').forEach((el) =>
-    el.addEventListener("shown.bs.tab", (e) => {
-      const id = e.target.id.replace("tab-", "");
-      activeTab.value = id;
-      history.replaceState(null, "", `#${id}`);
-    })
+      el.addEventListener("shown.bs.tab", (e) => {
+        const id = e.target.id.replace("tab-", "");
+        activeTab.value = id;
+        history.replaceState(null, "", `#${id}`);
+      })
   );
 
   getIndustryTypeName();
@@ -244,10 +266,41 @@ onMounted(() => {
 
 const userData = ref({})
 
+function formatAmount(amount) {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+// ✅ 進度條顏色（根據進度百分比）
+const progressColor = computed(() => {
+  const progress = props.planData?.planDetail.planProgress || 0;
+  if (progress >= 100) return '#10b981'; // 綠色
+  if (progress >= 50) return '#f59e0b';  // 橘色
+  return '#ff6634';                      // 紅色
+});
+
+const handleViewBusinessPlan = async () => {
+  // ✅ 檢查是否登入
+  if (!isLoggedIn.value) {
+    await NewAlert.show("請先登入", "請先登入會員以查看創業計劃書");
+    await router.push({ path: "/login" });
+    return;
+  }
+
+  // ✅ 檢查是否有計劃 ID
+  if (!props.planData?.id) {
+    await NewAlert.show("錯誤", "無法取得計劃書資訊");
+    return;
+  }
+
+  // ✅ 開啟新視窗
+  const url = `/account/startup?source=account&planId=${props.planData.id}&mode=pdf-preview`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+};
+
 async function goToParticipation() {
   if (!isLoggedIn.value) {
     await NewAlert.show("請先登入", "請先登入會員以繼續操作");
-    await router.push({ path: "/login" });
+    await router.push({path: "/login"});
     return;
   }
 
@@ -274,7 +327,7 @@ async function goToParticipation() {
           await handleUserFavoritePlan();
           return;
         } else if (result === 'push') {
-          await router.push({ path: "/account/profile" });
+          await router.push({path: "/account/profile"});
           return;
         }
         return;
@@ -305,7 +358,7 @@ async function goToParticipation() {
           await handleUserFavoritePlan();
           return;
         } else if (result === 'push') {
-          await router.push({ path: "/account/profile" });
+          await router.push({path: "/account/profile"});
           return;
         }
         return;
@@ -328,7 +381,7 @@ async function goToParticipation() {
 
 async function handleUserFavoritePlan() {
   if (!isLoggedIn.value) {
-    alert("請先登入會員");
+    await NewAlert.show("請先登入", "請先登入會員以繼續操作");
     await router.push({path: "/login"});
     return;
   }
@@ -339,14 +392,15 @@ async function handleUserFavoritePlan() {
   }
   const response = await userFavoritePlanApi.createUserFavoritePlan(formData);
   if (response.code === 0) {
-    alert("已加入收藏");
+   await NewAlert.show("已收藏", "此計畫已成功加入您的收藏清單");
   } else {
-    alert(response.message || "操作失敗，請稍後再試");
+    await NewAlert.show("收藏失敗", response.message + " ,加入收藏失敗，請洽客服人員");
   }
 
 }
 
 const industryTypesData = ref([]);
+
 async function getIndustryTypeName() {
   try {
     const response = await industryTypeApi.getIndustryTypes();
@@ -361,15 +415,6 @@ async function getIndustryTypeName() {
   }
 }
 
-const getCompanyStatusName = (status) => {
-  const statuses = {
-    1: "已設立",
-    2: "籌備中",
-    // 添加更多狀態映射
-  };
-  return statuses[status] || "未知";
-};
-
 // 動態生成加盟資訊數據 (保持原有邏輯，使用 extraFields)
 const joinInfoData = computed(() => {
   if (!props.brandData) return [];
@@ -379,9 +424,9 @@ const joinInfoData = computed(() => {
 
 
   return [
-    { label: "加盟金", value: `${data.franchiseFee}萬元` },
-    { label: "保證金", value: `${data.deposit}萬元` },
-    { label: "加盟主門檻要求", value: `${data.threshold}萬元` },
+    {label: "加盟金", value: `${data.franchiseFee}萬元`},
+    {label: "保證金", value: `${data.deposit}萬元`},
+    {label: "加盟主門檻要求", value: `${data.threshold}萬元`},
     {
       label: "開幕準備項目表列",
       list: extraFields.startup_projects?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
@@ -390,8 +435,8 @@ const joinInfoData = computed(() => {
       label: "加盟主門檻要求",
       list: extraFields.franchise_requirements?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
     },
-    { label: "目前開放加盟區域", value: data.location },
-    { label: "店面條件", value: `${data.storeCondition}坪以上` },
+    {label: "目前開放加盟區域", value: data.location},
+    {label: "店面條件", value: `${data.storeCondition}坪以上`},
     {
       label: "裝潢期程",
       list: extraFields.manufacturing_schedule?.map(item => `${item.fieldName}：${item.fieldValue}天`) || [],
@@ -403,6 +448,7 @@ const joinInfoData = computed(() => {
   ];
 });
 
+console.log(props.planData?.planDetail.brandIntro)
 </script>
 
 <style scoped lang="scss">
@@ -482,6 +528,7 @@ const joinInfoData = computed(() => {
     height: 150px;
   }
 }
+
 .nav-pills .nav-link {
   border: 2px solid #ff6634;
   color: #ff6634;
@@ -509,6 +556,7 @@ const joinInfoData = computed(() => {
 
 .company {
   margin-bottom: 3rem;
+
   .tab-pane {
     padding: 3rem;
     background: rgba(255, 255, 255, 0.9);
@@ -537,6 +585,7 @@ const joinInfoData = computed(() => {
   font-size: 16px;
   line-height: 28px;
   width: 120px;
+
   &-content {
     width: calc(100% - 120px);
     overflow-wrap: break-word;
@@ -553,6 +602,7 @@ const joinInfoData = computed(() => {
     flex-flow: column;
     justify-content: center;
     align-items: center;
+
     img {
       margin-bottom: 0.5rem;
     }
@@ -576,6 +626,7 @@ const joinInfoData = computed(() => {
     grid-template-columns: 160px 1fr;
     gap: 16px;
     padding: 14px 0;
+
     &:last-child {
       border-bottom: 0;
     }
@@ -627,10 +678,191 @@ const joinInfoData = computed(() => {
     .ji-row {
       grid-template-columns: 1fr;
       gap: 6px;
+
       .ji-label {
         color: #555;
       }
     }
+  }
+}
+
+/* ========== 品牌標題 ========== */
+.brand-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #ff6634;
+}
+
+.brand-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+/* ========== 區塊標題 ========== */
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 4px solid #ff6634;
+}
+
+/* ========== 品牌介紹 ========== */
+.brand-intro-section {
+  margin-bottom: 2rem;
+}
+
+.brand-intro-content {
+  line-height: 1.8;
+  color: #555;
+}
+
+.brand-intro-content :deep(p) {
+  margin-bottom: 0.75rem;
+}
+
+.brand-intro-content :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+/* ========== 專案進度 ========== */
+.project-progress-section {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* 進度條 */
+.progress-bar-container {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar-wrapper {
+  width: 100%;
+  height: 40px;
+  background-color: #e9ecef;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.6s ease, background-color 0.3s ease;
+  position: relative;
+}
+
+.progress-text {
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 進度數據卡片 */
+.progress-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card.highlight {
+  border: 2px solid #ff6634;
+  background: #fff5f2;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ff6634;
+}
+
+.stat-card.highlight .stat-value {
+  font-size: 1.5rem;
+}
+
+/* ========== 創業者介紹 ========== */
+.founder-section {
+  padding: 1.5rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.founder-intro {
+  line-height: 1.8;
+  color: #555;
+}
+
+.founder-intro p {
+  margin: 0;
+}
+
+.text-muted {
+  color: #999;
+  font-style: italic;
+}
+
+/* ========== 響應式設計 ========== */
+@media (max-width: 768px) {
+  .brand-name {
+    font-size: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+  }
+
+  .progress-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .progress-bar-wrapper {
+    height: 32px;
+  }
+
+  .progress-text {
+    font-size: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.125rem;
+  }
+
+  .stat-card.highlight .stat-value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .progress-stats {
+    grid-template-columns: 1fr;
   }
 }
 

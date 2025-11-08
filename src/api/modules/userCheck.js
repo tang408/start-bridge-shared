@@ -31,6 +31,10 @@ export const userCheckApi = {
 
     async uploadCorePlanFinalContractByUser(params = {}) {
         return api.post("/f/private/user-check/upload-core-plan-final-contract-by-user", params);
+    },
+
+    async updateCompanyInfoByUser(params = {}) {
+        return api.post("/f/private/user-check/update-company-info-by-user", params);
     }
 
 }
