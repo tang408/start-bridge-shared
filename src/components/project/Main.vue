@@ -34,7 +34,7 @@
         Lorem ipsum is placeholder text commonly used in the graphic, print, and
         publishing industries for previewing
       </span>
-      <button>創業者QA</button>
+      <button @click="goToQA">創業者QA</button>
     </div>
   </div>
 </template>
@@ -200,6 +200,9 @@ function handleCardClick(card) {
     return;
   }
 }
+const goToQA = () => {
+  router.push({ path: "/activity", hash: "#qa" });
+};
 
 // 組件掛載時獲取初始資料
 onMounted(async () => {

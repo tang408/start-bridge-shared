@@ -1,10 +1,10 @@
 <template>
   <div class="service">
     <div class="service-btn">
-      <button class="service-btn-yellow">
+      <button class="service-btn-yellow" @click="handleStartup">
         <img src="@/assets/icon/btn-icon.svg" />【啟動】創業
       </button>
-      <button class="service-btn-black">
+      <button class="service-btn-black" @click="handleCoCreate">
         <img src="@/assets/icon/btn-icon2.svg" />【參與】共創
       </button>
     </div>
@@ -87,6 +87,7 @@
               v-for="(step, index) in processCardSteps"
               :key="index"
               :class="{ active: index === activeIndex }"
+            @click="setActive(index)"
           >
             <img :src="step.img" class="process-image" />
             <div class="btn-tooltip-wrapper">
@@ -131,15 +132,17 @@
         星橋創業媒合平台 一個專注連鎖加盟媒合的平台，也是
         一群陪你從創業起步，到把夢想開成 一家店的專業團隊。
       </span>
-      <button>
+      <button @click="goToBrand">
         <img src="@/assets/icon/btn-icon2.svg" />
-        啟動／參與
+        啟動「創業項目」
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from "vue-router";
+const router = useRouter();
 import Icon from "./Icon.vue";
 import SharedSwiper from "./Swiper.vue";
 import SharedParner from "@/components/shared/Shared-Parner.vue";
@@ -149,11 +152,30 @@ import SwiperCore from "swiper";
 import { Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
-import { useRouter } from "vue-router";
 import { planApi as PlanApi } from "@/api/modules/plan.js";
 
 SwiperCore.use([Pagination]);
-const router = useRouter();
+
+const isLoggedIn = () => !!localStorage.getItem("token");
+const handleStartup = () => {
+  if (isLoggedIn()) {
+    router.push("/account/startup?step=step1");
+  } else {
+    router.push("/login");
+  }
+};
+
+const handleCoCreate = () => {
+  if (isLoggedIn()) {
+    router.push("/account/participation");
+  } else {
+    router.push("/login");
+  }
+};
+
+const goToBrand = () => {
+  router.push("/cooperative-brand");
+};
 
 const activeIndex = ref(0);
 const swiperRef = ref();

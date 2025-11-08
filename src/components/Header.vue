@@ -215,11 +215,9 @@ onBeforeUnmount(() => {
 const navItems = [
   { label: "關於我們", link: "/about" },
   {
-    label: "品牌刊登",
-    children: [
-      { label: "品牌刊登", link: "/brand-advertising" },
-      { label: "合作品牌", link: "/cooperative-brand" },
-    ],
+    label: "合作品牌",
+    link: "/cooperative-brand",
+    children: [{ label: "品牌刊登", link: "/brand-advertising" }],
   },
   { label: "專案一覽", link: "/project" },
   { label: "啟動/參與", link: "/activity" },

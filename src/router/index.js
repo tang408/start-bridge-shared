@@ -37,6 +37,7 @@ import Assessment from "../components/account-sales/Assessment.vue";
 import Chart from "../components/account-sales/Chart.vue";
 import SuccessContent from "../views/SuccessCaseContent.vue";
 import StarContent from "../views/MediaStarContent.vue";
+import Platform from "../views/Platform.vue";
 
 const routes = [
   {
@@ -120,7 +121,25 @@ const routes = [
           }
           next();
         }
-      }
+      },
+              {
+        path: "/terms",
+        children: [
+          {
+            path: "platform",
+            name: "terms-platform",
+            component: Platform,
+          },
+          {
+            path: "service",
+            name: "terms-service",
+          },
+        ],
+      },
+      {
+        path: "/privacy",
+        name: "privacy",
+      },
     ],
   },
   {
@@ -227,24 +246,6 @@ const routes = [
           { path: "chart", name: "chart", component: Chart },
         ],
       },
-
-      {
-        path: "/terms",
-        children: [
-          {
-            path: "platform",
-            name: "terms-platform",
-          },
-          {
-            path: "service",
-            name: "terms-service",
-          },
-        ],
-      },
-      {
-        path: "/privacy",
-        name: "privacy",
-      },
     ],
   },
 ];
@@ -253,8 +254,13 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
+    if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: "smooth",
+      };
+    }
     if (savedPosition) return savedPosition;
-
     return { left: 0, top: 0 };
   },
 });

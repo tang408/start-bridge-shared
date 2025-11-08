@@ -163,7 +163,7 @@
         <div class="agree-row">
           <label>
             <input type="checkbox" v-model="agree" /> 我已閱讀並同意
-            <RouterLink to="" class="highlight" @click.stop>
+            <RouterLink to="/terms/platform" class="highlight" @click.stop>
               平台合約
             </RouterLink>
             、
@@ -171,11 +171,11 @@
               免責聲明
             </RouterLink>
             、
-            <RouterLink to="" class="highlight" @click.stop>
+            <RouterLink to="/terms/service" class="highlight" @click.stop>
               服務條款
             </RouterLink>
             及
-            <RouterLink to="" class="highlight" @click.stop>
+            <RouterLink to="/privacy" class="highlight" @click.stop>
               隱私權政策
             </RouterLink>
             等所載內容及其意義，茲同意該等條款規定，並願遵守網站現今、嗣後規範的各種規則。

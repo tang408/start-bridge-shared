@@ -5,9 +5,27 @@
         <img src="@/assets/images/logo-white.png" class="footer-logo" />
       </div>
       <div class="col-sm-3 col-12 community desktop-flex-none">
-        <img src="@/assets/images/line.png" />
-        <img src="@/assets/images/ig.png" />
-        <img src="@/assets/images/fb.png" />
+        <a
+          href="https://lin.ee/YsPs8Fg"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/line.png" alt="Line" />
+        </a>
+        <a
+          href="https://www.instagram.com/starbridge.tw/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/ig.png" alt="Instagram" />
+        </a>
+        <a
+          href="https://www.facebook.com/profile.php?id=61576363816033&locale=zh_TW"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/fb.png" alt="Facebook" />
+        </a>
       </div>
       <div class="col-sm-3 col-12">
         <div class="information">
@@ -17,12 +35,36 @@
         </div>
       </div>
       <div class="col-sm-3 col-12 statement">
-        <span>平台合約聲明</span><span>版權內容</span>
+        <RouterLink to="/terms/platform" class="agree-link" @click.stop
+          ><span>平台合約聲明</span></RouterLink
+        >
+        <RouterLink to="" class="agree-link" @click.stop
+          ><span>版權內容</span></RouterLink
+        >
+        <span></span>
       </div>
       <div class="col-sm-3 col-12 community mobile-none">
-        <img src="@/assets/images/line.png" />
-        <img src="@/assets/images/ig.png" />
-        <img src="@/assets/images/fb.png" />
+        <a
+          href="https://lin.ee/YsPs8Fg"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/line.png" alt="Line" />
+        </a>
+        <a
+          href="https://www.instagram.com/starbridge.tw/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/ig.png" alt="Instagram" />
+        </a>
+        <a
+          href="https://www.facebook.com/profile.php?id=61576363816033&locale=zh_TW"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img src="@/assets/images/fb.png" alt="Facebook" />
+        </a>
       </div>
     </div>
   </div>
@@ -77,6 +119,10 @@ export default {
         @media (max-width: 767px) {
           flex-flow: column;
           gap: 0;
+        }
+        a {
+          color: #fff;
+          text-decoration: none;
         }
       }
       &.community {
