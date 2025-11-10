@@ -2,12 +2,21 @@
 import { createApp, h, reactive } from 'vue';
 import SharedMessageBox from "../components/shared/Shared-Message-Box.vue";
 
-const alertState = reactive({
+type AlertType = 'alert' | 'confirm' | 'favorite';
+type AlertResult = boolean | 'favorite' | 'push';
+
+const alertState = reactive<{
+    isVisible: boolean;
+    title: string;
+    content: string;
+    type: AlertType;
+    resolver: ((value: AlertResult) => void) | null;
+}>({
     isVisible: false,
     title: '',
     content: '',
-    type: 'alert' as 'alert' | 'confirm' | 'favorite',
-    resolver: null as ((value: boolean | string) => void) | null, // ✅ 改為支援多種返回值
+    type: 'alert',
+    resolver: null,
 });
 
 const container = document.createElement('div');
@@ -34,18 +43,17 @@ const alertApp = createApp({
                     alertState.resolver = null;
                 }
             },
-            // ✅ 新增 favorite 和 push 事件處理
             onFavorite: () => {
                 alertState.isVisible = false;
                 if (alertState.resolver) {
-                    alertState.resolver('favorite'); // 返回 'favorite' 字串
+                    alertState.resolver('favorite');
                     alertState.resolver = null;
                 }
             },
             onPush: () => {
                 alertState.isVisible = false;
                 if (alertState.resolver) {
-                    alertState.resolver('push'); // 返回 'push' 字串
+                    alertState.resolver('push');
                     alertState.resolver = null;
                 }
             }
@@ -55,43 +63,43 @@ const alertApp = createApp({
 alertApp.mount(container);
 
 const AlertService = {
-    /**
-     * 顯示提示彈窗 (只有確認按鈕)
-     */
     show(title: string, content: string): Promise<boolean> {
         return new Promise((resolve) => {
             alertState.title = title;
             alertState.content = content;
             alertState.type = 'alert';
             alertState.isVisible = true;
-            alertState.resolver = resolve as (value: boolean) => void;
+            alertState.resolver = (value) => {
+                resolve(Boolean(value));
+            };
         });
     },
 
-    /**
-     * 顯示確認彈窗 (有確認和取消按鈕)
-     */
     confirm(title: string, content: string): Promise<boolean> {
         return new Promise((resolve) => {
             alertState.title = title;
             alertState.content = content;
             alertState.type = 'confirm';
             alertState.isVisible = true;
-            alertState.resolver = resolve as (value: boolean) => void;
+            alertState.resolver = (value) => {
+                resolve(Boolean(value));
+            };
         });
     },
 
-    /**
-     * ✅ 新增：顯示收藏彈窗 (有收藏和前往按鈕)
-     * @returns 'favorite' | 'push' | false (關閉)
-     */
     favorite(title: string, content: string): Promise<'favorite' | 'push' | false> {
         return new Promise((resolve) => {
             alertState.title = title;
             alertState.content = content;
             alertState.type = 'favorite';
             alertState.isVisible = true;
-            alertState.resolver = resolve as (value: 'favorite' | 'push' | false) => void;
+            alertState.resolver = (value) => {
+                if (value === 'favorite' || value === 'push') {
+                    resolve(value);
+                } else {
+                    resolve(false);
+                }
+            };
         });
     },
 

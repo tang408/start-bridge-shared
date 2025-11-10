@@ -83,7 +83,7 @@
           </button>
           <button
               class="tab-btn mt-2"
-              @click.stop="handleParticipantPlanInfo(card)"
+              @click.stop="handlePlansInfo(card)"
           >
             媒合中專案
           </button>
@@ -117,8 +117,10 @@
 import SharedFabActions from "@/components/shared/Shared-Fab-Actions.vue";
 import {useAuth} from "@/composables/useAuth.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
-import {onMounted} from "vue";
+import {onMounted, ref} from "vue";
 import {NewAlert} from "@/composables/useAlert.js";
+import {userApi} from "@/api/modules/user.js";
+import {planApi} from "@/api/modules/plan.js";
 
 const props = defineProps({
   card: {type: Object, required: true},
@@ -133,22 +135,21 @@ const props = defineProps({
   showDownloadButton: {type: Boolean, default: false},
 });
 
-const emit = defineEmits(["card-click", "favorite-toggle","download-plan"]);
+const emit = defineEmits(["card-click", "favorite-toggle","download-plan","create-plan","display-plan"]);
 
 function onCardClick() {
   emit("card-click", props.card);
 }
 
-function handleParticipantPlanInfo(card) {
-  console.log("handleParticipantPlanInfo clicked", card)
+function handlePlansInfo(card) {
+  emit("display-plan", card);
 }
 
-function handleCreatePlan(card) {
-  console.log("handleCreatePlan clicked", card)
+async function handleCreatePlan(card) {
+  emit("create-plan", card);
 }
 
 function handleDownloadPlan(card) {
-  console.log("handleDownloadPlan clicked", card)
   emit("download-plan", card);
 }
 

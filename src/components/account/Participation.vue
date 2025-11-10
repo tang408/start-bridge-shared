@@ -616,7 +616,7 @@ async function getAllParticipantPlanByUser() {
       userId: currentUser.value,
     });
 
-    if (response.code === 0) {
+    if (response.code === 0 && response.data !== null) {
       projects.value = response.data.map((plan) => {
         const progress = plan.targetAmount > 0
             ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
@@ -654,7 +654,7 @@ async function getAllParticipantPlanDetailByUser() {
       userId: currentUser.value,
     });
 
-    if (response.code === 0) {
+    if (response.code === 0 && response.data !== null) {
       details.value = response.data.map((plan) => {
         const status = mapPlanStatus(plan.currentStep);
         const transactions = plan.participantData.map((tx) => ({
@@ -691,7 +691,7 @@ async function getAllParticipantPlanRecordByUser() {
       userId: currentUser.value,
     });
 
-    if (response.code === 0) {
+    if (response.code === 0 && response.data !== null) {
 
       records.value = response.data.map((record) => {
         const actionMap = {

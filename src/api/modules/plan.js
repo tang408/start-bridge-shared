@@ -58,5 +58,8 @@ export const planApi = {
     },
     async endPlan(params = {}) {
         return api.post("/f/private/plan/end-plan", params);
+    },
+    async getMatchingPlansInfo(params = {}) {
+        return api.post("/f/private/plan/get-matching-plans-info", params);
     }
 };

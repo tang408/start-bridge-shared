@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const LocalHost = 'http://localhost:8080/api';
-const ReleaseHost ='http://43.213.118.243:8080/api';
+const TestHost ='http://43.213.118.243:8080/api';
+const ReleaseHost = 'https://starbridge.com.tw/api';
 // 創建 axios 實例
 const api = axios.create({
   baseURL: LocalHost,
