@@ -38,6 +38,9 @@ import Chart from "../components/account-sales/Chart.vue";
 import SuccessContent from "../views/SuccessCaseContent.vue";
 import StarContent from "../views/MediaStarContent.vue";
 import Platform from "../views/Platform.vue";
+import TermsService from "../views/TermsService.vue";
+import Privacy from "../views/Privacy.vue";
+import Soon from "../views/Soon.vue";
 
 const routes = [
   {
@@ -120,12 +123,19 @@ const routes = [
           {
             path: "service",
             name: "terms-service",
+            component: TermsService,
           },
         ],
       },
       {
         path: "/privacy",
         name: "privacy",
+        component: Privacy,
+      },
+      {
+        path: "/soon",
+        name: "soon",
+        component: Soon,
       },
     ],
   },
