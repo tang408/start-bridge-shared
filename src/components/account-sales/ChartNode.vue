@@ -11,7 +11,7 @@
       <div>推薦碼 {{ node.referralCode }}</div>
       <div>姓名 {{ node.name }}</div>
       <div>職級 {{ node.rank }}</div>
-      <div> {{ childrenCount }}人</div>
+       <div> 團隊 {{ node.directCount + 1 }} 人</div>
     </div>
 
     <!-- 所有節點的子節點都需要展開/收合 -->
@@ -53,10 +53,6 @@ const toggle = () => {
 const hasChildren = computed(
     () => props.node.children && props.node.children.length > 0
 );
-
-const childrenCount = computed(() => {
-  return props.node.children ? props.node.children.length : 0;
-});
 
 const closeKey = ref(props.forceCloseKey);
 

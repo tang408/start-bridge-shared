@@ -129,7 +129,7 @@
         </button>
 
         <button
-            v-if="p.status === 12 "
+            v-if="p.status === 15 "
             type="button"
             class="btn-upload"
             :disabled="p.companyStatus === 1"

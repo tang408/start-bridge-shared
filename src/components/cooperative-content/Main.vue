@@ -278,11 +278,11 @@ const detailItems = computed(() => {
     return [
       {label: "領域別", value: "飲料店業"},
       {label: "公司成立狀態", value: "已設立 (2022-06-14)"},
-      {label: "資本額", value: "1001萬元"},
+      {label: "資本額", value: "1001元"},
       {label: "公司網址", type: "link", value: "https://www.super-milk-tea.com/"},
-      {label: "加盟費用", value: "300萬元"},
-      {label: "FB粉絲團", type: "link", value: "https://www.facebook.com/super.milk.tea2022"},
-      {label: "合作特約優惠", value: "200萬元"},
+      {label: "加盟費用", value: "300元"},
+      {label: "社群媒體", type: "link", value: "https://www.facebook.com/super.milk.tea2022"},
+      {label: "合作特約優惠", value: "200元"},
     ];
   }
 
@@ -293,12 +293,8 @@ const detailItems = computed(() => {
       value: industryTypesData.value.find(item => item.id === data.industryType)?.name || "未知"
     },
     {
-      label: "公司成立狀態",
-      value: `${getCompanyStatusName(data.companyStatus)} (${data.establishedDate})`
-    },
-    {
       label: "資本額",
-      value: `${data.capital}萬元`
+      value: `${formatAmount(data.capital)}元`
     },
     {
       label: "公司網址",
@@ -307,16 +303,16 @@ const detailItems = computed(() => {
     },
     {
       label: "加盟費用",
-      value: `${data.franchiseFee}萬元`
+      value: `${formatAmount(data.franchiseFee)}元`
     },
     {
-      label: "FB粉絲團",
+      label: "社群媒體",
       type: "link",
       value: data.facebook
     },
     {
       label: "合作特約優惠",
-      value: `${data.specialOffer}萬元`
+      value: `${formatAmount(data.specialOffer)}元`
     },
   ];
 });
@@ -337,6 +333,9 @@ async function getIndustryTypeName() {
   }
 }
 
+const formatAmount = (amount) => {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 const getCompanyStatusName = (status) => {
   const statuses = {
     1: "已設立",

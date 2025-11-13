@@ -63,7 +63,7 @@
           <li class="col-12 col-md-6">
             <div class="title">資本額</div>
             <div v-if="partnerInterviewData.capital" class="title-content">
-              {{ partnerInterviewData.capital }} 萬元
+              {{ formatAmount(partnerInterviewData.capital) }} 元
             </div>
             <div v-else class="title-content">不提供</div>
           </li>
@@ -72,7 +72,7 @@
           <li class="col-12 col-md-6">
             <div class="title">加盟金</div>
             <div v-if="partnerInterviewData.franchiseFee" class="title-content">
-              {{ partnerInterviewData.franchiseFee }} 萬元
+              {{ formatAmount(partnerInterviewData.franchiseFee) }} 元
             </div>
             <div v-else class="title-content">不提供</div>
           </li>
@@ -81,7 +81,7 @@
           <li class="col-12 col-md-6">
             <div class="title">合作特約優惠</div>
             <div v-if="partnerInterviewData.specialOffer" class="title-content">
-              {{ partnerInterviewData.specialOffer }} 萬元
+              {{ formatAmount(partnerInterviewData.specialOffer) }} 元
             </div>
             <div v-else class="title-content">不提供</div>
           </li>
@@ -117,6 +117,10 @@ async function getIndustryTypes() {
 const getCurrentId = () => {
   return route.params.id
 }
+
+const formatAmount = (amount) => {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 async function getPartnerInterview(partnerInterviewId) {
   const formData = {
@@ -205,7 +209,7 @@ onMounted(async () => {
   }
   .container {
     position: absolute;
-    top: px;
+    top: 2px;
     right: 0;
     @media (max-width: 576px) {
       top: 0;

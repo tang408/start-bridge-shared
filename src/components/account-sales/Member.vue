@@ -1,4 +1,4 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <div class="fs-24">轄下會員列表</div>
 
   <div class="filter-table">
@@ -132,14 +132,20 @@
               v-model="selectedMemberDetail.founderInfo.identifyStatus"
               label="身分驗證狀態"
               :options="[
-              { label: '審核中', value: 0 },
-              { label: '通過', value: 1 },
-              { label: '不通過', value: 2 },
+               { label: '審核中', value: 0 },
+              { label: '業務初審', value: 1 },
+              { label: '管理員審核', value: 2 },
+              { label: '通過', value: 3 },
+              { label: '不通過', value: 4 },
             ]"
               placeholder="身分檢核文件"
               class="form-group"
               readonly="true"
           />
+          <div v-if="selectedMemberDetail.founderInfo.identifyStatus === 1" class="review-btn-group">
+            <button class="btn-pass" @click="handleIdentifyStatusChange(true, '','founder')"> 通過 </button>
+            <button class="btn-fail"> 不通過 </button>
+          </div>
         </div>
       </template>
 
@@ -177,13 +183,19 @@
               label="身分驗證狀態"
               :options="[
               { label: '審核中', value: 0 },
-              { label: '通過', value: 1 },
-              { label: '不通過', value: 2 },
+              { label: '業務初審', value: 1 },
+              { label: '管理員審核', value: 2 },
+              { label: '通過', value: 3 },
+              { label: '不通過', value: 4 },
             ]"
               placeholder="身分檢核文件"
               class="form-group"
               readonly="true"
           />
+          <div v-if="selectedMemberDetail.coreFounderInfo.identifyStatus === 1" class="review-btn-group">
+            <button class="btn-pass" @click="handleIdentifyStatusChange(true, '','coreFounder')"> 通過 </button>
+            <button class="btn-fail"> 不通過 </button>
+          </div>
         </div>
       </template>
 
@@ -228,6 +240,8 @@
         <div>自備款：{{ formatAmount(planDetail.planSelfFunded) }} 元</div>
         <div>總募資金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
         <div>共創者人數：{{ planDetail.planPartnerCount || 0 }} 人</div>
+        <div class="color-1">尚缺募資金額：{{ formatAmount(planDetail.shortAmount) }} 元</div>
+        <div class="color-1">尚缺募資人數：{{ planDetail.shortPartnerCount }} 人</div>
 
         <hr/>
 
@@ -238,9 +252,11 @@
               :key="participant.id"
               class="doc-label mb-2"
           >
-            {{ participant.name }} -
-            狀態：{{ getParticipantStatus(participant.status) }} -
-            投入金額：{{ formatAmount(participant.amount) }} 元
+
+            {{ participant.name }} | {{ participant.sex }} | {{ participant.salesName }} | {{ participant.createdAt}}
+            <br/>
+            投入金額：{{ formatAmount(participant.amount) }} 元 -
+            狀態：{{ getParticipantStatus(participant.status) }}
           </div>
         </div>
         <div v-else class="text-muted">
@@ -281,6 +297,8 @@ import {cityApi} from "@/api/modules/city.js";
 const {isLoggedIn, currentSales} = useAuth();
 
 import {useRoute, useRouter} from 'vue-router';
+import {salesCheckApi} from "@/api/modules/salesCheck.js";
+import {NewAlert} from "@/composables/useAlert.js";
 
 const route = useRoute();
 const router = useRouter();
@@ -296,6 +314,28 @@ const columns = [
   {key: "actions", label: "查看"},
 ];
 
+async function handleIdentifyStatusChange(approved, remark,type) {
+  const formData = {
+    salesId: currentSales.value,
+    userId: selectedMemberDetail.value.id,
+    type: type,
+    approved: approved,
+    remark: remark || ''
+  }
+
+  const res = await salesCheckApi.checkUserIdentityBySales(formData);
+  if (res.code === 0) {
+    await NewAlert.show("審核狀態", "審核成功，目前已送至管理員審核中。")
+    // 更新本地狀態
+    if (type === 'founder') {
+      selectedMemberDetail.value.founderInfo.identifyStatus = approved ? 2 : 4;
+    } else if (type === 'coreFounder') {
+      selectedMemberDetail.value.coreFounderInfo.identifyStatus = approved ? 2 : 4;
+    } else {
+      alert(res.message || '審核失敗');
+    }
+  }
+}
 function formatMemberType(types) {
   if (!Array.isArray(types)) return '';
   const labels = [];
@@ -757,6 +797,18 @@ const openDocDialog = (type,url) => {
 
 .detail-table tbody tr:hover {
   background: #f8f9fa;
+}
+
+.doc-modal {
+  max-width: 95vw;
+  max-height: 95vh;
+}
+
+.doc-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
 }
 
 .modal-content-wrapper {

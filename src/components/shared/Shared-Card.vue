@@ -71,11 +71,11 @@
         </div>
         <div class="info-row">
           <span class="info-label">合作特約優惠</span>
-          <span class="info-value">{{ card.specialOffer }} 萬元</span>
+          <span class="info-value">{{ formatAmount(card.specialOffer) }} 元</span>
         </div>
         <div class="info-row">
           <span class="info-label">加盟費</span>
-          <span class="info-value">{{ card.franchiseFee }} 萬元</span>
+          <span class="info-value">{{ formatAmount(card.franchiseFee) }} 元</span>
         </div>
         <div>
           <button class="tab-btn mt-2">
@@ -152,6 +152,10 @@ async function handleCreatePlan(card) {
 function handleDownloadPlan(card) {
   emit("download-plan", card);
 }
+
+const formatAmount = (amount) => {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 const {isLoggedIn, currentUser} = useAuth();
 

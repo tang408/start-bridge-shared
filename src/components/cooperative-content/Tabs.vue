@@ -24,17 +24,17 @@
       </li>
 
       <li class="nav-item">
-        <a
-            class="nav-link btn-yellow"
-            role="button"
-            :class="{ 'disabled': !hasActivePlan }"
-            :style="{
-      cursor: hasActivePlan ? 'pointer' : 'not-allowed',
-      opacity: hasActivePlan ? 1 : 0.5
-    }"
-            @click="handleMatchingProjectClick"
+<a
+        class="nav-link btn-yellow"
+        role="button"
+        :class="{ 'disabled': !hasActivePlan }"
+        :style="{
+        cursor: hasActivePlan ? 'pointer' : 'not-allowed',
+        opacity: hasActivePlan ? 1 : 0.5
+        }"
+        @click="handleMatchingProjectClick"
         >
-          媒合中專案
+        媒合中專案
         </a>
       </li>
       <li class="nav-item">
@@ -80,18 +80,18 @@
           </div>
 
           <div>
-            <p class="title mb-2 mt-5">營運項目(品項/單項)</p>
+            <p class="title mb-2 mt-5">產品圖片</p>
             <!-- 使用資料庫的 product_images 欄位 -->
             <div class="row g-3" v-if="productImages.length">
               <div class="col-md-4 col-12" v-for="(img, index) in productImages" :key="index">
                 <img :src="img" class="w-100" style="border-radius: 30px;"/>
               </div>
             </div>
-            <p v-else>暫無營運項目圖片</p>
+            <p v-else>暫無產品圖片</p>
           </div>
 
           <div>
-            <p class="title mb-2 mt-5">當前規模(門店數/區域佔比)</p>
+            <p class="title mb-2 mt-5">當前規模(門店數)</p>
             <!-- 使用資料庫的 current_scale 欄位 -->
             <div v-if="projectData?.currentScale" v-html="projectData.currentScale"></div>
             <div v-else>
@@ -110,10 +110,8 @@
                 <template v-if="row.value">{{ row.value }}</template>
                 <!-- HTML 內容 -->
                 <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
-                <!-- 列表內容 -->
-                <ul v-else-if="row.list?.length" class="ji-list">
-                  <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
-                </ul>
+                <!-- 空值提示 -->
+                <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
           </div>
@@ -129,10 +127,8 @@
                 <template v-if="row.value">{{ row.value }}</template>
                 <!-- HTML 內容 -->
                 <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
-                <!-- 列表內容 -->
-                <ul v-else-if="row.list?.length" class="ji-list">
-                  <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
-                </ul>
+                <!-- 空值提示 -->
+                <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
           </div>
@@ -195,7 +191,7 @@ function handleMatchingProjectClick() {
   }
 }
 
-// 處理營運項目圖片
+// 處理產品圖片
 const productImages = computed(() => {
   if (!props.projectData?.productImages) return [];
 
@@ -208,58 +204,76 @@ const productImages = computed(() => {
   }
 });
 
-// 動態生成加盟資訊數據 (保持原有邏輯，使用 extraFields)
+const formatAmount = (amount) => {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+// 🆕 獲取自定義內容的輔助函數
+const getCustomContent = (key) => {
+  const customContents = props.projectData?.customContents || {};
+  return customContents[key]?.content || '';
+};
+
+// 動態生成加盟資訊數據 - 使用新的 customContents
 const joinInfoData = computed(() => {
   if (!props.projectData) return [];
 
   const data = props.projectData;
-  const extraFields = data.extraFields || {};
 
   return [
-    {label: "加盟金", value: `${data.franchiseFee}萬元`},
-    {label: "保證金", value: `${data.deposit}萬元`},
-    {label: "加盟主門檻要求", html: `${data.threshold}`},
     {
-      label: "開幕準備項目表列",
-      list: extraFields.startup_projects?.map(item => `${item.displayName}：${item.value}`) || [],
+      label: "加盟金",
+      value: `${formatAmount(data.franchiseFee)}元`
+    },
+    {
+      label: "保證金",
+      value: `${formatAmount(data.deposit)}元`
     },
     {
       label: "加盟主門檻要求",
-      list: extraFields.franchise_requirements?.map(item => `${item.displayName}：${item.value}`) || [],
+      html: data.threshold
     },
-    {label: "目前開放加盟區域", value: data.location},
-    {label: "店面條件", html: `${data.storeCondition}`},
     {
-      label: "裝潢期程",
-      list: extraFields.manufacturing_schedule?.map(item => `${item.displayName}：${item.value}天`) || [],
+      label: "目前開放加盟區域",
+      value: data.location
+    },
+    {
+      label: "店面條件",
+      html: data.storeCondition
+    },
+    {
+      label: "加盟金涵蓋項目",
+      html: getCustomContent('startup_projects')
+    },
+    {
+      label: "裝潢期時程",
+      html: getCustomContent('manufacturing_schedule')
     },
     {
       label: "其他成本",
-      list: extraFields.others?.map(item => `${item.displayName}：${item.value}`) || [],
+      html: getCustomContent('others')
     },
-  ];
+  ].filter(item => item.value || item.html); // 過濾掉空值
 });
 
-// 動態生成支援數據 (保持原有邏輯，使用 extraFields)
+// 動態生成支援數據 - 使用新的 customContents
 const supportData = computed(() => {
   if (!props.projectData) return [];
-
-  const extraFields = props.projectData.extraFields || {};
 
   return [
     {
       label: "商業模式關鍵數據",
-      list: extraFields.business_model?.map(item => `${item.displayName}：${item.value}`) || [],
+      html: getCustomContent('business_model')
     },
     {
       label: "加盟主培訓資訊",
-      list: extraFields.franchise_training?.map(item => `${item.displayName}：${item.value}`) || [],
+      html: getCustomContent('franchise_training')
     },
     {
-      label: "總部支援綱要",
-      list: extraFields.support_services?.map(item => `${item.displayName}：${item.value}`) || [],
+      label: "總部支援體系",
+      html: getCustomContent('support_services')
     },
-  ];
+  ].filter(item => item.html); // 只顯示有內容的項目
 });
 
 const tabs = [
@@ -473,33 +487,27 @@ span {
     font-size: 16px;
     line-height: 28px;
     color: #555555;
-  }
 
-  .ji-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    li {
-      position: relative;
-      padding-left: 1em;
-
-      &::before {
-        content: "•";
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
+    .text-muted {
+      color: #999 !important;
+      font-style: italic;
     }
   }
 
-  .ji-block + .ji-block {
-    margin-top: 8px;
-  }
+  .html-content {
+    :deep(p) {
+      margin: 0;
+      padding: 0;
+    }
 
-  .ji-block-title {
-    font-weight: 700;
-    margin-bottom: 6px;
+    :deep(ul), :deep(ol) {
+      margin: 0;
+      padding-left: 1.5em;
+    }
+
+    :deep(strong) {
+      font-weight: 700;
+    }
   }
 
   @media (max-width: 576px) {

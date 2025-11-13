@@ -805,7 +805,7 @@ watch(userProfile, (newValue) => {
     formFounder.budget = newValue.userInfoData?.budget || "";
 
 
-    formCo.status = getStatusText(newValue.coreFounderData?.status) || "";
+    formCo.status = getCoreStatusText(newValue.coreFounderData?.status) || "";
     formCo.asset = newValue.userInfoData?.budget || 0;
 
     formCo.refCode = newValue.userInfoData?.referralCode || "";
@@ -1010,14 +1010,32 @@ function getStatusText(status) {
     case 0:
       return '無須審核';
     case 1:
-    case true:
       return '創業者資料待審核';
     case 2:
-      return '審核通過';
+      return '業務初審通過';
     case 3:
+      return '審核通過';
+    case 4:
       return '審核不通過';
     default:
-      return '未審核1';
+      return '未審核';
+  }
+}
+
+function getCoreStatusText(status) {
+  switch (status) {
+    case 0:
+      return '無須審核';
+    case 1:
+      return '共創者資料待審核';
+    case 2:
+      return '業務初審通過';
+    case 3:
+      return '審核通過';
+    case 4:
+      return '審核不通過';
+    default:
+      return '未審核';
   }
 }
 

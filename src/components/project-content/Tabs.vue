@@ -139,34 +139,13 @@
             <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
-                <!-- ✅ 使用 v-html 渲染 HTML 內容 -->
-                <div v-if="row.value" v-html="row.value"></div>
-                <ul v-else-if="row.list?.length" class="ji-list">
-                  <li v-for="(li, j) in row.list" :key="j" v-html="li"></li>
-                </ul>
+                <!-- 純文本值 -->
+                <template v-if="row.value">{{ row.value }}</template>
+                <!-- HTML 內容 -->
+                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <!-- 空值提示 -->
+                <span v-else class="text-muted">暫無資料</span>
               </div>
-            </div>
-          </div>
-          <div class="tabs-2-content d-flex-block justify-content-between mt-4">
-            <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon1.png" class=""/>
-              <span>免加盟金</span>
-            </div>
-            <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon2.png" class=""/>
-              <span>含生財器具</span>
-            </div>
-            <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon3.png" class=""/>
-              <span>含裝潢</span>
-            </div>
-            <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon4.png" class=""/>
-              <span>含教育訓練</span>
-            </div>
-            <div class="col-2">
-              <img src="/src/assets/images/project-tabs-icon5.png" class=""/>
-              <span>含廣告行銷</span>
             </div>
           </div>
         </div>
@@ -237,8 +216,8 @@ const props = defineProps({
 const router = useRouter();
 const tabs = [
   {key: "brand", label: "專案詳情"},
-  {key: "joinInfo", label: "加盟資訊"},
-  {key: "terms", label: "加盟條件"},
+  {key: "joinInfo", label: "加盟條件"},
+  {key: "terms", label: "加盟資訊"},
   {key: "project", label: "相關報表"},
 ];
 
@@ -282,7 +261,7 @@ const handleViewBusinessPlan = async () => {
   // ✅ 檢查是否登入
   if (!isLoggedIn.value) {
     await NewAlert.show("請先登入", "請先登入會員以查看創業計劃書");
-    await router.push({ path: "/login" });
+    await router.push({path: "/login"});
     return;
   }
 
@@ -392,7 +371,7 @@ async function handleUserFavoritePlan() {
   }
   const response = await userFavoritePlanApi.createUserFavoritePlan(formData);
   if (response.code === 0) {
-   await NewAlert.show("已收藏", "此計畫已成功加入您的收藏清單");
+    await NewAlert.show("已收藏", "此計畫已成功加入您的收藏清單");
   } else {
     await NewAlert.show("收藏失敗", response.message + " ,加入收藏失敗，請洽客服人員");
   }
@@ -415,40 +394,55 @@ async function getIndustryTypeName() {
   }
 }
 
-// 動態生成加盟資訊數據 (保持原有邏輯，使用 extraFields)
+// 🆕 獲取自定義內容的輔助函數
+const getCustomContent = (key) => {
+  const customContents = props.brandData?.customContents || {};
+  return customContents[key]?.content || '';
+};
+
+// 動態生成加盟資訊數據 - 使用新的 customContents
 const joinInfoData = computed(() => {
   if (!props.brandData) return [];
 
   const data = props.brandData;
-  const extraFields = data.customFields || {};
-
 
   return [
-    {label: "加盟金", value: `${data.franchiseFee}萬元`},
-    {label: "保證金", value: `${data.deposit}萬元`},
-    {label: "加盟主門檻要求", value: `${data.threshold}萬元`},
     {
-      label: "開幕準備項目表列",
-      list: extraFields.startup_projects?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
+      label: "加盟金",
+      value: `${formatAmount(data.franchiseFee)}元`
     },
+    {
+      label: "保證金",
+      value: `${formatAmount(data.deposit)}元`
+    },
+
     {
       label: "加盟主門檻要求",
-      list: extraFields.franchise_requirements?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
+      html: data.threshold
     },
-    {label: "目前開放加盟區域", value: data.location},
-    {label: "店面條件", value: `${data.storeCondition}坪以上`},
     {
-      label: "裝潢期程",
-      list: extraFields.manufacturing_schedule?.map(item => `${item.fieldName}：${item.fieldValue}天`) || [],
+      label: "目前開放加盟區域",
+      value: data.location
+    },
+    {
+      label: "店面條件",
+      html: data.storeCondition
+    },
+    {
+      label: "加盟金涵蓋項目",
+      html: getCustomContent('startup_projects')
+    },
+    {
+      label: "裝潢期時程",
+      html: getCustomContent('manufacturing_schedule')
     },
     {
       label: "其他成本",
-      list: extraFields.others?.map(item => `${item.fieldName}：${item.fieldValue}`) || [],
+      html: getCustomContent('others')
     },
-  ];
+  ].filter(item => item.value || item.html); // 過濾掉空值
 });
 
-console.log(props.planData?.planDetail.brandIntro)
 </script>
 
 <style scoped lang="scss">
@@ -645,33 +639,44 @@ console.log(props.planData?.planDetail.brandIntro)
     font-size: 16px;
     line-height: 28px;
     color: #555555;
-  }
 
-  .ji-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    li {
-      position: relative;
-      padding-left: 1em;
-
-      &::before {
-        content: "•";
-        position: absolute;
-        left: 0;
-        top: 0;
-      }
+    .text-muted {
+      color: #999 !important;
+      font-style: italic;
     }
   }
 
-  .ji-block + .ji-block {
-    margin-top: 8px;
-  }
+  .html-content {
+    :deep(p) {
+      margin: 0 0 8px 0;
 
-  .ji-block-title {
-    font-weight: 700;
-    margin-bottom: 6px;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    :deep(ul), :deep(ol) {
+      margin: 0;
+      padding-left: 1.5em;
+    }
+
+    :deep(li) {
+      margin: 4px 0;
+    }
+
+    :deep(strong) {
+      font-weight: 700;
+      color: #373a36;
+    }
+
+    :deep(em) {
+      font-style: italic;
+    }
+
+    :deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) {
+      margin: 12px 0 8px 0;
+      color: #373a36;
+    }
   }
 
   @media (max-width: 576px) {

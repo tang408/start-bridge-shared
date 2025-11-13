@@ -8,7 +8,8 @@
       <div>推薦碼 {{ rootNode.referralCode }}</div>
       <div>姓名 {{ rootNode.name }}</div>
       <div>職級 {{ rootNode.rank }}</div>
-      <div> {{ totalMembers }}人</div>
+      <!-- ✅ 可以選擇顯示團隊總人數或直屬人數 -->
+      <div>團隊 {{ rootNode.directCount + 1 }} 人</div>
     </div>
 
     <!-- 第二層開始:顯示 root 的 children -->
@@ -51,8 +52,8 @@ async function getStructure() {
   }
   const response = await salesApi.getStructure(formData);
   salesStructure.value = response.data;
-  // 把 rank 替換成 對應的 salesLevel的 id 取得 name
 
+  // 把 rank 替換成對應的 salesLevel 的 name
   if (salesLevelData.value) {
     updateRanks(salesStructure.value.root);
   }
@@ -68,12 +69,6 @@ function updateRanks(node) {
   }
 }
 
-// 計算總人數（遞迴）
-const totalMembers = computed(() => {
-  if (!rootNode.value) return 0;
-  return countMembers(rootNode.value);
-});
-
 const salesLevelData = ref();
 
 async function getSalesLevel() {
@@ -87,16 +82,6 @@ onMounted(async () => {
     await getStructure();
   }
 });
-
-function countMembers(node) {
-  let count = 1; // 計算自己
-  if (node.children && node.children.length > 0) {
-    node.children.forEach(child => {
-      count += countMembers(child);
-    });
-  }
-  return count;
-}
 
 // 匯出相關
 const chartContainer = ref(null);

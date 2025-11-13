@@ -69,8 +69,11 @@
       </div>
 
       <div class="mt-5 text-center">
-        <button class="register-btn" @click="goToRegister">
-          <img class="me-3" src="@/assets/icon/btn-icon2.svg" />前往註冊
+        <button v-if="activeTab === 'startup'" class="register-btn" @click="goToCooperative">
+          <img class="me-3" src="@/assets/icon/btn-icon2.svg" />立即申請創業
+        </button>
+        <button v-else class="register-btn" @click="goToPlan">
+          <img class="me-3" src="@/assets/icon/btn-icon2.svg" />立即申請參與
         </button>
       </div>
     </div>
@@ -117,11 +120,16 @@ watch(
 );
 
 const goToRegister = () => {
-  if (isLoggedIn.value) {
-     NewAlert.show("注意！", "您已是會員，無需重複註冊喔！");
-  } else{
-    router.push("/entSignUp");
-  }
+    // NewAlert.show("注意！", "您已是會員，無需重複註冊喔！");
+    router.push("/cooperative-brand");
+};
+
+const goToCooperative = () => {
+        router.push("/cooperative-brand");
+};
+
+const goToPlan = () => {
+  router.push("/project");
 };
 
 const activeStartup = ref({ lane: "init", idx: 0 });
