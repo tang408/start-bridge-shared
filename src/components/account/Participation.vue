@@ -328,6 +328,10 @@
               參與共創
             </button>
           </div>
+          <div class="dollar">
+            <div class="py-2">單筆最低參與金額：{{ fmtMoney(p.minimumAmount) }} 元</div>
+            <div>額度級距：{{ fmtMoney(p.amountRange) }} 元</div>
+          </div>
         </div>
       </button>
     </article>
@@ -757,6 +761,10 @@ async function getParticipantPlan() {
         lastUpdate: calculateTimeRemaining(plan.endDate),
         title: plan.planName,
         content: statusLabel(status),
+        minimumAmount: plan.minimumAmount,
+        limitPartner: plan.limitPartner,
+        amountRange: plan.amountRange,
+        totalParticipantPartner: plan.totalParticipantPartner,
         progress: progress,
         dollar: plan.totalParticipantAmount,
         remain: remain,
@@ -781,6 +789,18 @@ async function participate(p) {
     await NewAlert.show("輸入錯誤", "請輸入有效的參與金額。");
     return;
   }
+
+  if (p.totalParticipantPartner >= p.limitPartner) {
+    await NewAlert.show("參與失敗", "此共創專案的參與名額已滿，無法再參與。");
+    return;
+  }
+
+  if (p.increaseAmount < p.minimumAmount) {
+    await NewAlert.show("輸入錯誤", `參與金額不可低於最低參與金額 ${fmtMoney(p.minimumAmount)} 元。`);
+    return;
+  }
+
+
 
   if (!form.agree) {
     errors.agree = "請同意風險聲明及平台免責聲明";

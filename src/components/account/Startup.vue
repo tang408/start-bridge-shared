@@ -129,7 +129,7 @@
         </button>
 
         <button
-            v-if="p.status === 15 "
+            v-if="p.status === 15"
             type="button"
             class="btn-upload"
             :disabled="p.companyStatus === 1"
@@ -1367,7 +1367,7 @@ async function loadPlanData(planId) {
             note: planData.peratingCostsRemark || '',
           },
           {
-            item: "其他",
+            item: "淨利",
             percent: String(planData.otherCostsPercent || ''),
             amount: String(planData.otherCostsAmount || ''),
             note: planData.otherCostsRemark || '',
@@ -1779,7 +1779,7 @@ const formData = reactive({
         amount: "",
         note: "",
       },
-      {item: "其他", percent: "", amount: "", note: ""},
+      {item: "淨利", percent: "", amount: "", note: ""},
       {
         item: "總計",
         percent: "",

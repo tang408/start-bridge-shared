@@ -5,7 +5,7 @@
         <h1>{{ title }}</h1>
       </div>
 
-      <div class="logo-grid" role="list">
+      <div class="logo-grid" :class="gridSizeClass" role="list">
         <!-- 載入狀態 -->
         <div v-if="loading" class="loading-state">
           <p>載入中...</p>
@@ -48,13 +48,25 @@ const props = defineProps({
 });
 
 const imgSrc = computed(() =>
-  props.src && props.src.length
-    ? props.src
-    : new URL("@/assets/images/logo-only.png", import.meta.url).href
+    props.src && props.src.length
+        ? props.src
+        : new URL("@/assets/images/logo-only.png", import.meta.url).href
 );
 
 const loading = ref(false);
 const partnerPhotos = ref([]);
+
+// 根據數量計算 grid 的 class
+const gridSizeClass = computed(() => {
+  const count = partnerPhotos.value.length;
+  if (count <= 8) {
+    return 'grid-large';
+  } else if (count <= 20) {
+    return 'grid-medium';
+  }
+  return 'grid-small';
+});
+
 async function getOfficialPartnerPhotos() {
   loading.value = true;
   try {
@@ -111,26 +123,85 @@ function handleImageError(event) {
 .logo {
   &-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 0;
+    gap: 20px;
     align-items: center;
 
-    @media (min-width: 768px) {
-      grid-template-columns: repeat(10, 1fr);
-      gap: 20px;
+    // 8個以內 - 較大
+    &.grid-large {
+      grid-template-columns: repeat(2, 1fr);
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px;
+      }
+
+      .logo-item img {
+        max-height: 100px;
+
+        @media (min-width: 768px) {
+          max-height: 120px;
+        }
+      }
+    }
+
+    // 8-20個 - 中等
+    &.grid-medium {
+      grid-template-columns: repeat(3, 1fr);
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 25px;
+      }
+
+      .logo-item img {
+        max-height: 80px;
+
+        @media (min-width: 768px) {
+          max-height: 90px;
+        }
+      }
+    }
+
+    // 20個以上 - 較小（原本的尺寸）
+    &.grid-small {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 20px;
+      }
+
+      .logo-item img {
+        max-height: 60px;
+      }
     }
   }
+
   &-item {
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 8px;
+
     img {
       width: 100%;
       height: auto;
-      max-height: 60px;
       object-fit: contain;
+      transition: transform 0.3s ease;
     }
+  }
+}
+
+.loading-state,
+.no-data {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+
+  p {
+    font-size: 1.1rem;
+    color: #666;
   }
 }
 </style>

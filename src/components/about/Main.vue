@@ -6,7 +6,7 @@
           <h4 class="color-1 lh-24">
             {{ aboutMes[0]?.title }}
           </h4>
-          <span class="lh-36" v-html="aboutMes[0]?.content"></span>
+          <span class="lh-24" v-html="aboutMes[0]?.content"></span>
           <img src="@/assets/images/about-sign.png" height="38"/>
         </div>
         <div class="pic-content-1 col-md-6 col-12">
@@ -34,7 +34,7 @@
           <h4 class="color-1 lh-24">
             {{ aboutMes[1]?.title }}
           </h4>
-          <span class="lh-36" v-html="aboutMes[1]?.content"></span>
+          <span class="lh-24" v-html="aboutMes[1]?.content"></span>
           <button>啟動／參與</button>
         </div>
       </div>

@@ -74,6 +74,10 @@
       <div class="modal-section">
         <div class="doc-label">基本資料</div>
         <div>姓名：{{ selectedMemberDetail.name }}</div>
+        <div>手機號碼：{{ selectedMemberDetail.phone }}</div>
+        <div>電子信箱：{{ selectedMemberDetail.email }}</div>
+        <div>出生年月日：{{selectedMemberDetail.birthday}}</div>
+        <div>其他聯繫方式(Line)：{{selectedMemberDetail.line}}</div>
         <div>會員身分：
           <span v-if="selectedMemberDetail.type?.includes(1)">創業者</span>
           <span v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.type?.includes(2)">、</span>
@@ -92,6 +96,21 @@
           <div class="doc-label">創業者資訊</div>
           <div class="doc-label">
             預計加盟產業：{{ selectedMemberDetail.founderInfo.industryTypeName || '未設定' }}
+          </div>
+          <div>
+            所在地區：{{ cities.find(city => city.id === selectedMemberDetail.founderInfo.city)?.name || '未設定' }}
+          </div>
+          <div>
+            工作狀態：{{ selectedMemberDetail.founderInfo.workStatus }}
+          </div>
+          <div>
+            最高學歷/專長背景：{{ selectedMemberDetail.founderInfo.education }}
+          </div>
+          <div>
+            工作經驗描述：{{ selectedMemberDetail.founderInfo.workExperience || '未設定' }}
+          </div>
+          <div>
+            自我介紹：{{ selectedMemberDetail.founderInfo.introduce || '未設定' }}
           </div>
           <div class="doc-label">
             創業預算：{{ formatAmount(selectedMemberDetail.founderInfo.budget) }} 元
@@ -132,7 +151,7 @@
               v-model="selectedMemberDetail.founderInfo.identifyStatus"
               label="身分驗證狀態"
               :options="[
-               { label: '審核中', value: 0 },
+               { label: '無須審核', value: 0 },
               { label: '業務初審', value: 1 },
               { label: '管理員審核', value: 2 },
               { label: '通過', value: 3 },
@@ -142,10 +161,6 @@
               class="form-group"
               readonly="true"
           />
-          <div v-if="selectedMemberDetail.founderInfo.identifyStatus === 1" class="review-btn-group">
-            <button class="btn-pass" @click="handleIdentifyStatusChange(true, '','founder')"> 通過 </button>
-            <button class="btn-fail"> 不通過 </button>
-          </div>
         </div>
       </template>
 
@@ -159,6 +174,30 @@
           </div>
           <div class="doc-label">
             共創預算：{{ formatAmount(selectedMemberDetail.coreFounderInfo.budget) }} 元
+          </div>
+          <div>
+            所在地區：{{ cities.find(city => city.id === selectedMemberDetail.coreFounderInfo.city)?.name || '未設定' }}
+          </div>
+          <div>
+            工作狀態：{{ selectedMemberDetail.coreFounderInfo.workStatus || '未設定' }}
+          </div>
+          <div>
+            最低可投入資產：{{ formatAmount(selectedMemberDetail.coreFounderInfo.minBudget) }} 元
+          </div>
+          <div>
+            最高可投入資產：{{ formatAmount(selectedMemberDetail.coreFounderInfo.maxBudget) }} 元
+          </div>
+          <div>
+            可接受投入參與年限：{{ selectedMemberDetail.coreFounderInfo.investLimitYearShow ? selectedMemberDetail.coreFounderInfo.investLimitYear + ' 年' : '不公開'}}
+          </div>
+          <div>
+            理財經驗描述：{{ selectedMemberDetail.coreFounderInfo.experienceShow ? selectedMemberDetail.coreFounderInfo.experience : '不公開'}}
+          </div>
+          <div>
+            自我介紹：{{ selectedMemberDetail.coreFounderInfo.introduceShow ? selectedMemberDetail.coreFounderInfo.introduce : '不公開'}}
+          </div>
+          <div>
+
           </div>
           <div>
             <span class="doc-label">上傳資訊：</span>
@@ -182,7 +221,7 @@
               v-model="selectedMemberDetail.coreFounderInfo.identifyStatus"
               label="身分驗證狀態"
               :options="[
-              { label: '審核中', value: 0 },
+              { label: '無須審核', value: 0 },
               { label: '業務初審', value: 1 },
               { label: '管理員審核', value: 2 },
               { label: '通過', value: 3 },
@@ -192,10 +231,6 @@
               class="form-group"
               readonly="true"
           />
-          <div v-if="selectedMemberDetail.coreFounderInfo.identifyStatus === 1" class="review-btn-group">
-            <button class="btn-pass" @click="handleIdentifyStatusChange(true, '','coreFounder')"> 通過 </button>
-            <button class="btn-fail"> 不通過 </button>
-          </div>
         </div>
       </template>
 
@@ -314,28 +349,6 @@ const columns = [
   {key: "actions", label: "查看"},
 ];
 
-async function handleIdentifyStatusChange(approved, remark,type) {
-  const formData = {
-    salesId: currentSales.value,
-    userId: selectedMemberDetail.value.id,
-    type: type,
-    approved: approved,
-    remark: remark || ''
-  }
-
-  const res = await salesCheckApi.checkUserIdentityBySales(formData);
-  if (res.code === 0) {
-    await NewAlert.show("審核狀態", "審核成功，目前已送至管理員審核中。")
-    // 更新本地狀態
-    if (type === 'founder') {
-      selectedMemberDetail.value.founderInfo.identifyStatus = approved ? 2 : 4;
-    } else if (type === 'coreFounder') {
-      selectedMemberDetail.value.coreFounderInfo.identifyStatus = approved ? 2 : 4;
-    } else {
-      alert(res.message || '審核失敗');
-    }
-  }
-}
 function formatMemberType(types) {
   if (!Array.isArray(types)) return '';
   const labels = [];

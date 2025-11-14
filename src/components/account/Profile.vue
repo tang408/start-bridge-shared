@@ -911,8 +911,8 @@ async function submitForFounderAndCompany() {
       city: formFounder.region,
       workStatus: formFounder.work,
       industryType: formFounder.brand,
-      assetsCertification: formFounder.assetProofId,
-      PCRCertification: formFounder.policeRecordId,
+      assetsCertification: formFounder.assetProofId || 0,
+      pcrCertification: formFounder.policeRecordId || 0,
       education: formFounder.edu,
       workExperience: formFounder.expDesc,
       introduce: formFounder.introduce,
@@ -934,7 +934,7 @@ async function submitForFounderAndCompany() {
     if (response.code === 0) {
       await NewAlert.show(
           "修改資料",
-          "送出基本資料審核成功" // 傳入內容
+          "送出基本資料成功" // 傳入內容
       );
       hasChanges.value = false;
       saveOriginalData();
@@ -976,7 +976,7 @@ async function submitForCoreFounder() {
       maxBudget: Number(formCo.maxBudget),
       expectIndustryType: formCo.industryType,
       industryType: formCo.industryType,
-      investLimitYear: formCo.yearLimit,
+      investLimitYear: formCo.yearLimit || 0,
       investLimitYearIsShow: formCo.yearLimitIsShow,
       experience: formCo.experience,
       experienceIsShow: formCo.experienceIsShow,
@@ -991,7 +991,7 @@ async function submitForCoreFounder() {
     if (response.code === 0) {
       await NewAlert.show(
           "修改資料",
-          "送出資料審核成功"
+          "送出資料成功"
       );
       hasChanges.value = false;
       saveOriginalData();

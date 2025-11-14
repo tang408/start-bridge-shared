@@ -79,11 +79,36 @@
             創業計劃書
           </span>
         <span
-          class="doc-tag clickable px-1"
-          @click="openPlanContractDialog(planInfo)"
+            class="doc-tag px-1"
+            :class="{
+            'clickable': planContractInfo?.finalContractUrl,
+            'disabled': !planContractInfo?.finalContractUrl
+            }"
+            @click="planContractInfo?.finalContractUrl && openPlanContractDialog(planInfo)"
         >
-            合約
-          </span>
+        合約
+        </span>
+        <span
+            class="doc-tag clickable px-1"
+            v-if="planInfo?.founderPcrc"
+            @click="openCertificationDialog('pcr',planInfo.founderPcrc)"
+        >
+        良民證
+        </span>
+        <span
+            class="doc-tag clickable px-1"
+            v-if="planInfo?.founderIdc"
+            @click="openCertificationDialog('pcr',planInfo.founderIdc)"
+        >
+        身分證明
+        </span>
+        <span
+            class="doc-tag clickable px-1"
+            v-if="planInfo?.founderAssetsc"
+            @click="openCertificationDialog('pcr',planInfo.founderAssetsc)"
+        >
+        財產證明
+        </span>
       </div>
       <hr/>
       <div>
@@ -122,7 +147,7 @@
         v-model="remark"
         type="text"
         placeholder="請輸入不通過的原因..."
-     id="remark-input" />
+        id="remark-input"/>
   </SharedModal>
 
   <!-- 文件詳情 Dialog -->
@@ -138,229 +163,229 @@
     <div v-if="showDocDialog" class="dialog-overlay" @click="showDocDialog = false">
       <div class="dialog-container" @click.stop>
         <div class="modal-content-wrapper">
-        <div class="dialog-body">
-          <!-- 創業計劃書 -->
-          <div v-if="planDetail">
-            <div class="info-section">
-              <h4>基本資訊</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.planDetail.hasExperience">
-                  <label>是否有相關經驗：</label>
-                  <span>{{ planDetail.planDetail.hasExperience ? '是' : '否' }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.experienceDetails">
-                  <label>經驗詳情：</label>
-                  <span>{{ planDetail.planDetail.experienceDetails }}</span>
-                </div>
-                <div class="info-item">
-                  <label>財務限制：</label>
-                  <span>{{ planDetail.planDetail.financialConstraints ? '是' : '否' }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.constraintsExplanation">
-                  <label>限制說明：</label>
-                  <span>{{ planDetail.planDetail.constraintsExplanation }}</span>
-                </div>
-              </div>
-            </div>
-            <hr/>
-            <div class="info-section">
-              <h4>優勢與資源</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.planDetail.advantageExplanation">
-                  <label>優勢說明：</label>
-                  <span>{{ planDetail.planDetail.advantageExplanation }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.availableResources">
-                  <label>可用資源：</label>
-                  <span>{{ planDetail.planDetail.availableResources }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.supportDocumentation">
-                  <label>支持文件：</label>
-                  <span>{{ planDetail.planDetail.supportDocumentation }}</span>
+          <div class="dialog-body">
+            <!-- 創業計劃書 -->
+            <div v-if="planDetail">
+              <div class="info-section">
+                <h4>基本資訊</h4>
+                <div class="info-grid">
+                  <div class="info-item" v-if="planDetail.planDetail.hasExperience">
+                    <label>是否有相關經驗：</label>
+                    <span>{{ planDetail.planDetail.hasExperience ? '是' : '否' }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.experienceDetails">
+                    <label>經驗詳情：</label>
+                    <span>{{ planDetail.planDetail.experienceDetails }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>財務限制：</label>
+                    <span>{{ planDetail.planDetail.financialConstraints ? '是' : '否' }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.constraintsExplanation">
+                    <label>限制說明：</label>
+                    <span>{{ planDetail.planDetail.constraintsExplanation }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr/>
-            <div class="info-section">
-              <h4>創新與計劃</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.planDetail.innovationDescription">
-                  <label>創新描述：</label>
-                  <span>{{ planDetail.planDetail.innovationDescription }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.briefingSession">
-                  <label>創業規劃是否有參加其他說明會：</label>
-                  <span>{{ planDetail.planDetail.briefingSession }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.nextStagePlan">
-                  <label>下階段計劃：</label>
-                  <span>{{ planDetail.planDetail.nextStagePlan }}</span>
-                </div>
-              </div>
-            </div>
-            <hr/>
-            <div class="info-section">
-              <h4>招募資訊</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.planDetail.recruitmentMethods">
-                  <label>招募方式：</label>
-                  <span>{{ planDetail.planDetail.recruitmentMethods }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.expectedNumberPeople">
-                  <label>預期人數：</label>
-                  <span>{{ planDetail.planDetail.expectedNumberPeople }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.recruitmentPipeline">
-                  <label>招募管道：</label>
-                  <span>{{ planDetail.planDetail.recruitmentPipeline }}</span>
+              <hr/>
+              <div class="info-section">
+                <h4>優勢與資源</h4>
+                <div class="info-grid">
+                  <div class="info-item" v-if="planDetail.planDetail.advantageExplanation">
+                    <label>優勢說明：</label>
+                    <span>{{ planDetail.planDetail.advantageExplanation }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.availableResources">
+                    <label>可用資源：</label>
+                    <span>{{ planDetail.planDetail.availableResources }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.supportDocumentation">
+                    <label>支持文件：</label>
+                    <span>{{ planDetail.planDetail.supportDocumentation }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr/>
-            <div class="info-section">
-              <h4>其他資訊</h4>
-              <div class="info-grid">
-                <div class="info-item" v-if="planDetail.planDetail.investTime">
-                  <label>投入時間：</label>
-                  <span>{{ planDetail.planDetail.investTime }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.customerSource">
-                  <label>客源來源：</label>
-                  <span>{{ planDetail.planDetail.customerSource }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.storeLocationType">
-                  <label>店面類型：</label>
-                  <span>{{ planDetail.planDetail.storeLocationType }}</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planDetail.coFounderAddedValue">
-                  <label>共創者附加價值：</label>
-                  <span>{{ planDetail.planDetail.coFounderAddedValue }}</span>
+              <hr/>
+              <div class="info-section">
+                <h4>創新與計劃</h4>
+                <div class="info-grid">
+                  <div class="info-item" v-if="planDetail.planDetail.innovationDescription">
+                    <label>創新描述：</label>
+                    <span>{{ planDetail.planDetail.innovationDescription }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.briefingSession">
+                    <label>創業規劃是否有參加其他說明會：</label>
+                    <span>{{ planDetail.planDetail.briefingSession }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.nextStagePlan">
+                    <label>下階段計劃：</label>
+                    <span>{{ planDetail.planDetail.nextStagePlan }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr/>
-            <!-- 籌備成本 -->
-            <div class="info-section">
-              <h4>籌備成本明細</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>加盟費：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.franchiseFee?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>裝潢費用：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>設備費用：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.equipmentCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>首批物料成本：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.firstMaterialCost?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>薪資預算：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.paySalaryBudget?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>其他人事成本：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.otherPersonnelCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>行銷費用：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.marketingExpenses?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>其他費用：</label>
-                  <span>NT$ {{ planDetail.planPrepareCosts.otherCosts?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item total">
-                  <label>總計：</label>
-                  <span>NT$ {{ prepareConstsTotal.toLocaleString() }}</span>
+              <hr/>
+              <div class="info-section">
+                <h4>招募資訊</h4>
+                <div class="info-grid">
+                  <div class="info-item" v-if="planDetail.planDetail.recruitmentMethods">
+                    <label>招募方式：</label>
+                    <span>{{ planDetail.planDetail.recruitmentMethods }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.expectedNumberPeople">
+                    <label>預期人數：</label>
+                    <span>{{ planDetail.planDetail.expectedNumberPeople }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.recruitmentPipeline">
+                    <label>招募管道：</label>
+                    <span>{{ planDetail.planDetail.recruitmentPipeline }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr/>
-            <!-- 營運成本 -->
-            <div class="info-section">
-              <h4>營運成本百分比</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>營業額目標：</label>
-                  <span>NT$ {{ planDetail.planOperatingCost.turnoverTarget?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>首批物料成本：</label>
-                  <span>{{
-                      planDetail.planOperatingCost.firstMaterialCostsPercent
-                    }}% (NT$ {{ planDetail.planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item" v-if="planDetail.planOperatingCost.firstMaterialCostsRemark">
-                  <label>備註：</label>
-                  <span>{{ planDetail.planOperatingCost.firstMaterialCostsRemark }}</span>
-                </div>
-                <div class="info-item">
-                  <label>人事成本：</label>
-                  <span>{{
-                      planDetail.planOperatingCost.personnelCostsPercent
-                    }}% (NT$ {{ planDetail.planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>租金成本：</label>
-                  <span>{{
-                      planDetail.planOperatingCost.rentalCostsPercent
-                    }}% (NT$ {{ planDetail.planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>營運成本：</label>
-                  <span>{{
-                      planDetail.planOperatingCost.peratingCostsPercent
-                    }}% (NT$ {{ planDetail.planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>其他成本：</label>
-                  <span>{{
-                      planDetail.planOperatingCost.otherCostsPercent
-                    }}% (NT$ {{ planDetail.planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
-                </div>
-                <div class="info-item">
-                  <label>獎勵門檻：</label>
-                  <span>NT$ {{ planDetail.planOperatingCost.rewardThreshold?.toLocaleString() }}</span>
-                </div>
-                <div class="info-item">
-                  <label>獎勵百分比：</label>
-                  <span>{{ planDetail.planOperatingCost.rewardPercent }}%</span>
-                </div>
-                <div class="info-item full-width" v-if="planDetail.planOperatingCost.otherStatement">
-                  <label>其他說明：</label>
-                  <span>{{ planDetail.planOperatingCost.otherStatement }}</span>
+              <hr/>
+              <div class="info-section">
+                <h4>其他資訊</h4>
+                <div class="info-grid">
+                  <div class="info-item" v-if="planDetail.planDetail.investTime">
+                    <label>投入時間：</label>
+                    <span>{{ planDetail.planDetail.investTime }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.customerSource">
+                    <label>客源來源：</label>
+                    <span>{{ planDetail.planDetail.customerSource }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.storeLocationType">
+                    <label>店面類型：</label>
+                    <span>{{ planDetail.planDetail.storeLocationType }}</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planDetail.coFounderAddedValue">
+                    <label>共創者附加價值：</label>
+                    <span>{{ planDetail.planDetail.coFounderAddedValue }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <hr/>
-            <!-- 分潤條款 -->
-            <div class="info-section">
-              <h4>分潤條款</h4>
-              <div class="info-grid">
-                <div class="info-item">
-                  <label>分潤週期：</label>
-                  <span>{{ planDetail.planProfitSharing.profitDistributionCycle }}</span>
+              <hr/>
+              <!-- 籌備成本 -->
+              <div class="info-section">
+                <h4>籌備成本明細</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>加盟費：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.franchiseFee?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>裝潢費用：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>設備費用：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.equipmentCosts?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>首批物料成本：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.firstMaterialCost?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>薪資預算：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.paySalaryBudget?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>其他人事成本：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.otherPersonnelCosts?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>行銷費用：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.marketingExpenses?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>其他費用：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.otherCosts?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item total">
+                    <label>總計：</label>
+                    <span>NT$ {{ prepareConstsTotal.toLocaleString() }}</span>
+                  </div>
                 </div>
-                <div class="info-item">
-                  <label>計算方式：</label>
-                  <span>{{ planDetail.planProfitSharing.profitCalculationMethod }}</span>
+              </div>
+              <hr/>
+              <!-- 營運成本 -->
+              <div class="info-section">
+                <h4>營運成本百分比</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>營業額目標：</label>
+                    <span>NT$ {{ planDetail.planOperatingCost.turnoverTarget?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>首批物料成本：</label>
+                    <span>{{
+                        planDetail.planOperatingCost.firstMaterialCostsPercent
+                      }}% (NT$ {{ planDetail.planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planOperatingCost.firstMaterialCostsRemark">
+                    <label>備註：</label>
+                    <span>{{ planDetail.planOperatingCost.firstMaterialCostsRemark }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>人事成本：</label>
+                    <span>{{
+                        planDetail.planOperatingCost.personnelCostsPercent
+                      }}% (NT$ {{ planDetail.planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item">
+                    <label>租金成本：</label>
+                    <span>{{
+                        planDetail.planOperatingCost.rentalCostsPercent
+                      }}% (NT$ {{ planDetail.planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item">
+                    <label>營運成本：</label>
+                    <span>{{
+                        planDetail.planOperatingCost.peratingCostsPercent
+                      }}% (NT$ {{ planDetail.planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item">
+                    <label>其他成本：</label>
+                    <span>{{
+                        planDetail.planOperatingCost.otherCostsPercent
+                      }}% (NT$ {{ planDetail.planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item">
+                    <label>獎勵門檻：</label>
+                    <span>NT$ {{ planDetail.planOperatingCost.rewardThreshold?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>獎勵百分比：</label>
+                    <span>{{ planDetail.planOperatingCost.rewardPercent }}%</span>
+                  </div>
+                  <div class="info-item full-width" v-if="planDetail.planOperatingCost.otherStatement">
+                    <label>其他說明：</label>
+                    <span>{{ planDetail.planOperatingCost.otherStatement }}</span>
+                  </div>
                 </div>
-                <div class="info-item">
-                  <label>支付方式：</label>
-                  <span>{{ planDetail.planProfitSharing.profitPaymentMethod }}</span>
+              </div>
+              <hr/>
+              <!-- 分潤條款 -->
+              <div class="info-section">
+                <h4>分潤條款</h4>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <label>分潤週期：</label>
+                    <span>{{ planDetail.planProfitSharing.profitDistributionCycle }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>計算方式：</label>
+                    <span>{{ planDetail.planProfitSharing.profitCalculationMethod }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>支付方式：</label>
+                    <span>{{ planDetail.planProfitSharing.profitPaymentMethod }}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     </div>
   </SharedModal>
 
@@ -385,6 +410,21 @@
           :error="addressErrors.address"
           :required="true"
       />
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showCertificationDialog"
+      :title="certificationDialogTitle"
+      mode="close"
+      @update:modelValue="handleCloseDocDialog"
+      class="doc-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section text-center">
+        <img :src="docDialogUrl" alt="文件預覽" class="doc-image"/>
+      </div>
     </div>
   </SharedModal>
 
@@ -569,6 +609,21 @@ async function viewProject(row) {
   } catch (error) {
     console.error('獲取專案詳情失敗:', error);
   }
+
+  const contractFormData = {
+    salesId: currentSales.value,
+    planId: row.planId,
+    userId: row.userId,
+  }
+
+  const contractRes = await salesApi.getPlanFinalContractBySales(contractFormData);
+  if (contractRes.code === 0) {
+    planContractInfo.value = contractRes.data;
+    console.log(planContractInfo.value)
+  } else {
+    planContractInfo.value = {};
+    console.log(planContractInfo.value)
+  }
 }
 
 // 格式化金額
@@ -675,9 +730,25 @@ async function handleApprove(data, approved) {
   if (data.planType === 1 && data.currentStep === 1) {
     const res = await salesCheckApi.checkPlanBySales(formData);
     if (res.code === 0) {
+      const identityFormData = {
+        salesId: currentSales.value,
+        userId: data.userId,
+        type: 'founder',
+        approved: approved,
+        remark: remark.value || '',
+      }
+      await salesCheckApi.checkUserIdentityBySales(identityFormData)
       await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
+        const identityFormData = {
+          salesId: currentSales.value,
+          userId: data.userId,
+          type: 'founder',
+          approved: approved,
+          remark: remark.value || '',
+        }
+        await salesCheckApi.checkUserIdentityBySales(identityFormData)
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
@@ -733,9 +804,25 @@ async function handleApprove(data, approved) {
   if (data.planType === 2 && data.participantPlanStep === 1) {
     const res = await salesCheckApi.checkCoreMoneyBySales(formData);
     if (res.code === 0) {
+      const identityFormData = {
+        salesId: currentSales.value,
+        userId: data.userId,
+        type: 'coreFounder',
+        approved: approved,
+        remark: remark.value || '',
+      }
+      await salesCheckApi.checkUserIdentityBySales(identityFormData)
       await NewAlert.show("成功！", "審核成功");
       showModal.value = false;
       if (!approved) {
+        const identityFormData = {
+          salesId: currentSales.value,
+          userId: data.userId,
+          type: 'coreFounder',
+          approved: approved,
+          remark: remark.value || '',
+        }
+        await salesCheckApi.checkUserIdentityBySales(identityFormData)
         showRemarkDialog.value = false;
       }
       await getAllPlanBySales();
@@ -758,6 +845,34 @@ async function handleApprove(data, approved) {
     }
   }
 }
+
+const showCertificationDialog = ref(false);
+const docDialogUrl = ref('');
+const currentDocType = ref('')
+
+const certificationDialogTitle = computed(() => {
+  switch (currentDocType.value) {
+    case 'pcr':
+      return '良民證預覽'
+    case 'identify':
+      return '身分證明預覽'
+    case 'assets':
+      return '資產證明預覽'
+    case 'secondary':
+      return '第二證件預覽'
+    default:
+      return '文件預覽'
+  }
+})
+
+const openCertificationDialog = (type,url) => {
+  console.log(type,url)
+  showCertificationDialog.value = true
+  docDialogUrl.value = url
+
+}
+
+
 
 // 關閉 Modal 時清空資料
 function handleClose() {
@@ -822,6 +937,7 @@ async function autoOpenPlanDialog(userId, planId, participantPlanId) {
 const showDocDialog = ref(false);
 const docDialogTitle = ref('');
 const planDetail = ref({});
+
 async function openPlanDetailDialog(plan) {
   docDialogTitle.value = '創業計劃書';
   showDocDialog.value = true;
@@ -844,28 +960,11 @@ async function openPlanDetailDialog(plan) {
 }
 
 const showPlanContractDialog = ref(false);
-const planContractDialogTitle = ref('合約');
 const planContractInfo = ref({});
-async function openPlanContractDialog(plan) {
+
+async function openPlanContractDialog() {
   docDialogTitle.value = '合約';
-  const formData = {
-    salesId: currentSales.value,
-    planId: plan.planId,
-    userId: plan.userId,
-  }
-
-  try {
-    const response = await salesApi.getPlanFinalContractBySales(formData);
-    if (response.code === 0) {
-      planContractInfo.value = response.data;
-      window.open(planContractInfo.value.finalContractUrl, '_blank')
-
-    } else {
-      await NewAlert.show('注意！', '獲取合約詳情失敗:' + response.message);
-    }
-  } catch (error) {
-    console.error('獲取合約詳情失敗:', error);
-  }
+  window.open(planContractInfo.value.finalContractUrl, '_blank')
 }
 
 function handleClosePlanContractDialog() {
@@ -963,7 +1062,7 @@ async function handleAddressSubmit() {
     addressForm.address = ''
 
   } catch (error) {
-   await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
+    await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
   }
 }
 
@@ -1044,17 +1143,28 @@ function handleAddressCancel() {
 .doc-tag {
   font-size: 14px;
   cursor: default;
-}
+  transition: all 0.2s ease;
 
-.doc-tag.clickable {
-  color: #409eff;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.3s;
-}
+  // 可點擊狀態
+  &.clickable {
+    color: #409eff;
+    cursor: pointer;
+    text-decoration: underline;
 
-.doc-tag.clickable:hover {
-  color: #66b1ff;
+    &:hover {
+      color: #66b1ff;
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+  }
+
+  // 禁用狀態
+  &.disabled {
+    color: #9e9e9e;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none; // 只在 disabled 時禁用點擊
+  }
 }
 
 .modal-content-wrapper {
