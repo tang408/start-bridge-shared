@@ -52,7 +52,12 @@ const routes = [
         name: "Home",
         component: Home,
       },
-      { path: "brand-advertising", name: "BrandAdvertising", component: Brand },
+      {
+        path: "brand-advertising",
+        name: "BrandAdvertising",
+        component: Brand,
+        redirect: '/soon'
+      },
       {
         path: "cooperative-brand",
         name: "CooperativeBrand",
@@ -77,6 +82,7 @@ const routes = [
         path: "star",
         name: "Star",
         component: Star,
+        redirect: '/soon'
       },
       {
         path: "star/:id",
@@ -88,6 +94,7 @@ const routes = [
         path: "success",
         name: "Success",
         component: Success,
+        redirect: '/soon'
       },
       {
         path: "success/:id",
@@ -99,6 +106,7 @@ const routes = [
         path: "store",
         name: "Store",
         component: Store,
+        redirect: '/soon'
       },
       {
         path: "project/:id",

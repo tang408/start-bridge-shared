@@ -92,43 +92,43 @@
       </div>
     </div>
   </div>
-  <div class="about-founder">
-    <h2 class="title">創辦人</h2>
-    <div class="container">
-      <div v-if="loading" class="text-center py-4">
-        <div class="spinner-border text-light" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-      <template v-else>
-        <Swiper
-            class="founder-swiper"
-            :modules="[Navigation]"
-            :slides-per-view="1"
-            :space-between="24"
-            :loop="false"
-            :breakpoints="{
-            640: { slidesPerView: 2, spaceBetween: 24 },
-            992: { slidesPerView: 3, spaceBetween: 28 },
-            1200: { slidesPerView: 4, spaceBetween: 32 },
-          }"
-            :navigation="{ nextEl: '.founder-next', prevEl: '.founder-prev' }"
-        >
-          <SwiperSlide v-for="founder in founders" :key="founder.id">
-            <div class="card-people">
-              <img class="avatar" :src="founder.photo" :alt="founder.name"/>
-              <h3 class="name">{{ founder.name }}</h3>
-              <span class="desc">{{ founder.info }}</span>
-            </div>
-          </SwiperSlide>
+<!--  <div class="about-founder">-->
+<!--    <h2 class="title">創辦人</h2>-->
+<!--    <div class="container">-->
+<!--      <div v-if="loading" class="text-center py-4">-->
+<!--        <div class="spinner-border text-light" role="status">-->
+<!--          <span class="visually-hidden">Loading...</span>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <template v-else>-->
+<!--        <Swiper-->
+<!--            class="founder-swiper"-->
+<!--            :modules="[Navigation]"-->
+<!--            :slides-per-view="1"-->
+<!--            :space-between="24"-->
+<!--            :loop="false"-->
+<!--            :breakpoints="{-->
+<!--            640: { slidesPerView: 2, spaceBetween: 24 },-->
+<!--            992: { slidesPerView: 3, spaceBetween: 28 },-->
+<!--            1200: { slidesPerView: 4, spaceBetween: 32 },-->
+<!--          }"-->
+<!--            :navigation="{ nextEl: '.founder-next', prevEl: '.founder-prev' }"-->
+<!--        >-->
+<!--          <SwiperSlide v-for="founder in founders" :key="founder.id">-->
+<!--            <div class="card-people">-->
+<!--              <img class="avatar" :src="founder.photo" :alt="founder.name"/>-->
+<!--              <h3 class="name">{{ founder.name }}</h3>-->
+<!--              <span class="desc">{{ founder.info }}</span>-->
+<!--            </div>-->
+<!--          </SwiperSlide>-->
 
-          <div v-if="founders.length > 4" class="swiper-button-prev founder-prev"></div>
-          <div v-if="founders.length > 4" class="swiper-button-next founder-next"></div>
-        </Swiper>
-        <img src="@/assets/images/star2.png" class="bc-shape"/>
-      </template>
-    </div>
-  </div>
+<!--          <div v-if="founders.length > 4" class="swiper-button-prev founder-prev"></div>-->
+<!--          <div v-if="founders.length > 4" class="swiper-button-next founder-next"></div>-->
+<!--        </Swiper>-->
+<!--        <img src="@/assets/images/star2.png" class="bc-shape"/>-->
+<!--      </template>-->
+<!--    </div>-->
+<!--  </div>-->
 
   <SharedParner :count="30" class="mt-5"/>
 </template>
