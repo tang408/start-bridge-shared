@@ -7,13 +7,7 @@
 
     <div class="col-md-8">
       <!-- 使用傳入的 description -->
-      <p v-if="description">{{ description }}</p>
-      <!-- 如果沒有數據，顯示預設內容 -->
-      <p v-else>
-        相傳元朝最會煮奶茶的人- 《元太祖的姑姑》 <br />
-        手中隨時捧著一杯厚奶茶 茶香四溢，路人無一不駐足<br />
-        姑姑穿越各朝代，改名為顏太煮 盼天下人嘗盡這杯好滋味！
-      </p>
+      <p v-html="description" v-if="description" />
     </div>
   </div>
 </template>
