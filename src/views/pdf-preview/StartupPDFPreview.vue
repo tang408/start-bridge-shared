@@ -453,32 +453,22 @@ async function loadPlanData() {
           },
           {
             item: "總計",
-            percent: planData.firstMaterialCostsPercent &&
-            planData.personnelCostsPercent &&
-            planData.rentalCostsPercent &&
-            planData.peratingCostsPercent &&
-            planData.otherCostsPercent
-                ? String(
+            percent: String(
                     Number(planData.firstMaterialCostsPercent || 0) +
                     Number(planData.personnelCostsPercent || 0) +
                     Number(planData.rentalCostsPercent || 0) +
                     Number(planData.peratingCostsPercent || 0) +
                     Number(planData.otherCostsPercent || 0)
                 )
-                : '',
-            amount: planData.firstMaterialCostsAmount &&
-            planData.personnelCostsAmount &&
-            planData.rentalCostsAmount &&
-            planData.peratingCostsAmount &&
-            planData.otherCostsAmount
-                ? String(
+                ,
+            amount:  String(
                     Number(planData.firstMaterialCostsAmount || 0) +
                     Number(planData.personnelCostsAmount || 0) +
                     Number(planData.rentalCostsAmount || 0) +
                     Number(planData.peratingCostsAmount || 0) +
                     Number(planData.otherCostsAmount || 0)
                 )
-                : '',
+                ,
             note: '',
             desc: "(淨利，不含稅)",
           },
@@ -920,7 +910,7 @@ $bg-light: #fafafa;
   color: $text-dark;
 
   &:hover {
-    background: lighten($primary-color, 35%);
+    background: $primary-color;
   }
 }
 
@@ -929,7 +919,7 @@ $bg-light: #fafafa;
   color: white;
 
   &:hover:not(:disabled) {
-    background: darken($secondary-color, 10%);
+    background: darken($secondary-color, 5%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba($secondary-color, 0.3);
   }
@@ -1077,7 +1067,7 @@ $bg-light: #fafafa;
     gap: 12px;
     font-size: 18px;
     padding: 16px 0;
-    border-bottom: 1px solid lighten($border-color, 5%);
+    border-bottom: 1px solid $border-color;
 
     .toc-number {
       font-weight: 700;

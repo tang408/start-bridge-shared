@@ -97,6 +97,7 @@ const local = reactive({ ...props.modelValue })
 
 watch(local, (val) => emit('update:modelValue', val), { deep: true })
 
+console.log('local in PDFStep5Part2:', local)
 // 格式化金額
 function formatCurrency(amount) {
   if (!amount) return '0'
