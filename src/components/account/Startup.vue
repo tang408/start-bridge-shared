@@ -63,7 +63,7 @@
                 <button
                     type="button"
                     class="text-link"
-                    @click.stop="handleBtn1Click(p.id)"
+                    @click.stop="handlePDFPreviewClick(p.id)"
                 >
                   創業計劃書
                 </button>
@@ -787,10 +787,6 @@
             <label>產業類型：</label>
             <span>{{ partnerData?.industryType }}</span>
           </div>
-          <div class="info-item">
-            <label>成立日期：</label>
-            <span>{{ partnerData?.establishedDate }}</span>
-          </div>
           <!-- ...其他基本資訊 -->
         </section>
 
@@ -923,89 +919,49 @@
 
         <!-- 自訂欄位（最複雜的部分） -->
         <section class="info-section">
-          <h3>創業項目資訊</h3>
+          <h3>{{ partnerData?.customContents?.startup_projects.categoryName }}</h3>
           <div
-              v-for="field in partnerData?.customFields?.startup_projects"
-              :key="field.fieldKey"
+              v-html="partnerData?.customContents?.startup_projects.content"
               class="info-item"
           >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
           </div>
         </section>
 
         <section class="info-section">
-          <h3>加盟需求</h3>
+          <h3>{{ partnerData?.customContents?.manufacturing_schedule.categoryName }}</h3>
           <div
-              v-for="field in partnerData?.customFields?.franchise_requirements"
-              :key="field.fieldKey"
+              v-html="partnerData?.customContents?.manufacturing_schedule.content"
               class="info-item"
           >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
           </div>
         </section>
 
         <section class="info-section">
-          <h3>製造時程</h3>
+          <h3>{{ partnerData?.customContents?.others.categoryName }}</h3>
           <div
-              v-for="field in partnerData?.customFields?.manufacturing_schedule"
-              :key="field.fieldKey"
+              v-html="partnerData?.customContents?.others.content"
               class="info-item"
           >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
           </div>
         </section>
 
         <section class="info-section">
-          <h3>其他資訊</h3>
+          <h3>{{ partnerData?.customContents?.business_model.categoryName }}</h3>
           <div
-              v-for="field in partnerData?.customFields?.others"
-              :key="field.fieldKey"
+              v-html="partnerData?.customContents?.business_model.content"
               class="info-item"
           >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
           </div>
         </section>
 
         <section class="info-section">
-          <h3>商業模式</h3>
+          <h3>{{ partnerData?.customContents?.franchise_training.categoryName }}</h3>
           <div
-              v-for="field in partnerData?.customFields?.business_model"
-              :key="field.fieldKey"
+              v-html="partnerData?.customContents?.franchise_training.content"
               class="info-item"
           >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
           </div>
         </section>
-
-        <section class="info-section">
-          <h3>加盟訓練</h3>
-          <div
-              v-for="field in partnerData?.customFields?.franchise_training"
-              :key="field.fieldKey"
-              class="info-item"
-          >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span>{{ field.fieldValue }}</span>
-          </div>
-        </section>
-
-        <section class="info-section">
-          <h3>支援服務</h3>
-          <div
-              v-for="field in partnerData?.customFields?.support_services"
-              :key="field.fieldKey"
-              class="info-item"
-          >
-            <label>{{ field.fieldName }}{{ field.isRequired ? ' *' : '' }}：</label>
-            <span style="white-space: pre-line;">{{ field.fieldValue }}</span>
-          </div>
-        </section>
-
       </div>
     </div>
   </div>
@@ -1255,6 +1211,18 @@ async function handleBtn2Click(planId) {
     }
   }
 }
+
+// PDF 預覽功能
+async function handlePDFPreviewClick(planId) {
+  // 跳轉到獨立的 PDF 預覽頁面
+  const routeData = router.resolve({
+    name: 'StartupPDFPreview',
+    params: { planId: planId }
+  });
+
+  window.open(routeData.href, '_blank');
+}
+
 async function loadPlanData(planId) {
   try {
     const requestData = {
@@ -4211,6 +4179,51 @@ hr {
 
 .text-link:active {
   color: #1c5985;
+}
+
+// PDF 預覽連結樣式
+.text-link {
+  background: none;
+  border: none;
+  color: #3498db;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+
+  &.pdf-link {
+    color: #ff6634;
+
+    &:hover {
+      color: #ff8855;
+    }
+  }
+
+  &:hover {
+    color: #2980b9;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+
+  &:active {
+    color: #1c5985;
+  }
+}
+
+// 按鈕群組樣式優化
+.two-buttons-group {
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      text-align: left;
+    }
+  }
 }
 
 </style>

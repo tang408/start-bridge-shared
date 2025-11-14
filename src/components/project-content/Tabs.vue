@@ -271,9 +271,13 @@ const handleViewBusinessPlan = async () => {
     return;
   }
 
-  // ✅ 開啟新視窗
-  const url = `/account/startup?source=account&planId=${props.planData.id}&mode=pdf-preview`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  // 跳轉到獨立的 PDF 預覽頁面
+  const routeData = router.resolve({
+    name: 'StartupPDFPreview',
+    params: { planId: props.planData.id }
+  });
+
+  window.open(routeData.href, '_blank');
 };
 
 async function goToParticipation() {

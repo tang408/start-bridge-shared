@@ -20,7 +20,7 @@
           :showInfo="true"
           @favorite-toggle="handleFavoriteToggle"
           @card-click="handlePlanClick"
-          @download-plan="handleDownloadClick(c)"
+          @download-plan="handlePDFPreviewClick(c)"
       />
     </div>
 
@@ -254,9 +254,14 @@ async function handleCreatePlan(card) {
   });
 }
 
-function handleDownloadClick(card) {
-  // 假設有一個 API 可以根據計劃 ID 獲取下載連結
-  window.open(`/account/startup?source=account&planId=${card.id}&mode=pdf-preview`, '_blank');
+async function handlePDFPreviewClick(plan) {
+  // 跳轉到獨立的 PDF 預覽頁面
+  const routeData = router.resolve({
+    name: 'StartupPDFPreview',
+    params: { planId: plan.id }
+  });
+
+  window.open(routeData.href, '_blank');
 }
 
 const showPlanInfoDialog = ref(false);

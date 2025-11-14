@@ -150,6 +150,15 @@ const routes = [
         name: "soon",
         component: Soon,
       },
+      {
+        path: '/pdf-preview/startup/:planId',
+        name: 'StartupPDFPreview',
+        component: () => import('@/views/pdf-preview/StartupPDFPreview.vue'),
+        meta: {
+          requiresAuth: true,
+          title: '創業計劃書預覽'
+        }
+      }
     ],
   },
   {
