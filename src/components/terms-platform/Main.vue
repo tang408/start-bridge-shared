@@ -22,13 +22,19 @@ import platformImg from "@/assets/images/platform.jpg";
     background-size: cover;
     background-position: center;
     display: flex;
+    flex-flow: column;
     justify-content: center;
+    align-items: center;
     width: 100%;
     padding: 100px 0;
+    gap: 30px;
   }
 
   img {
     width: 70%;
+    @media (max-width: 767px) {
+      width: 90%;
+    }
   }
 }
 </style>
