@@ -423,25 +423,25 @@
           />
         </div>
 
-<!--        &lt;!&ndash; Step 7 &ndash;&gt;-->
-<!--        <div class="pdf-section">-->
-<!--          <h2 class="section-title">七、提交與後續</h2>-->
-<!--          <Step7-->
-<!--              v-model="formData.step7"-->
-<!--              :errors="{}"-->
-<!--              :readonly="true"-->
-<!--          />-->
-<!--        </div>-->
+        <!--        &lt;!&ndash; Step 7 &ndash;&gt;-->
+        <!--        <div class="pdf-section">-->
+        <!--          <h2 class="section-title">七、提交與後續</h2>-->
+        <!--          <Step7-->
+        <!--              v-model="formData.step7"-->
+        <!--              :errors="{}"-->
+        <!--              :readonly="true"-->
+        <!--          />-->
+        <!--        </div>-->
 
-<!--        &lt;!&ndash; Step 8 &ndash;&gt;-->
-<!--        <div class="pdf-section">-->
-<!--          <h2 class="section-title">八、風險提示與責任聲明</h2>-->
-<!--          <Step8-->
-<!--              v-model="formData.step8"-->
-<!--              :errors="{}"-->
-<!--              :readonly="true"-->
-<!--          />-->
-<!--        </div>-->
+        <!--        &lt;!&ndash; Step 8 &ndash;&gt;-->
+        <!--        <div class="pdf-section">-->
+        <!--          <h2 class="section-title">八、風險提示與責任聲明</h2>-->
+        <!--          <Step8-->
+        <!--              v-model="formData.step8"-->
+        <!--              :errors="{}"-->
+        <!--              :readonly="true"-->
+        <!--          />-->
+        <!--        </div>-->
       </div>
     </div>
   </section>
@@ -990,17 +990,18 @@ import {userCheckApi} from "@/api/modules/userCheck.js";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {transactionApi} from "@/api/modules/transaction.js";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
+
 const router = useRouter();
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
 
 // PDF 相關引入
-import { usePdfGenerator } from "@/composables/usePDFGenerateor.js";
+import {usePdfGenerator} from "@/composables/usePDFGenerateor.js";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {NewAlert} from "@/composables/useAlert.js";
 
 // 2. 更新解構賦值，使用新的函數
-const { generateStepByStepPDF  } = usePdfGenerator();
+const {generateStepByStepPDF} = usePdfGenerator();
 const pdfContent = ref(null);
 const isGeneratingPDF = ref(false);
 
@@ -1016,10 +1017,10 @@ function getStep5ReportText() {
   }
 
   const reportOptions = [
-    { value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限" },
-    { value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供" },
-    { value: "season", text: "每季/年度「財務報表」，需於當季後次月 15 日前提供" },
-    { value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供" }
+    {value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
+    {value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
+    {value: "season", text: "每季/年度「財務報表」，需於當季後次月 15 日前提供"},
+    {value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"}
   ];
 
   const option = reportOptions.find(opt => opt.value === step5.reportSelected);
@@ -1167,7 +1168,7 @@ async function toggle(planId) {
 
 }
 
-async function  handleBtn1Click(planId) {
+async function handleBtn1Click(planId) {
   if (expandedId.value === planId) {
     currentPlanId.value = planId;
     await loadPlanData(planId);
@@ -1217,7 +1218,7 @@ async function handlePDFPreviewClick(planId) {
   // 跳轉到獨立的 PDF 預覽頁面
   const routeData = router.resolve({
     name: 'StartupPDFPreview',
-    params: { planId: planId }
+    params: {planId: planId}
   });
 
   window.open(routeData.href, '_blank');
@@ -1285,6 +1286,7 @@ async function loadPlanData(planId) {
         prepBudget: [
           {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
           {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
           {item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
@@ -1293,17 +1295,18 @@ async function loadPlanData(planId) {
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
           {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
           {
-            item: "總計", amount:  String(
-                    Number(planData.franchiseFee || 0) +
-                    Number(planData.decorationCosts || 0) +
-                    Number(planData.equipmentCosts || 0) +
-                    Number(planData.firstMaterialCost || 0) +
-                    Number(planData.paySalaryBudget || 0) +
-                    Number(planData.otherPersonnelCosts || 0) +
-                    Number(planData.marketingExpenses || 0) +
-                    Number(planData.cashFlow || 0) +
-                    Number(planData.otherCosts || 0)
-                ),
+            item: "總計", amount: String(
+                Number(planData.franchiseFee || 0) +
+                Number(planData.decorationCosts || 0) +
+                Number(planData.storeRentCosts || 0) +
+                Number(planData.equipmentCosts || 0) +
+                Number(planData.firstMaterialCost || 0) +
+                Number(planData.paySalaryBudget || 0) +
+                Number(planData.otherPersonnelCosts || 0) +
+                Number(planData.marketingExpenses || 0) +
+                Number(planData.cashFlow || 0) +
+                Number(planData.otherCosts || 0)
+            ),
           },
         ],
         costStruct: [
@@ -1369,7 +1372,7 @@ async function loadPlanData(planId) {
                 )
                 : '',
             note: '',
-            desc: "(淨利，不含稅)",
+            desc: "(不含稅)",
           },
         ],
         targetRevenue: String(planData.turnoverTarget || ''),
@@ -1679,7 +1682,7 @@ const formData = reactive({
     selfFund: "",
     totalFunding: "",
     minAmount: "",
-    amountRange: 10,
+    amountRange: "",
     partnerLimit: "",
   },
   step2: {file: null},
@@ -1710,6 +1713,7 @@ const formData = reactive({
     prepBudget: [
       {item: "品牌加盟的相關費用", amount: ""},
       {item: "店面的裝潢設計工程", amount: ""},
+      {item: "店面租賃兩壓一租", amount: ""},
       {item: "營運設備與生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
@@ -1753,7 +1757,7 @@ const formData = reactive({
         percent: "",
         amount: "",
         note: "",
-        desc: "(淨利，不含稅)",
+        desc: "(不含稅)",
       },
     ],
     targetRevenue: "",
@@ -1912,20 +1916,7 @@ watch(
     {immediate: true}
 );
 
-const progress = ref([
-  {
-    id: 1,
-    status: "applying",
-    title: "專案名稱專案名稱專案名稱專案名稱專案名稱",
-    progressStep: 3,
-    stateText: "上傳合約",
-    serviceCharge: 5,
-    endTime: "2024-12-15",
-    paymentStatus: 1,
-    contractStatus: 1,
-    companyStatus:1,
-  },
-]);
+const progress = ref([]);
 const records = reactive([
   {
     id: "rec-1",
@@ -2259,6 +2250,7 @@ function convertFormData(formData, userId) {
     // 財務規劃 (Step5) - 預算項目
     franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
     decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設工程"),
+    storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
     equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備與生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
     paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業者預計支薪預算"),
@@ -2318,12 +2310,11 @@ async function createPlan() {
     if (!isEditMode.value) {
 
       // 前往個人頁面上傳文件
-      const result = await NewAlert.confirm("創業計劃書提交成功","請前往「個人專區」上傳相關文件。")
+      const result = await NewAlert.confirm("創業計劃書提交成功", "請前往「個人專區」上傳相關文件。")
       if (result) {
-        await router.push({ path: "/account/profile" });
+        await router.push({path: "/account/profile"});
       }
-    }
-    else {
+    } else {
       // 編輯模式下的提示
       await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
     }
@@ -2390,6 +2381,11 @@ async function getAllPlanByUser() {
   console.log(response)
 
   if (response.code === 0) {
+    if (!response.data || response.data.length === 0) {
+      progress.value = []
+      return
+    }
+
     progress.value = response.data.map(plan => ({
       id: plan.planId,
       status: plan.currentStep,
@@ -2448,7 +2444,7 @@ const companyForm = reactive({
   // 公司資料
   companyName: '',
   companyNameEn: '',
-  businessId : '',
+  businessId: '',
   companyLogo: '',
   companyLogoId: '',
   slogan: '',
@@ -2563,7 +2559,7 @@ async function handleCompanySubmit() {
     planId: currentPlan.value.id,
     companyName: companyForm.companyName,
     companyNameEn: companyForm.companyNameEn,
-    businessId : companyForm.businessId,
+    businessId: companyForm.businessId,
     companyLogo: companyForm.companyLogo.id,
     slogan: companyForm.slogan,
     bankAccountName: companyForm.bankAccountName,
@@ -2861,34 +2857,34 @@ async function getTransactionByUser() {
   const formData = {
     userId: currentUser.value,
   }
+  const response = await transactionApi.getTransactionByUser(formData)
 
-  try {
-    const response = await transactionApi.getTransactionByUser(formData)
+  if (response.code === 0) {
+    // 清空原有資料
+    records.splice(0, records.length)
 
-    if (response.code === 0) {
-      // 清空原有資料
-      records.splice(0, records.length)
-
-      // 處理並填入新資料
-      const processedData = response.data.map(record => ({
-        id: `rec-${record.id}`,
-        date: record.date,
-        title: record.planName,
-        action: actionMap[record.action] || '未知操作',
-        status: statusMap[record.status] || '未知狀態'
-      }))
-
-      // 填入新資料
-      records.push(...processedData)
-
-      console.log('處理後的交易記錄:', records)
-    } else {
-      await NewAlert.show("注意！", response.message + " ,取得交易紀錄失敗，請洽客服人員。")
+    // 處理並填入新資料
+    if (!response.data || response.data.length === 0) {
+      console.log('沒有交易記錄')
+      return
     }
-  } catch (error) {
-    console.error('取得交易紀錄錯誤:', error)
-    await NewAlert.show("注意！", "取得交易紀錄失敗，請洽客服人員。")
+
+    const processedData = response.data.map(record => ({
+      id: `rec-${record.id}`,
+      date: record.date,
+      title: record.planName,
+      action: actionMap[record.action] || '未知操作',
+      status: statusMap[record.status] || '未知狀態'
+    }))
+
+    // 填入新資料
+    records.push(...processedData)
+
+    console.log('處理後的交易記錄:', records)
+  } else {
+    await NewAlert.show("注意！", response.message + " ,取得交易紀錄失敗，請洽客服人員。")
   }
+
 }
 
 // 對應表

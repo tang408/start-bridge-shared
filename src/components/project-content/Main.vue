@@ -6,19 +6,26 @@
           :description="brandData?.description"
       />
       <Swiper
-        :images="brandImages || []"
+          :images="brandImages || []"
       />
       <Tabs
-        :brand-data="brandData"
-        :plan-data="planData"
+          :brand-data="brandData"
+          :plan-data="planData"
       />
       <div class="">
         <h1 class="mb-4 text-center">媒體介紹</h1>
-        <div class="media-section-card row">
+        <!-- 如果有媒體介紹數據才顯示 -->
+        <div v-if="cards.length > 0" class="media-section-card row">
           <div class="col-md-4" v-for="(card, index) in cards" :key="index">
-            <img :src="card.img" class="media-section-card-image w-100 mb-2" />
-            <div>{{ card.title }}</div>
+            <a :href="card.url" target="_blank" class="media-card-link">
+              <img :src="card.img" class="media-section-card-image w-70 mb-2" />
+              <div>{{ card.title }}</div>
+            </a>
           </div>
+        </div>
+        <!-- 沒有媒體介紹時顯示提示 -->
+        <div v-else class="text-center text-muted py-5">
+          暫無媒體介紹
         </div>
       </div>
     </div>
@@ -46,25 +53,14 @@ import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 const route = useRoute();
 const {isLoggedIn, currentUser} = useAuth();
 
-const cards = [
-  {
-    img: new URL("@/assets/images/media-1.png", import.meta.url).href,
-    title: "顏太煮奶茶 x 面白大丈夫｜夢幻連動!!笑料滿滿的面白放送",
-  },
-  {
-    img: new URL("@/assets/images/media-2.png", import.meta.url).href,
-    title: "咀嚼控的最愛｜爆料系平價手搖✨「顏太煮奶茶」",
-  },
-  {
-    img: new URL("@/assets/images/media-3.png", import.meta.url).href,
-    title: "盛情款待的手搖時光｜台中奶茶霸主🧋「顏太煮奶茶」",
-  },
-];
+// 媒體介紹數據,從 API 獲取
+const cards = ref([]);
 
 const emit = defineEmits(['data-loaded']);
 const planData = ref();
 const brandData = ref();
 const brandImages = ref([])
+
 async function getPlan() {
   const formData = {
     userId: isLoggedIn.value ? currentUser.value : "",
@@ -73,6 +69,17 @@ async function getPlan() {
   const response = await PlanApi.getPlan(formData);
   if (response.code === 0) {
     planData.value = response.data;
+
+    // 處理媒體介紹數據
+    if (response.data.mediaIntros && Array.isArray(response.data.mediaIntros)) {
+      cards.value = response.data.mediaIntros.map(item => ({
+        img: item.imageUrl,
+        title: item.title,
+        url: item.url
+      }));
+    } else {
+      cards.value = [];
+    }
 
     await getOfficialPartner();
   }
@@ -88,7 +95,7 @@ async function getOfficialPartner() {
     brandData.value = response.data;
     emit('data-loaded', response.data);
 
-// 將 JSON 字串轉換成陣列
+    // 將 JSON 字串轉換成陣列
     if (response.data.brandImage) {
       try {
         brandImages.value = JSON.parse(response.data.brandImage);
@@ -120,6 +127,7 @@ onMounted(() => {
       padding: 0 21px;
       background-size: cover;
     }
+
     &-img {
       margin: -50px 0;
       width: 100%;
@@ -130,6 +138,7 @@ onMounted(() => {
       }
     }
   }
+
   &-bc {
     &-img {
       position: absolute;
@@ -139,6 +148,7 @@ onMounted(() => {
       height: 40vh;
     }
   }
+
   &-footer {
     position: relative;
     @media (max-width: 576px) {
@@ -172,8 +182,24 @@ onMounted(() => {
   @media (max-width: 576px) {
     gap: 15px;
   }
+
   &-image {
     border-radius: 20px;
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.media-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+
+  &:hover {
+    color: inherit;
   }
 }
 </style>

@@ -396,6 +396,7 @@ async function loadPlanData() {
         prepBudget: [
           {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
           {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
           {item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
@@ -407,6 +408,7 @@ async function loadPlanData() {
             item: "總計", amount:  String(
                 Number(planData.franchiseFee || 0) +
                 Number(planData.decorationCosts || 0) +
+                Number(planData.storeRentCosts || 0) +
                 Number(planData.equipmentCosts || 0) +
                 Number(planData.firstMaterialCost || 0) +
                 Number(planData.paySalaryBudget || 0) +

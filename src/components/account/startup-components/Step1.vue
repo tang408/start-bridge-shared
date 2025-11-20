@@ -59,7 +59,7 @@
         :readonly="readonly"
     />
 
-    <!-- 單筆最高金額度 -->
+    <!-- 額度級距 -->
     <SharedInput
         id="amountRange"
         label="額度級距(萬元) (一單位多少)"
@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted } from "vue";
+import {reactive, ref, watch, onMounted, nextTick} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedDatePicker from "@/components/shared/Shared-DatePicker.vue";
@@ -130,14 +130,69 @@ watch(
     }
 );
 
+// 計算最低額度是否整除總額 同步到 額度級距
+let isAdjustingMinAmount = false;
+
 watch(
-    () => [local.totalFunding, local.minAmount] ,
+    () => local.minAmount,
+    (newMinAmount) => {
+      // 防止循環調整
+      if (isAdjustingMinAmount) return;
+
+      const minAmountNum = Number(newMinAmount) || 1;
+      const totalFundingNum = Number(local.totalFunding) || 0;
+
+      if (minAmountNum > 0 && totalFundingNum > 0) {
+        // 找出能整除 totalFunding 的最接近值
+        const factors = [];
+
+        // 找出所有因數
+        for (let i = 1; i <= totalFundingNum; i++) {
+          if (totalFundingNum % i === 0) {
+            factors.push(i);
+          }
+        }
+
+        // 找最接近 minAmountNum 的因數
+        let closestFactor = factors[0];
+        let minDiff = Math.abs(minAmountNum - closestFactor);
+
+        for (const factor of factors) {
+          const diff = Math.abs(minAmountNum - factor);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestFactor = factor;
+          }
+        }
+
+        if (closestFactor !== minAmountNum) {
+          isAdjustingMinAmount = true;
+          nextTick(() => {
+            local.minAmount = closestFactor;
+            local.amountRange = closestFactor;
+            isAdjustingMinAmount = false;
+          });
+        } else {
+          local.amountRange = minAmountNum;
+        }
+      } else {
+        local.amountRange = minAmountNum;
+      }
+    }
+);
+
+// 計算合夥人上限（放在最後，確保使用已調整的值）
+watch(
+    () => [local.totalFunding, local.minAmount],
     ([newTotalFunding, newMinAmount]) => {
       const totalFundingNum = Number(newTotalFunding) || 0;
       const minAmountNum = Number(newMinAmount) || 1;
-      local.partnerLimit = Math.ceil(totalFundingNum / minAmountNum);
+
+      if (minAmountNum > 0) {
+        local.partnerLimit = Math.ceil(totalFundingNum / minAmountNum);
+      }
     }
-)
+);
 
 // 返回列表
 function backToList() {

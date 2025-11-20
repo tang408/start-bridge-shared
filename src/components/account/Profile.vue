@@ -211,6 +211,21 @@
               required
               :disabled="ro('brand')"
           />
+          <!-- 身分證明上傳* -->
+          <SharedUpload
+              id="assetProof"
+              label="身分證明上傳"
+              v-model="formFounder.founderIdProof"
+              :error="errFounder.founderIdProof"
+              :required="true"
+              accept=".pdf,.jpg,.jpeg,.png"
+              button-text="重新上傳"
+              :account="formFounder.fullname"
+              :name="'founderIdProof'"
+              :max-size-mb="10"
+              @upload-success="(result) => handleUploadSuccess('founderIdProof', result)"
+              :disabled="ro('founderIdProof')"
+          />
 
           <!-- 資產證明上傳* -->
           <SharedUpload
@@ -328,16 +343,6 @@
               :disabled="ro('idProofSecond')"
           />
 
-          <!-- 創業預算*(自備款2成)* -->
-          <SharedInput
-              id="asset"
-              label="創業預算*(自備款2成)"
-              v-model="formCo.asset"
-              :error="errCo.asset"
-              required
-              :readonly="ro('asset')"
-          />
-
           <!-- 工作狀況* -->
           <SharedInput
               id="work"
@@ -359,15 +364,7 @@
               :disabled="ro('region')"
           />
 
-          <!-- 最低 & 最高可投入資產 -->
-          <SharedInput
-              id="minBudget"
-              label="最低可投入資產*"
-              v-model="formCo.minBudget"
-              :error="errCo.minBudget"
-              required
-              :readonly="ro('minBudget')"
-          />
+          <!-- 最高可投入資產 -->
 
           <SharedInput
               id="maxBudget"
@@ -538,6 +535,13 @@ function handleUploadSuccess(fileType, result) {
         id: fileId,
         url: result.data?.url
       };
+    } else if (fileType === 'founderIdProof') {
+      formFounder.founderIdProofId = fileId;
+      formFounder.founderIdProof = {
+        name: fileName,
+        id: fileId,
+        url: result.data?.url
+      };
     } else if (fileType === 'assetProof') {
       formFounder.assetProofId = fileId;
       formFounder.assetProof = {
@@ -582,6 +586,8 @@ const formFounder = reactive({
   region: "",
   work: "",
   brand: "",
+  founderIdProof: "",
+  founderIdProofId: null,
   assetProof: "",
   assetProofId: null,
   policeRecord: "",
@@ -592,7 +598,6 @@ const formFounder = reactive({
 });
 
 const formCo = reactive({
-  minBudget: 0,
   maxBudget: 0,
   idProofId: 0,
   idProof: "",
@@ -810,7 +815,6 @@ watch(userProfile, (newValue) => {
 
     formCo.refCode = newValue.userInfoData?.referralCode || "";
     formCo.work = newValue.coreFounderData?.workStatus || "";
-    formCo.minBudget = newValue.coreFounderData?.minBudget || "";
     formCo.maxBudget = newValue.coreFounderData?.maxBudget || "";
     formCo.industryType = newValue.coreFounderData?.expectIndustryType || "";
     formCo.yearLimit = newValue.coreFounderData?.investLimitYear || "";
@@ -826,6 +830,8 @@ watch(userProfile, (newValue) => {
 
 watch(proofFiles, (newValue) => {
   if (newValue) {
+    formFounder.founderIdProof = newValue.identityCertification.displayName || "";
+    formFounder.founderIdProofId = newValue.identityCertification.id || "";
     formFounder.assetProof = newValue.assetsCertification.displayName || "";
     formFounder.assetProofId = newValue.assetsCertification.id || "";
     formFounder.policeRecord = newValue.pcrCertification.displayName || "";
@@ -911,6 +917,7 @@ async function submitForFounderAndCompany() {
       city: formFounder.region,
       workStatus: formFounder.work,
       industryType: formFounder.brand,
+      identityCertification: formFounder.founderIdProofId || 0,
       assetsCertification: formFounder.assetProofId || 0,
       pcrCertification: formFounder.policeRecordId || 0,
       education: formFounder.edu,
@@ -972,7 +979,6 @@ async function submitForCoreFounder() {
       email: formCo.email,
       budget: Number(formCo.asset),
       workStatus: formCo.work,
-      minBudget: Number(formCo.minBudget),
       maxBudget: Number(formCo.maxBudget),
       expectIndustryType: formCo.industryType,
       industryType: formCo.industryType,

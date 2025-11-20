@@ -83,9 +83,7 @@
               </div>
             </div>
 
-            <div class="bottom-text">
-              我們觀察到，普遍民眾的投資選擇大多為金控機構所發行的金融商品，如基金
-              、保險等等，而能投資到傳統產業的機會，通常只能透過股票這樣的次級市場或者身旁的朋友自行創業才有機會，希望透過我們這樣新型的創業媒合模式，並且聚焦在連鎖加盟品牌之下，能讓民眾能獲得更加快速可靠參與傳統產業的投資機會。
+            <div class="bottom-text" v-html="aboutMeText">
             </div>
           </section>
         </div>
@@ -170,6 +168,7 @@ const stars = ref([
 const activeIdx = ref(0);
 const founders = ref([]);
 const aboutMes = ref([]);
+const aboutMeText = ref('');
 const advantages = ref([]);
 const loading = ref(false);
 
@@ -208,6 +207,23 @@ async function getAboutMes() {
   }
 }
 
+async function getAboutMeText() {
+  loading.value = true;
+  try {
+    const response = await aboutMeApi.getAboutMeText();
+    if (response.code === 0) {
+      aboutMeText.value = response.data.content;
+    } else {
+      throw new Error('API 響應格式錯誤');
+    }
+  } catch (error) {
+    console.error('獲取關於我們文字內容失敗:', error);
+  } finally {
+    loading.value = false;
+  }
+
+}
+
 // 根據索引返回對應的 card class
 function getCardClass(index) {
   const classes = ['card-yellow', 'card-orange', 'card-black'];
@@ -235,6 +251,7 @@ onMounted(async () => {
   await Promise.all([
     getOfficialFounders(),
     getAboutMes(),
+    getAboutMeText(),
     getAdvantages()
   ]);
 });

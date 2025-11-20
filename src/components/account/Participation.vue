@@ -706,9 +706,9 @@ async function getAllParticipantPlanRecordByUser() {
         };
 
         const statusMap = {
-          1: '處理中',
-          2: '成功',
-          3: '失敗',
+          0: '處理中',
+          1: '成功',
+          2: '失敗',
         };
         return {
           id: record.id,
@@ -797,6 +797,11 @@ async function participate(p) {
 
   if (p.increaseAmount < p.minimumAmount) {
     await NewAlert.show("輸入錯誤", `參與金額不可低於最低參與金額 ${fmtMoney(p.minimumAmount)} 元。`);
+    return;
+  }
+
+  if (p.increaseAmount % p.amountRange !== 0) {
+    await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;
   }
 
