@@ -125,7 +125,7 @@
               :readonly="readonly"
             />
             <span class="option-label">
-              若營運月營業額達
+              若當月營業額達
               <SharedInput
                 id="rewardAmount"
                 type="number"
@@ -236,10 +236,10 @@ watch(
 
 async function recalc() {
   isRecalculating = true;
-  
+
   // 使用 nextTick 確保在下一個 tick 執行,避免同步更新問題
   await nextTick();
-  
+
   const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
 
   // STEP 1: 淨利
@@ -265,7 +265,7 @@ async function recalc() {
         ? ((Number(row.percent || 0) / 100) * Number(local.targetRevenue)).toFixed(0)
         : "";
   });
-  
+
   // 等待下一個 tick 再重置旗標和發送更新
   await nextTick();
   isRecalculating = false;

@@ -11,7 +11,7 @@
         ← 返回列表
       </button>
 
-      <h5 class="form-title">一、加盟表單</h5>
+      <h5 class="form-title">一、個人背景與信用參考</h5>
 
       <!-- 是否有創業經驗 -->
       <SharedRadio
@@ -62,6 +62,7 @@
           placeholder="請說明相關情況"
           :readonly="readonly"
       />
+      <h5 class="form-title">核心能力與資源</h5>
 
       <SharedTextarea
           id="selfAdv"

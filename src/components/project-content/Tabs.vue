@@ -24,7 +24,13 @@
       </li>
 
       <li class="nav-item">
-        <a class="nav-link btn-yellow" role="button" @click="goToParticipation">
+        <a
+            class="nav-link btn-yellow"
+            role="button"
+            @click="goToParticipation"
+            :class="{ 'disabled': !canParticipate }"
+            :style="{ cursor: canParticipate ? 'pointer' : 'not-allowed', opacity: canParticipate ? 1 : 0.6 }"
+        >
           參與專案
         </a>
       </li>
@@ -61,17 +67,30 @@
           <div class="project-progress-section">
             <h3 class="section-title">專案進度</h3>
 
-            <!-- 進度條 -->
+            <!-- 🆕 雙層進度條：橘色（已完成）+ 灰色（審核中）-->
             <div class="progress-bar-container">
               <div class="progress-bar-wrapper">
+                <!-- 橘色進度條（已完成）-->
                 <div
-                    class="progress-bar-fill"
-                    :style="{
-              width: `${props.planData?.planDetail.planProgress || 0}%`,
-              backgroundColor: progressColor
-            }"
+                    class="progress-bar-fill completed"
+                    :style="{ width: `${completedProgress}%` }"
                 >
-                  <span class="progress-text">{{ props.planData?.planDetail.planProgress || 0 }}%</span>
+                  <span class="progress-text" v-if="completedProgress > 5">
+                    {{ completedProgress }}%
+                  </span>
+                </div>
+
+                <!-- 灰色進度條（審核中）-->
+                <div
+                    class="progress-bar-fill pending"
+                    :style="{
+                      width: `${pendingProgress}%`,
+                      left: `${completedProgress}%`
+                    }"
+                >
+                  <span class="progress-text" v-if="pendingProgress > 5">
+                    {{ pendingProgress }}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -79,16 +98,16 @@
             <!-- 進度數據 -->
             <div class="progress-stats">
               <div class="stat-card">
-                <div class="stat-label">媒合總額</div>
-                <div class="stat-value">
-                  $ {{ formatAmount(props.planData?.planDetail.totalParticipantAmount || 0) }}
+                <div class="stat-label">已完成媒合總額</div>
+                <div class="stat-value completed-color">
+                  $ {{ formatAmount(props.planData?.planDetail.completedAmount || 0) }}
                 </div>
               </div>
 
               <div class="stat-card">
                 <div class="stat-label">媒合人數</div>
                 <div class="stat-value">
-                  {{ props.planData?.planDetail.totalParticipants || 0 }} 人
+                  {{ props.planData?.planDetail.totalUniqueParticipants || 0 }} 人
                 </div>
               </div>
 
@@ -118,6 +137,7 @@
               <p v-else class="text-muted">暫無創業者介紹</p>
             </div>
           </div>
+
           <!-- 創業計劃書跳轉 -->
           <div class="founder-section mt-4">
             <h3 class="section-title">創業計劃書</h3>
@@ -149,6 +169,8 @@
             </div>
           </div>
         </div>
+
+
 
         <div v-else-if="t.key === 'terms'" class="d-flex-block">
           <!-- 檢查 franchiseInfo 是否存在 -->
@@ -213,6 +235,7 @@ const props = defineProps({
     required: true,
   },
 });
+
 const router = useRouter();
 const tabs = [
   {key: "brand", label: "專案詳情"},
@@ -222,6 +245,36 @@ const tabs = [
 ];
 
 const activeTab = ref(tabs[0].key);
+
+// 🆕 計算屬性：橘色進度（已完成）
+const completedProgress = computed(() => {
+  return props.planData?.planDetail?.completedProgress || 0;
+});
+
+// 🆕 計算屬性：灰色進度（審核中）
+const pendingProgress = computed(() => {
+  return props.planData?.planDetail?.pendingProgress || 0;
+});
+
+// 🆕 計算屬性：總進度
+const totalProgress = computed(() => {
+  return props.planData?.planDetail?.totalProgress || 0;
+});
+
+// 🆕 計算屬性：審核中金額
+const pendingAmount = computed(() => {
+  return props.planData?.planDetail?.pendingAmount || 0;
+});
+
+// 🆕 計算屬性：是否可參與
+const canParticipate = computed(() => {
+  return props.planData?.planDetail?.canParticipate ?? true;
+});
+
+// 🆕 計算屬性：最大可投資金額
+const maxParticipateAmount = computed(() => {
+  return props.planData?.planDetail?.maxParticipateAmount || 0;
+});
 
 onMounted(() => {
   const hash = window.location.hash.replace("#", "");
@@ -249,38 +302,13 @@ function formatAmount(amount) {
   return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-// ✅ 進度條顏色（根據進度百分比）
-const progressColor = computed(() => {
-  const progress = props.planData?.planDetail.planProgress || 0;
-  if (progress >= 100) return '#10b981'; // 綠色
-  if (progress >= 50) return '#f59e0b';  // 橘色
-  return '#ff6634';                      // 紅色
-});
-
-const handleViewBusinessPlan = async () => {
-  // ✅ 檢查是否登入
-  if (!isLoggedIn.value) {
-    await NewAlert.show("請先登入", "請先登入會員以查看創業計劃書");
-    await router.push({path: "/login"});
-    return;
-  }
-
-  // ✅ 檢查是否有計劃 ID
-  if (!props.planData?.id) {
-    await NewAlert.show("錯誤", "無法取得計劃書資訊");
-    return;
-  }
-
-  // 跳轉到獨立的 PDF 預覽頁面
-  const routeData = router.resolve({
-    name: 'StartupPDFPreview',
-    params: { planId: props.planData.id }
-  });
-
-  window.open(routeData.href, '_blank');
-};
-
 async function goToParticipation() {
+  // 🆕 檢查是否可以參與
+  if (!canParticipate.value) {
+    await NewAlert.show("無法參與", "目前專案已額滿或審核中，暫時無法參與");
+    return;
+  }
+
   if (!isLoggedIn.value) {
     await NewAlert.show("請先登入", "請先登入會員以繼續操作");
     await router.push({path: "/login"});
@@ -296,7 +324,7 @@ async function goToParticipation() {
   if (response.code === 0) {
     userData.value = response.data;
 
-    // ✅ 檢查用戶基本資料
+    // 檢查用戶基本資料
     if (userData.value.userInfoData) {
       const userInfo = userData.value.userInfoData;
 
@@ -317,24 +345,21 @@ async function goToParticipation() {
       }
     }
 
-    // ✅ 檢查創業者資料（修正欄位名稱和判斷邏輯）
+    // 檢查創業者資料
     if (userData.value.coreFounderData) {
       const coreFounderInfo = userData.value.coreFounderData;
 
-      // ✅ 修正：移除字串檢查，只檢查數字和 0
       if (
           !coreFounderInfo.city ||
           coreFounderInfo.city === 0 ||
           !coreFounderInfo.workStatus ||
           coreFounderInfo.workStatus === "" ||
-          !coreFounderInfo.minBudget ||
-          coreFounderInfo.minBudget === 0 ||
           !coreFounderInfo.maxBudget ||
           coreFounderInfo.maxBudget === 0
       ) {
         const result = await NewAlert.favorite(
             "資料不齊全",
-            "請完善會員資料（所在區域、工作狀態、最低、最高可投入資源、預計參與產業）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+            "請完善會員資料（所在區域、工作狀態、最高可投入資源、預計參與產業）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
         );
 
         if (result === 'favorite') {
@@ -349,7 +374,7 @@ async function goToParticipation() {
     }
   }
 
-  // ✅ 所有檢查通過，跳轉到參與頁面
+  // 所有檢查通過，跳轉到參與頁面
   await router.push({
     name: "participation",
     query: {
@@ -358,9 +383,32 @@ async function goToParticipation() {
       brandId: props.planData?.brand,
       brandName: props.brandData?.name,
       planId: props.planData?.id,
+      maxAmount: maxParticipateAmount.value, // 🆕 傳遞最大可投資金額
     },
   });
 }
+
+// ... 其他函數保持不變 ...
+
+const handleViewBusinessPlan = async () => {
+  if (!isLoggedIn.value) {
+    await NewAlert.show("請先登入", "請先登入會員以查看創業計劃書");
+    await router.push({path: "/login"});
+    return;
+  }
+
+  if (!props.planData?.id) {
+    await NewAlert.show("錯誤", "無法取得計劃書資訊");
+    return;
+  }
+
+  const routeData = router.resolve({
+    name: 'StartupPDFPreview',
+    params: {planId: props.planData.id}
+  });
+
+  window.open(routeData.href, '_blank');
+};
 
 async function handleUserFavoritePlan() {
   if (!isLoggedIn.value) {
@@ -379,7 +427,6 @@ async function handleUserFavoritePlan() {
   } else {
     await NewAlert.show("收藏失敗", response.message + " ,加入收藏失敗，請洽客服人員");
   }
-
 }
 
 const industryTypesData = ref([]);
@@ -398,13 +445,11 @@ async function getIndustryTypeName() {
   }
 }
 
-// 🆕 獲取自定義內容的輔助函數
 const getCustomContent = (key) => {
   const customContents = props.brandData?.customContents || {};
   return customContents[key]?.content || '';
 };
 
-// 動態生成加盟資訊數據 - 使用新的 customContents
 const joinInfoData = computed(() => {
   if (!props.brandData) return [];
 
@@ -419,7 +464,6 @@ const joinInfoData = computed(() => {
       label: "保證金",
       value: `${formatAmount(data.deposit)}元`
     },
-
     {
       label: "加盟主門檻要求",
       html: data.threshold
@@ -444,7 +488,7 @@ const joinInfoData = computed(() => {
       label: "其他成本",
       html: getCustomContent('others')
     },
-  ].filter(item => item.value || item.html); // 過濾掉空值
+  ].filter(item => item.value || item.html);
 });
 
 </script>
@@ -750,6 +794,7 @@ const joinInfoData = computed(() => {
   margin-bottom: 1.5rem;
 }
 
+/* 🆕 雙層進度條樣式 */
 .progress-bar-wrapper {
   width: 100%;
   height: 40px;
@@ -764,8 +809,20 @@ const joinInfoData = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: width 0.6s ease, background-color 0.3s ease;
-  position: relative;
+  transition: width 0.6s ease;
+  position: absolute;
+  top: 0;
+}
+
+.progress-bar-fill.completed {
+  background-color: #ff6634; /* 橘色 */
+  left: 0;
+  z-index: 2;
+}
+
+.progress-bar-fill.pending {
+  background-color: #d1d5db; /* 灰色 */
+  z-index: 1;
 }
 
 .progress-text {
@@ -773,6 +830,38 @@ const joinInfoData = computed(() => {
   font-weight: 600;
   font-size: 0.875rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 🆕 總進度文字 */
+.total-progress-text {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.pending-hint {
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+/* 🆕 金額顏色 */
+.completed-color {
+  color: #ff6634 !important;
+}
+
+.pending-color {
+  color: #6b7280 !important;
+}
+
+/* 🆕 禁用按鈕樣式 */
+.btn-yellow.disabled {
+  pointer-events: none;
+  background: #e5e7eb !important;
+  border-color: #e5e7eb !important;
+  color: #9ca3af !important;
 }
 
 /* 進度數據卡片 */

@@ -800,6 +800,11 @@ async function participate(p) {
     return;
   }
 
+  if (p.increaseAmount > p.goal - p.dollar) {
+    await NewAlert.show("輸入錯誤", `參與金額不可超過剩餘可參與金額 ${fmtMoney(p.goal - p.dollar)} 元。`);
+    return;
+  }
+
   if (p.increaseAmount % p.amountRange !== 0) {
     await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;

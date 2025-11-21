@@ -785,7 +785,7 @@
           </div>
           <div class="info-item">
             <label>產業類型：</label>
-            <span>{{ partnerData?.industryType }}</span>
+            <span>{{ industryTypesData[partnerData?.industryType-1].name|| '無資料' }}</span>
           </div>
           <!-- ...其他基本資訊 -->
         </section>
@@ -795,19 +795,19 @@
           <h3>財務資訊</h3>
           <div class="info-item">
             <label>資本額：</label>
-            <span>{{ partnerData?.capital }} 萬</span>
+            <span>{{ partnerData?.capital }} </span>
           </div>
           <div class="info-item">
             <label>加盟金：</label>
-            <span>{{ partnerData?.franchiseFee }} 萬</span>
+            <span>{{ partnerData?.franchiseFee }} </span>
           </div>
           <div class="info-item">
             <label>保證金：</label>
-            <span>{{ partnerData?.deposit }} 萬</span>
+            <span>{{ partnerData?.deposit }} </span>
           </div>
           <div class="info-item">
             <label>優惠金額：</label>
-            <span>{{ partnerData?.specialOffer }} 萬</span>
+            <span>{{ partnerData?.specialOffer }} </span>
           </div>
         </section>
 
@@ -919,45 +919,45 @@
 
         <!-- 自訂欄位（最複雜的部分） -->
         <section class="info-section">
-          <h3>{{ partnerData?.customContents?.startup_projects.categoryName }}</h3>
+          <h3>{{ partnerData?.customContents.startup_projects?.categoryName }}</h3>
           <div
-              v-html="partnerData?.customContents?.startup_projects.content"
+              v-html="partnerData?.customContents.startup_projects?.content"
               class="info-item"
           >
           </div>
         </section>
 
         <section class="info-section">
-          <h3>{{ partnerData?.customContents?.manufacturing_schedule.categoryName }}</h3>
+          <h3>{{ partnerData?.customContents.manufacturing_schedule?.categoryName }}</h3>
           <div
-              v-html="partnerData?.customContents?.manufacturing_schedule.content"
+              v-html="partnerData?.customContents.manufacturing_schedule?.content"
               class="info-item"
           >
           </div>
         </section>
 
         <section class="info-section">
-          <h3>{{ partnerData?.customContents?.others.categoryName }}</h3>
+          <h3>{{ partnerData?.customContents.others?.categoryName }}</h3>
           <div
-              v-html="partnerData?.customContents?.others.content"
+              v-html="partnerData?.customContents.others?.content"
               class="info-item"
           >
           </div>
         </section>
 
         <section class="info-section">
-          <h3>{{ partnerData?.customContents?.business_model.categoryName }}</h3>
+          <h3>{{ partnerData?.customContents.business_model?.categoryName }}</h3>
           <div
-              v-html="partnerData?.customContents?.business_model.content"
+              v-html="partnerData?.customContents.business_model?.content"
               class="info-item"
           >
           </div>
         </section>
 
         <section class="info-section">
-          <h3>{{ partnerData?.customContents?.franchise_training.categoryName }}</h3>
+          <h3>{{ partnerData?.customContents.franchise_training?.categoryName }}</h3>
           <div
-              v-html="partnerData?.customContents?.franchise_training.content"
+              v-html="partnerData?.customContents.franchise_training?.content"
               class="info-item"
           >
           </div>
@@ -999,6 +999,7 @@ const {isLoggedIn, currentUser, currentUserName} = useAuth();
 import {usePdfGenerator} from "@/composables/usePDFGenerateor.js";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {NewAlert} from "@/composables/useAlert.js";
+import {industryTypeApi} from "@/api/modules/industryType.js";
 
 // 2. 更新解構賦值，使用新的函數
 const {generateStepByStepPDF} = usePdfGenerator();
@@ -1287,7 +1288,7 @@ async function loadPlanData(planId) {
           {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
           {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
           {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
-          {item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '')},
+          {item: "營運設備、生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
@@ -1564,16 +1565,16 @@ function parseStoreLocation(text) {
   };
 }
 
-// Step4: Q9 - 解析共創者附加價值 "推廣親友及資源"
+// Step4: Q9 - 解析共創者附加價值 "推薦親友來消費"
 function parseCoFounderValue(text) {
   if (!text) return {value: '', note: {}};
 
   const valueMap = {
-    '協助經營': 'operation',
-    '推廣親友及資源': 'network',
-    '協助行銷': 'sales',
-    '能協助籌資': 'finance',
-    '獨立經營': 'independent'
+    '適度參與經營討論': 'operation',
+    '推薦親友來消費': 'network',
+    '介紹人脈行銷推廣': 'sales',
+    '幫忙協尋點位': 'finance',
+    '以上皆非,日常經營由創業者的團隊獨立運作。': 'independent'
   };
 
   for (const [key, value] of Object.entries(valueMap)) {
@@ -1714,7 +1715,7 @@ const formData = reactive({
       {item: "品牌加盟的相關費用", amount: ""},
       {item: "店面的裝潢設計工程", amount: ""},
       {item: "店面租賃兩壓一租", amount: ""},
-      {item: "營運設備與生財器具", amount: ""},
+      {item: "營運設備、生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
       {item: "籌備期其他人事成本", amount: ""},
@@ -2137,11 +2138,11 @@ function convertFormData(formData, userId) {
   // Q9: 轉換共創者附加價值為 text
   function getCoFounderValueText(value, valueNote) {
     const valueMapping = {
-      'operation': '協助經營',
-      'network': '推廣親友及資源',
-      'sales': '協助行銷',
-      'finance': '能協助籌資',
-      'independent': '獨立經營',
+      'operation': '適度參與經營討論',
+      'network': '推薦親友來消費',
+      'sales': '介紹人脈行銷推廣',
+      'finance': '幫忙協尋點位',
+      'independent': '以上皆非,日常經營由創業者的團隊獨立運作。',
       'other': '其他'
     };
 
@@ -2251,7 +2252,7 @@ function convertFormData(formData, userId) {
     franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
     decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設工程"),
     storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
-    equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備與生財器具"),
+    equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備、生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
     paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業者預計支薪預算"),
     otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "籌備期其他人事成本"),
@@ -2804,6 +2805,7 @@ onMounted(() => {
     getAllPlanStep();
     getAllPlanByUser();
     getSystemSetting();
+    getIndustryTypes();
   }
 
   // 檢查初始路由
@@ -2898,6 +2900,14 @@ const statusMap = {
   1: '處理中',
   2: '成功',
   3: '失敗'
+}
+
+const industryTypesData = ref([]);
+async function getIndustryTypes() {
+  const res = await industryTypeApi.getIndustryTypes();
+  if (res && res.data) {
+    industryTypesData.value = res.data;
+  }
 }
 
 </script>

@@ -44,7 +44,7 @@
 
         <!-- Step 3: 創業經驗 -->
         <div class="pdf-page pdf-section" data-section="step3">
-          <h2 class="section-title">二、創業經驗</h2>
+          <h2 class="section-title">個人背景與信用參考</h2>
           <PDFStep3
             v-model="formData.step3"
             :errors="{}"
@@ -196,7 +196,7 @@ const formData = reactive({
     prepBudget: [
       {item: "品牌加盟的相關費用", amount: ""},
       {item: "店面的裝潢設計工程", amount: ""},
-      {item: "營運設備與生財器具", amount: ""},
+      {item: "營運設備、生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
       {item: "籌備期其他人事成本", amount: ""},
@@ -397,7 +397,7 @@ async function loadPlanData() {
           {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
           {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
           {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
-          {item: "營運設備與生財器具", amount: String(planData.equipmentCosts || '')},
+          {item: "營運設備、生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
@@ -665,16 +665,16 @@ function parseStoreLocation(text) {
   };
 }
 
-// Step4: Q9 - 解析共創者附加價值 "推廣親友及資源"
+// Step4: Q9 - 解析共創者附加價值 "推薦親友來消費"
 function parseCoFounderValue(text) {
   if (!text) return {value: '', note: {}};
 
   const valueMap = {
-    '協助經營': 'operation',
-    '推廣親友及資源': 'network',
-    '協助行銷': 'sales',
-    '能協助籌資': 'finance',
-    '獨立經營': 'independent'
+    '適度參與經營討論': 'operation',
+    '推薦親友來消費': 'network',
+    '介紹人脈行銷推廣': 'sales',
+    '幫忙協尋點位': 'finance',
+    '以上皆非,日常經營由創業者的團隊獨立運作。': 'independent'
   };
 
   for (const [key, value] of Object.entries(valueMap)) {
