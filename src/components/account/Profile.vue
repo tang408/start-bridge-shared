@@ -202,15 +202,14 @@
           />
 
           <!-- 預計加盟產業/品牌* -->
-          <SharedSelect
-              id="brand"
+          <SharedMultiSelect
+              v-model="formFounder.founderExpectIndustry"
+              id="multi-select"
               label="預計加盟產業/品牌*"
-              v-model="formFounder.brand"
               :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
-              :error="errFounder.brand"
-              required
-              :disabled="ro('brand')"
+              placeholder="請選擇多個選項"
           />
+
           <!-- 身分證明上傳* -->
           <SharedUpload
               id="assetProof"
@@ -376,14 +375,12 @@
           />
 
           <!-- 預計參與產業 -->
-          <SharedSelect
-              id="industry"
-              label="預計參與產業*"
-              v-model="formCo.industryType"
+          <SharedMultiSelect
+              v-model="formCo.coreFounderExpectIndustry"
+              id="multi-select"
+              label="預計加盟產業/品牌*"
               :options="industryTypes.map(type => ({ value: type.id, text: type.name }))"
-              :error="errCo.industryType"
-              required
-              :disabled="ro('industryType')"
+              placeholder="請選擇多個選項"
           />
 
           <!-- 可接受投入參與年限 -->
@@ -500,6 +497,7 @@ import {fileApi} from "@/api/modules/file.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
 import {cityApi} from "@/api/modules/city.js";
 import {NewAlert} from "@/composables/useAlert.js";
+import SharedMultiSelect from "@/components/shared/Shared-Multi-Select.vue";
 
 const {isLoggedIn, currentUser, logout} = useAuth();
 
@@ -568,6 +566,7 @@ function handleUploadSuccess(fileType, result) {
 }
 
 /** ------- 用戶（user） state ------- */
+const selectedValues = ref([]);
 const formUser = reactive({
   phone: "",
   password: "",
@@ -585,7 +584,7 @@ const formFounder = reactive({
   budget: 0,
   region: "",
   work: "",
-  brand: "",
+  founderExpectIndustry: "",
   founderIdProof: "",
   founderIdProofId: null,
   assetProof: "",
@@ -595,6 +594,7 @@ const formFounder = reactive({
   edu: "",
   expDesc: "",
   introduce: "",
+
 });
 
 const formCo = reactive({
@@ -607,7 +607,7 @@ const formCo = reactive({
   work: "",
   region: "",
   asset: 0,
-  industryType: "",
+  coreFounderExpectIndustry: "",
   yearLimit: "",
   yearLimitIsShow: false,
   experience: "",
@@ -805,7 +805,7 @@ watch(userProfile, (newValue) => {
     formFounder.edu = newValue.founderInfoData?.education || "";
     formFounder.expDesc = newValue.founderInfoData?.workExperience || "";
     formFounder.introduce = newValue.founderInfoData?.introduce || "";
-    formFounder.brand = newValue.founderInfoData?.expectIndustryType || "";
+    formFounder.founderExpectIndustry = newValue.founderInfoData?.expectIndustryType || "";
     formFounder.region = newValue.founderInfoData?.city || "";
     formFounder.budget = newValue.userInfoData?.budget || "";
 
@@ -816,7 +816,7 @@ watch(userProfile, (newValue) => {
     formCo.refCode = newValue.userInfoData?.referralCode || "";
     formCo.work = newValue.coreFounderData?.workStatus || "";
     formCo.maxBudget = newValue.coreFounderData?.maxBudget || "";
-    formCo.industryType = newValue.coreFounderData?.expectIndustryType || "";
+    formCo.coreFounderExpectIndustry = newValue.coreFounderData?.expectIndustryType || "";
     formCo.yearLimit = newValue.coreFounderData?.investLimitYear || "";
     formCo.yearLimitIsShow = newValue.coreFounderData?.investLimitYearIsShow || false;
     formCo.experience = newValue.coreFounderData?.experience || "";
@@ -901,8 +901,8 @@ async function submitForFounderAndCompany() {
     return;
   }
 
-  if (formFounder.industryType === "") {
-    errFounder.brand = '請選擇預計加盟產業/品牌';
+  if (formFounder.founderExpectIndustry === []) {
+    errFounder.founderExpectIndustry = '請選擇預計加盟產業/品牌';
     await NewAlert.show(
         "表單錯誤",
         "請選擇預計加盟產業/品牌"
@@ -916,7 +916,7 @@ async function submitForFounderAndCompany() {
       budget: Number(formFounder.budget),
       city: formFounder.region,
       workStatus: formFounder.work,
-      industryType: formFounder.brand,
+      industryType: formFounder.founderExpectIndustry,
       identityCertification: formFounder.founderIdProofId || 0,
       assetsCertification: formFounder.assetProofId || 0,
       pcrCertification: formFounder.policeRecordId || 0,
@@ -980,8 +980,8 @@ async function submitForCoreFounder() {
       budget: Number(formCo.asset),
       workStatus: formCo.work,
       maxBudget: Number(formCo.maxBudget),
-      expectIndustryType: formCo.industryType,
-      industryType: formCo.industryType,
+      expectIndustryType: formCo.coreFounderExpectIndustry,
+      industryType: formCo.coreFounderExpectIndustry,
       investLimitYear: formCo.yearLimit || 0,
       investLimitYearIsShow: formCo.yearLimitIsShow,
       experience: formCo.experience,
