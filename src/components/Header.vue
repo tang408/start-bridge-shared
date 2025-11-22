@@ -103,10 +103,9 @@
               </ul>
             </li>
 
-            <!-- ⭐ 新增：會員和登入/登出的容器 -->
             <li class="user-login-wrapper">
               <!-- 會員 icon -->
-              <div class="member-icon">
+              <div class="nav-item br-1">
                 <router-link class="nav-link d-flex align-items-center" to="">
                   <img
                       src="@/assets/icon/user.png"
@@ -114,6 +113,7 @@
                       class="member-icon-img"
                       @click="handleProfileClick"
                   />
+                  會員
                 </router-link>
               </div>
 

@@ -589,16 +589,10 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-  switch (status) {
-    case 1:
-      return 'pending';
-    case 2:
-      return 'success';
-    case 3:
-      return 'failed';
-    default:
-      return 'unknown';
-  }
+    if (status > 0 && status <= 8) return 'pending';
+    if (status > 8 && status !== 9) return 'success';
+    if (status === 9 || status < 0) return 'failed';
+    return 'unknown';
 }
 
 // 映射計畫狀態
