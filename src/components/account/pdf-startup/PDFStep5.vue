@@ -167,11 +167,9 @@
       />
 
       <div class="mb-3">
-        <SharedRadio
+        <SharedCheckline
           v-model="local.reportSelected"
-          v-model:extra="local.otherReport"
           label="4. 定期財報公開聲明："
-          name="reportOptions"
           :options="local.reportOptions"
           :error="errors.reportSelected"
           :disabled="readonly"
@@ -187,6 +185,7 @@
 import { reactive, watch } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
+import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
 
 const props = defineProps({
   modelValue: { type: Object, required: true },

@@ -699,24 +699,29 @@ function parseCoFounderValue(text) {
   };
 }
 
-// Step5: 解析報表選項 "提供店內 POS 帳號並開啟營業報表權限"
+// Step5: 解析報表選項 "提供店內 POS 帳號並開啟營業報表權限,每月/季「現金流量表」，需於次月 15 日前提供"
 function parseReportSelected(text) {
-  if (!text) return '';
+  if (!text) return {};
 
-  const optionMap = {
-    'POS': 'pos',
-    '每月': 'monthly',
-    '每季': 'season',
-    '每年': 'yearly'
-  };
+  const result = {};
+  const selections = text.split(',').map(s => s.trim());
 
-  for (const [key, value] of Object.entries(optionMap)) {
-    if (text.includes(key)) {
-      return value;
+  selections.forEach(selection => {
+    if (selection.includes('提供店內 POS 帳號並開啟營業報表權限')) {
+      result.pos = { checked: true, value: '' };
+    } else if (selection.includes('每月/季「現金流量表」')) {
+      result.monthly = { checked: true, value: '' };
+    } else if (selection.includes('每季/年度「財務報表」')) {
+      result.season = { checked: true, value: '' };
+    } else if (selection.includes('每年度「資產負債表」')) {
+      result.yearly = { checked: true, value: '' };
+    } else if (selection.includes('其他')) {
+      const match = selection.match(/其他[:：]\s*(.+)/);
+      result.other = { checked: true, value: match ? match[1] : '' };
     }
-  }
+  });
 
-  return 'other';
+  return result;
 }
 
 function parseOtherReport(text) {

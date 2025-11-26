@@ -178,11 +178,9 @@
       />
 
       <div class="mb-3">
-        <SharedRadio
+        <SharedCheckline
           v-model="local.reportSelected"
-          v-model:extra="local.otherReport"
           label="4. 定期財報公開聲明："
-          name="reportOptions"
           :options="local.reportOptions"
           :error="errors.reportSelected"
           :disabled="readonly"
@@ -198,6 +196,7 @@
 import { reactive, watch, nextTick } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
+import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
 
 const props = defineProps({
   modelValue: { type: Object, required: true },
@@ -340,7 +339,8 @@ function submitStep() {
     props.errors.fundNote = "請選擇資金需求";
   }
 
-  if (!local.reportSelected) {
+  const hasSelectedReport = Object.values(local.reportSelected || {}).some(v => v.checked);
+  if (!hasSelectedReport) {
     props.errors.reportSelected = "請選擇一項定期報告方式";
   }
 

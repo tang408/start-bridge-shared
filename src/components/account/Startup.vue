@@ -1386,9 +1386,32 @@ async function loadPlanData(planId) {
         rewardAmount: String(planData.rewardThreshold || ''),
         rewardPercent: String(planData.rewardPercent || ''),
         fundNote: 1,
-        reportSelected: parseReportSelected(planData.otherStatement),
-        otherReport: parseOtherReport(planData.otherStatement),
+        reportSelected: parseReportSelectedMulti(planData.otherStatement),
+        otherReport: {},
       });
+
+      function parseReportSelectedMulti(text) {
+        if (!text) return {};
+        
+        const result = {};
+        const parts = text.split(", "); 
+        
+        const reportOptions = formData.step5.reportOptions;
+        
+        parts.forEach(part => {
+          // Check if it matches any standard option
+          const option = reportOptions.find(opt => opt.text === part);
+          if (option) {
+            result[option.key] = { checked: true };
+          } else if (part.startsWith("其他: ")) {
+            // Handle 'other'
+            const value = part.replace("其他: ", "");
+            result.other = { checked: true, value: value };
+          }
+        });
+        
+        return result;
+      }
 
       // Step6 - 分潤條款
       Object.assign(formData.step6, {
@@ -1775,15 +1798,16 @@ const formData = reactive({
 
     fundNote: "",
     reportOptions: [
-      {value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
-      {value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
+      {key: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
+      {key: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
       {
-        value: "season",
+        key: "season",
         text: "每季/年度「財務報表」，需於當季後次月 15 日前提供",
       },
-      {value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"},
-      {text: "其他", value: "other", withInput: true},
+      {key: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"},
+      {text: "其他", key: "other", withInput: true},
     ],
+    reportSelected: {},
     otherReport: {},
   },
   step6: {
@@ -1999,13 +2023,26 @@ function convertFormData(formData, userId) {
     if (!step5.reportSelected) return "";
 
     // 如果選擇的是 "other"，返回自訂輸入的內容
-    if (step5.reportSelected === "other") {
-      return `其他: ${step5.otherReport?.other || ""}`;
-    }
+    if (!step5.reportSelected) return "";
 
-    // 從 reportOptions 中找到對應的 text
-    const selectedOption = step5.reportOptions.find(option => option.value === step5.reportSelected);
-    return selectedOption ? selectedOption.text : step5.reportSelected;
+    const result = [];
+    // Iterate over reportOptions to maintain order and get text
+    step5.reportOptions.forEach(option => {
+      const key = option.key;
+      const selection = step5.reportSelected[key];
+      
+      if (selection && selection.checked) {
+        if (key === 'other') {
+          // For 'other', get the custom value
+          const customText = selection.value || "";
+          result.push(`其他: ${customText}`);
+        } else {
+          result.push(option.text);
+        }
+      }
+    });
+
+    return result.join(", ");
   }
 
   // Q2: 處理 briefingSession - 返回 "是/否 (值)"
