@@ -322,16 +322,22 @@ async function toggleFavorite(newVal) {
       position: relative;
       overflow: hidden;
       height: 15px;
-      background: linear-gradient(
-              90deg,
-              $brand-yellow 0%,
-              #ff5f31 86.53%,
-              rgba(255, 255, 255, 0) 86.54%
-      );
+      background: #e0e0e0;
       border: 1px solid #d9d9d9;
       border-radius: $br-20;
       @media (max-width: 767px) {
         height: 20px;
+      }
+
+      &-inner {
+        height: 100%;
+        background: linear-gradient(
+                90deg,
+                #FFD700 0%,
+                #ff5f31 86.53%,
+        );
+        border-radius: $br-20;
+        transition: width 0.3s ease;
       }
 
       .progress-percent {
@@ -344,6 +350,7 @@ async function toggleFavorite(newVal) {
         color: #fff;
         z-index: 1;
         pointer-events: none;
+        text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
       }
     }
 
