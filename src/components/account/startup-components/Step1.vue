@@ -218,7 +218,7 @@ async function getOfficialPartner() {
   try {
     const response = await officialPartnerApi.getOfficialPartner(formData);
     if (response && response.data) {
-      brandInfo.value = `【${response.data.name}】 【加盟預算: $${response.data.franchiseFee}萬】`;
+      brandInfo.value = `【${response.data.name}】 【加盟預算: $${response.data.franchiseFee}】`;
     }
   } catch (error) {
     console.error('載入品牌資訊失敗:', error);

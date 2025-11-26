@@ -15,8 +15,7 @@
     <div class="qa-content-text">
       <h3>對專案有疑問?</h3>
       <span class="lh-26">
-        Lorem ipsum is placeholder text commonly used in the graphic, print, and
-        publishing industries for previewing
+        創業路上，從品牌選擇、資金評估到市場定位，難免會有許多不確定性。我們擁有豐富的媒合與輔導經驗，承諾為您解答所有專案相關疑問，助您精準跨出創業第一步！
       </span>
       <button @click="goToQA">創業者QA</button>
     </div>
