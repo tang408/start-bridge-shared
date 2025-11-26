@@ -589,16 +589,10 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-  switch (status) {
-    case 1:
-      return 'pending';
-    case 2:
-      return 'success';
-    case 3:
-      return 'failed';
-    default:
-      return 'unknown';
-  }
+    if (status > 0 && status <= 8) return 'pending';
+    if (status > 8 && status !== 9) return 'success';
+    if (status === 9 || status < 0) return 'failed';
+    return 'unknown';
 }
 
 // 映射計畫狀態
@@ -706,9 +700,9 @@ async function getAllParticipantPlanRecordByUser() {
         };
 
         const statusMap = {
-          1: '處理中',
-          2: '成功',
-          3: '失敗',
+          0: '處理中',
+          1: '成功',
+          2: '失敗',
         };
         return {
           id: record.id,
@@ -797,6 +791,16 @@ async function participate(p) {
 
   if (p.increaseAmount < p.minimumAmount) {
     await NewAlert.show("輸入錯誤", `參與金額不可低於最低參與金額 ${fmtMoney(p.minimumAmount)} 元。`);
+    return;
+  }
+
+  if (p.increaseAmount > p.goal - p.dollar) {
+    await NewAlert.show("輸入錯誤", `參與金額不可超過剩餘可參與金額 ${fmtMoney(p.goal - p.dollar)} 元。`);
+    return;
+  }
+
+  if (p.increaseAmount % p.amountRange !== 0) {
+    await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;
   }
 

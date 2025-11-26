@@ -70,6 +70,11 @@
       <div>自備款：{{ formatAmount(planInfo.planSelfFunded) }} 元</div>
       <div>總募款金額：{{ formatAmount(planInfo.planAmount) }} 元</div>
       <div>需求人數：{{ planInfo.planPartnerCount }} 人</div>
+      <div v-if="planInfo.paymentStatus || planInfo.contractStatus">
+        證明上傳狀態：
+        <span :class="getStatusClass('payment', planInfo.paymentStatus)">{{ getStatusText('payment', planInfo.paymentStatus) }}</span>
+        <span :class="getStatusClass('contract', planInfo.contractStatus)">{{ getStatusText('contract', planInfo.contractStatus) }}</span>
+      </div>
       <div>
         <span class="doc-label">上傳資訊：</span>
         <span
@@ -98,16 +103,30 @@
         <span
             class="doc-tag clickable px-1"
             v-if="planInfo?.founderIdc"
-            @click="openCertificationDialog('pcr',planInfo.founderIdc)"
+            @click="openCertificationDialog('identify',planInfo.founderIdc)"
         >
         身分證明
         </span>
         <span
             class="doc-tag clickable px-1"
             v-if="planInfo?.founderAssetsc"
-            @click="openCertificationDialog('pcr',planInfo.founderAssetsc)"
+            @click="openCertificationDialog('assets',planInfo.founderAssetsc)"
         >
         財產證明
+        </span>
+        <span
+            class="doc-tag clickable px-1"
+            v-if="planInfo?.coreFounderIdc"
+            @click="openCertificationDialog('income',planInfo.coreFounderIdc)"
+        >
+        身分證明
+        </span>
+        <span
+            class="doc-tag clickable px-1"
+            v-if="planInfo?.coreFounderSecondIdc"
+            @click="openCertificationDialog('income',planInfo.coreFounderSecondIdc)"
+        >
+        第二身分證明
         </span>
       </div>
       <hr/>
@@ -275,6 +294,10 @@
                   <div class="info-item">
                     <label>裝潢費用：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>店面租賃兩壓一租：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.storeRentCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
                     <label>設備費用：</label>
@@ -678,7 +701,7 @@ const shouldShowReviewButtons = () => {
     if (!planInfo.value.planStatus) return false;
 
     // 創業者可審核的步驟
-    const founderReviewableSteps = [1, 8, 13, 15, 17, 19]; // 可以審核的步驟
+    const founderReviewableSteps = [1, 13, 15, 17, 19]; // 可以審核的步驟
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
 }
@@ -983,6 +1006,7 @@ const prepareConstsTotal = computed(() => {
   return (
       (costs.franchiseFee || 0) +
       (costs.decorationCosts || 0) +
+      (costs.storeRentCosts || 0) +
       (costs.equipmentCosts || 0) +
       (costs.firstMaterialCost || 0) +
       (costs.paySalaryBudget || 0) +
@@ -1074,6 +1098,22 @@ function handleAddressCancel() {
   addressErrors.address = ''
 }
 
+const getStatusText = (type, status) => {
+  if (type === 'payment') {
+    return status >= 1 ? '已支付上架費' : '未支付上架費';
+  } else if (type === 'contract') {
+    return status >= 1 ? '已簽約' : '未簽約';
+  }
+}
+const getStatusClass = (type, status) =>
+{
+  const baseClass = 'tag';
+  if (type === 'payment') {
+    return status >= 1 ? `${baseClass} tag-success` : `${baseClass} tag-warning`;
+  } else if (type === 'contract') {
+    return status >= 1 ? `${baseClass} tag-success` : `${baseClass} tag-warning`;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -1196,5 +1236,21 @@ function handleAddressCancel() {
   // Firefox 滾動條樣式
   scrollbar-width: thin;
   scrollbar-color: #ccc #f5f5f5;
+}
+
+.tag {
+  display: inline-block;
+  padding: 1px 4px;
+  margin: 0 4px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.tag-success {
+  background-color: #52c41a;
+  color: white;
+}
+.tag-warning {
+  background-color: #faad14;
+  color: white;
 }
 </style>

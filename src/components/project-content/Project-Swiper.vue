@@ -41,11 +41,9 @@ const modules = [Autoplay, Pagination];
 
   .banner-swiper {
     width: 100%;
-    height: 300px;
-    background: #f54c23;
     img {
       width: 100%;
-      max-width: 1140px;
+      height: auto;
       display: block;
     }
 

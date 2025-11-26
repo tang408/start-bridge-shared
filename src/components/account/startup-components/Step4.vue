@@ -57,7 +57,7 @@
             :options="[
             {
               key: 'total',
-              text: '總共需要多少人數：',
+              text: '包括以上本人及籌備團隊及員工,總共需要多少人數：',
               withInput: true,
               inputType: 'number',
             },
@@ -134,12 +134,12 @@
           label="9. 期待的共同創業者附加價值？"
           name="q9Location"
           :options="[
-          { text: '協助經營', value: 'operation' },
-          { text: '推廣親友及資源', value: 'network' },
-          { text: '協助行銷', value: 'sales' },
-          { text: '能協助籌資', value: 'finance' },
-          { text: '獨立經營', value: 'independent' },
+          { text: '適度參與經營討論', value: 'operation' },
+          { text: '推薦親友來消費', value: 'network' },
+          { text: '介紹人脈行銷推廣', value: 'sales' },
+          { text: '幫忙協尋點位', value: 'finance' },
           { text: '其他', value: 'other', withInput: true },
+          { text: '以上皆非,日常經營由創業者的團隊獨立運作。', value: 'independent' },
         ]"
           :error="props.errors.q9Location"
           :disabled="readonly"

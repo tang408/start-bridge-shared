@@ -42,7 +42,7 @@
             :readonly="readonly"
         />
         <span class="option-label">
-              若營運月營業額達 {{    formatCurrency(local.rewardAmount)}}
+              若當月營業額達 {{    formatCurrency(local.rewardAmount)}}
               元，公司即撥發營業額之 {{ local.rewardPercent}}
               % 給予創業者獎勵運營團隊。
             </span>
@@ -97,6 +97,7 @@ const local = reactive({ ...props.modelValue })
 
 watch(local, (val) => emit('update:modelValue', val), { deep: true })
 
+console.log('local in PDFStep5Part2:', local)
 // 格式化金額
 function formatCurrency(amount) {
   if (!amount) return '0'

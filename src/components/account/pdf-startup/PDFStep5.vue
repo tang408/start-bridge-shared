@@ -125,7 +125,7 @@
               :readonly="readonly"
             />
             <span class="option-label">
-              若營運月營業額達
+              若當月營業額達
               <SharedInput
                 id="rewardAmount"
                 type="number"

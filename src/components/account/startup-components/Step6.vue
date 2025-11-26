@@ -11,8 +11,6 @@
         ← 返回列表
       </button>
 
-      <h5 class="form-title">創業計劃書</h5>
-
       <div class="content">
         <h6 class="section-title">四、創業責任與分潤條款</h6>
         <p class="desc">※ 審核通過後，本計劃書將成為合約附件</p>

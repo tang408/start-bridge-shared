@@ -125,7 +125,7 @@
               :readonly="readonly"
             />
             <span class="option-label">
-              若營運月營業額達
+              若當月營業額達
               <SharedInput
                 id="rewardAmount"
                 type="number"
@@ -184,7 +184,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import { reactive, watch, nextTick } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 
@@ -199,45 +199,78 @@ const emit = defineEmits(["update:modelValue", "next"]);
 
 const local = reactive({ ...props.modelValue });
 
-watch(local, (val) => emit("update:modelValue", val), { deep: true });
+let isRecalculating = false;
 
+// 只在非計算時同步到父組件
+watch(local, (val) => {
+  if (!isRecalculating) {
+    emit("update:modelValue", val);
+  }
+}, { deep: true });
 
+// 監聽營業額變化
 watch(
-    () => [local.prepBudget],
+    () => local.targetRevenue,
     () => {
-      const total = local.prepBudget
-          .slice(0, local.prepBudget.length - 1)
-          .reduce((sum, row) => sum + Number(row.amount || 0), 0);
-      local.prepBudget[local.prepBudget.length - 1].amount = total;
+      if (!isRecalculating) {
+        recalc();
+      }
+    }
+);
 
-    },
-    { deep: true }
-)
-
+// 只監聽可編輯的成本項目的 percent
 watch(
-    () => [local.costStruct, local.targetRevenue],
     () => {
-      local.costStruct.forEach((row) => {
-        if (row.item === "總計") {
-          const totalPercent = local.costStruct
-            .slice(0, local.costStruct.length - 1)
-            .reduce((sum, r) => sum + Number(r.percent || 0), 0);
-          row.percent = totalPercent;
-          row.amount = local.targetRevenue
-            ? ((totalPercent / 100) * Number(local.targetRevenue)).toFixed(0)
-            : "";
-        } else {
-          row.amount = local.targetRevenue
-            ? ((Number(row.percent || 0) / 100) *
-                Number(local.targetRevenue)).toFixed(0)
-            : "";
-        }
-      });
+      const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
+      return local.costStruct
+        .filter(r => costItems.includes(r.item))
+        .map(r => r.percent);
     },
-    { deep: true }
-)
+    () => {
+      if (!isRecalculating) {
+        recalc();
+      }
+    },
+    { deep: false }
+);
 
+async function recalc() {
+  isRecalculating = true;
 
+  // 使用 nextTick 確保在下一個 tick 執行,避免同步更新問題
+  await nextTick();
+
+  const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
+
+  // STEP 1: 淨利
+  const totalCostPercent = local.costStruct
+      .filter(r => costItems.includes(r.item))
+      .reduce((sum, r) => sum + Number(r.percent || 0), 0);
+
+  const netProfitRow = local.costStruct.find(r => r.item === "淨利");
+  if (netProfitRow) {
+    netProfitRow.percent = 100 - totalCostPercent;
+  }
+
+  // STEP 2: 總計
+  const totalRow = local.costStruct.find(r => r.item === "總計");
+  if (totalRow) {
+    // 總計永遠是 100%,因為它代表整個營業額的分配
+    totalRow.percent = 100;
+  }
+
+  // STEP 3: 金額
+  local.costStruct.forEach(row => {
+    row.amount = local.targetRevenue
+        ? ((Number(row.percent || 0) / 100) * Number(local.targetRevenue)).toFixed(0)
+        : "";
+  });
+
+  // 等待下一個 tick 再重置旗標和發送更新
+  await nextTick();
+  isRecalculating = false;
+  emit("update:modelValue", local);
+}
 function submitStep() {
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
