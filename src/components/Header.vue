@@ -105,7 +105,7 @@
 
             <li class="user-login-wrapper">
               <!-- 會員 icon -->
-              <div class="nav-item br-1">
+              <div class="member-icon">
                 <router-link class="nav-link d-flex align-items-center" to="">
                   <img
                       src="@/assets/icon/user.png"
@@ -113,7 +113,6 @@
                       class="member-icon-img"
                       @click="handleProfileClick"
                   />
-                  會員
                 </router-link>
               </div>
 
