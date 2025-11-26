@@ -66,25 +66,24 @@
       </div>
   </div>
   <div class="mb-3">
-    <SharedRadio
+    <SharedCheckline
         v-model="local.reportSelected"
-        v-model:extra="local.otherReport"
         label="4. 定期財報公開聲明："
-        name="reportOptions"
-        :options="local.reportOptions"
+        :options="reportOptionsList"
         :error="errors.reportSelected"
-        :disabled="readonly"
+        :readonly="readonly"
     />
   </div>
 
 </template>
 
 <script setup>
-import {reactive, ref, watch} from 'vue'
-import Header from "@/components/Header.vue";
-import SharedInput from "@/components/shared/Shared-Input.vue";
+import { computed, reactive, ref, watch } from 'vue'
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
+import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
+
 const isChecked = ref(true)
+
 const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, default: () => ({}) },
@@ -97,7 +96,17 @@ const local = reactive({ ...props.modelValue })
 
 watch(local, (val) => emit('update:modelValue', val), { deep: true })
 
+// 使用 key 而不是 value（移到函式外面）
+const reportOptionsList = computed(() => [
+  { key: 'pos', text: '提供店內 POS 帳號並開啟營業報表權限', withInput: false },
+  { key: 'monthly', text: '每月/季「現金流量表」，需於次月 15 日前提供', withInput: false },
+  { key: 'season', text: '每季/年度「財務報表」，需於當季後次月 15 日前提供', withInput: false },
+  { key: 'yearly', text: '每年度「資產負債表」，需於次年一月底前提供', withInput: false },
+  { key: 'other', text: '其他', withInput: true },
+])
+
 console.log('local in PDFStep5Part2:', local)
+
 // 格式化金額
 function formatCurrency(amount) {
   if (!amount) return '0'
@@ -120,17 +129,10 @@ function getReportText() {
     return `其他: ${local.otherReport?.other || ''}`
   }
 
-  const reportOptions = {
-    'pos': '提供店內 POS 帳號並開啟營業報表權限',
-    'monthly': '每月/季「現金流量表」，需於次月 15 日前提供',
-    'season': '每季/年度「財務報表」,需於當季後次月 15 日前提供',
-    'yearly': '每年度「資產負債表」,需於次年一月底前提供'
-  }
-
-  return reportOptions[local.reportSelected] || local.reportSelected
+  // 這裡可以加上其他邏輯，或直接 return
+  return '-'
 }
 </script>
-
 <style lang="scss" scoped>
 $primary-color: #ffcc41;
 $secondary-color: #ff6634;

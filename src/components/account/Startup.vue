@@ -1294,7 +1294,12 @@ async function loadPlanData(planId) {
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
           {item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '')},
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
-          {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
+          {
+            item: "其他（請說明）",
+            amount: String(planData.otherCosts || ''),
+            customTitle: planData.otherCostsTitle || "",
+            editable: true
+          },
           {
             item: "總計", amount: String(
                 Number(planData.franchiseFee || 0) +
@@ -1381,9 +1386,32 @@ async function loadPlanData(planId) {
         rewardAmount: String(planData.rewardThreshold || ''),
         rewardPercent: String(planData.rewardPercent || ''),
         fundNote: 1,
-        reportSelected: parseReportSelected(planData.otherStatement),
-        otherReport: parseOtherReport(planData.otherStatement),
+        reportSelected: parseReportSelectedMulti(planData.otherStatement),
+        otherReport: {},
       });
+
+      function parseReportSelectedMulti(text) {
+        if (!text) return {};
+        
+        const result = {};
+        const parts = text.split(", "); 
+        
+        const reportOptions = formData.step5.reportOptions;
+        
+        parts.forEach(part => {
+          // Check if it matches any standard option
+          const option = reportOptions.find(opt => opt.text === part);
+          if (option) {
+            result[option.key] = { checked: true };
+          } else if (part.startsWith("其他: ")) {
+            // Handle 'other'
+            const value = part.replace("其他: ", "");
+            result.other = { checked: true, value: value };
+          }
+        });
+        
+        return result;
+      }
 
       // Step6 - 分潤條款
       Object.assign(formData.step6, {
@@ -1685,6 +1713,9 @@ const formData = reactive({
     minAmount: "",
     amountRange: "",
     partnerLimit: "",
+    expectedOpeningInfo: "",
+    expectedOpeningDate: "",
+
   },
   step2: {file: null},
   step3: {
@@ -1721,8 +1752,8 @@ const formData = reactive({
       {item: "籌備期其他人事成本", amount: ""},
       {item: "開店前品牌行銷費用", amount: ""},
       {item: "營運週轉金及現金流", amount: ""},
-      {item: "其他（請說明）", amount: ""},
-      {item: "總計", amount: ""},
+  {item: "其他", amount: "", customTitle: "", editable: true},  // ✅ 新增 customTitle 和 editable 標記
+  {item: "總計", amount: ""},
     ],
     costStruct: [
       {
@@ -1767,15 +1798,16 @@ const formData = reactive({
 
     fundNote: "",
     reportOptions: [
-      {value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
-      {value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
+      {key: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
+      {key: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
       {
-        value: "season",
+        key: "season",
         text: "每季/年度「財務報表」，需於當季後次月 15 日前提供",
       },
-      {value: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"},
-      {text: "其他", value: "other", withInput: true},
+      {key: "yearly", text: "每年度「資產負債表」，需於次年一月底前提供"},
+      {text: "其他", key: "other", withInput: true},
     ],
+    reportSelected: {},
     otherReport: {},
   },
   step6: {
@@ -1991,13 +2023,26 @@ function convertFormData(formData, userId) {
     if (!step5.reportSelected) return "";
 
     // 如果選擇的是 "other"，返回自訂輸入的內容
-    if (step5.reportSelected === "other") {
-      return `其他: ${step5.otherReport?.other || ""}`;
-    }
+    if (!step5.reportSelected) return "";
 
-    // 從 reportOptions 中找到對應的 text
-    const selectedOption = step5.reportOptions.find(option => option.value === step5.reportSelected);
-    return selectedOption ? selectedOption.text : step5.reportSelected;
+    const result = [];
+    // Iterate over reportOptions to maintain order and get text
+    step5.reportOptions.forEach(option => {
+      const key = option.key;
+      const selection = step5.reportSelected[key];
+      
+      if (selection && selection.checked) {
+        if (key === 'other') {
+          // For 'other', get the custom value
+          const customText = selection.value || "";
+          result.push(`其他: ${customText}`);
+        } else {
+          result.push(option.text);
+        }
+      }
+    });
+
+    return result.join(", ");
   }
 
   // Q2: 處理 briefingSession - 返回 "是/否 (值)"
@@ -2216,6 +2261,8 @@ function convertFormData(formData, userId) {
     minimumAmount: parseInt(step1.minAmount) || 0,
     amountRange: parseInt(step1.amountRange) || 0,
     limitPartner: parseInt(step1.partnerLimit) || 0,
+    expectedOpeningInfo: step1.expectedOpeningInfo || "",
+    expectedOpeningDate: step1.expectedOpeningDate || "",
     brand: parseInt(step1.brand) || 0,
 
     // 創業經驗 (Step3)
@@ -2250,7 +2297,7 @@ function convertFormData(formData, userId) {
 
     // 財務規劃 (Step5) - 預算項目
     franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
-    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設工程"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設計工程"),
     storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
     equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備、生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
@@ -2258,7 +2305,15 @@ function convertFormData(formData, userId) {
     otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "籌備期其他人事成本"),
     marketingExpenses: getBudgetAmount(step5.prepBudget, "開店前品牌行銷費用"),
     cashFlow: getBudgetAmount(step5.prepBudget, "營運週轉金及現金流"),
-    otherCosts: getBudgetAmount(step5.prepBudget, "其他（請說明）"),
+    // ✅ 從可編輯項目中提取「其他」費用和標題
+otherCosts: (() => {
+  const otherItem = step5.prepBudget.find(item => item.editable);
+  return otherItem ? parseInt(otherItem.amount) || 0 : 0;
+})(),
+otherCostsTitle: (() => {
+  const otherItem = step5.prepBudget.find(item => item.editable);
+  return otherItem?.customTitle || "";
+})(),
 
     // 財務規劃 (Step5) - 營業目標和成本結構
     turnoverTarget: parseInt(step5.targetRevenue) || 0,
@@ -2274,9 +2329,9 @@ function convertFormData(formData, userId) {
     peratingCostsPercent: getCostPercent(step5.costStruct, "經營管理成本"),
     peratingCostsAmount: getCostAmount(step5.costStruct, "經營管理成本"),
     peratingCostsRemark: getCostRemark(step5.costStruct, "經營管理成本"),
-    otherCostsPercent: getCostPercent(step5.costStruct, "其他"),
-    otherCostsAmount: getCostAmount(step5.costStruct, "其他"),
-    otherCostsRemark: getCostRemark(step5.costStruct, "其他"),
+    otherCostsPercent: getCostPercent(step5.costStruct, "淨利"),
+    otherCostsAmount: getCostAmount(step5.costStruct, "淨利"),
+    otherCostsRemark: getCostRemark(step5.costStruct, "淨利"),
 
     rewardThreshold: parseInt(step5.rewardAmount) || 0,
     rewardPercent: parseFloat(step5.rewardPercent) || 0,

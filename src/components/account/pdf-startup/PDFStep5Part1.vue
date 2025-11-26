@@ -17,7 +17,14 @@
             :key="index"
             :class="{ 'total-row': item.item === '總計' }"
           >
-            <td class="col-item">{{ item.item }}</td>
+            <td class="col-item">
+              <span v-if="item.editable && item.customTitle">
+                {{ item.customTitle }}
+              </span>
+              <span v-else>
+                {{ item.item }}
+              </span>
+            </td>
             <td class="col-amount">
               {{ formatCurrency(item.amount) }}
             </td>

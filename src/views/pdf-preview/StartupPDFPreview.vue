@@ -345,7 +345,7 @@ async function loadPlanData() {
 
     if (response.code === 0) {
       const planData = response.data;
-      console.log(planData.startupBudget)
+      console.log('載入計畫資料:', planData)
 
       // Step1 - 基本資料
       Object.assign(formData.step1, {
@@ -356,6 +356,9 @@ async function loadPlanData() {
         minAmount: String(planData.minimumAmount || ''),
         amountRange: String(planData.amountRange || ''),
         partnerLimit: String(planData.limitPartner || ''),
+        expectedOpeningInfo: planData.expectedOpeningInfo || '',
+        expectedOpeningDate: planData.expectedOpeningDate || '',
+
       });
       console.log('formData.step1:', formData.step1)
       // Step3 - 創業經驗
@@ -403,7 +406,12 @@ async function loadPlanData() {
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
           {item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '')},
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
-          {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
+          {
+            item: "其他（請說明）",
+            amount: String(planData.otherCosts || ''),
+            customTitle: planData.otherCostsTitle || "",
+            editable: true
+          },
           {
             item: "總計", amount:  String(
                 Number(planData.franchiseFee || 0) +
@@ -691,24 +699,29 @@ function parseCoFounderValue(text) {
   };
 }
 
-// Step5: 解析報表選項 "提供店內 POS 帳號並開啟營業報表權限"
+// Step5: 解析報表選項 "提供店內 POS 帳號並開啟營業報表權限,每月/季「現金流量表」，需於次月 15 日前提供"
 function parseReportSelected(text) {
-  if (!text) return '';
+  if (!text) return {};
 
-  const optionMap = {
-    'POS': 'pos',
-    '每月': 'monthly',
-    '每季': 'season',
-    '每年': 'yearly'
-  };
+  const result = {};
+  const selections = text.split(',').map(s => s.trim());
 
-  for (const [key, value] of Object.entries(optionMap)) {
-    if (text.includes(key)) {
-      return value;
+  selections.forEach(selection => {
+    if (selection.includes('提供店內 POS 帳號並開啟營業報表權限')) {
+      result.pos = { checked: true, value: '' };
+    } else if (selection.includes('每月/季「現金流量表」')) {
+      result.monthly = { checked: true, value: '' };
+    } else if (selection.includes('每季/年度「財務報表」')) {
+      result.season = { checked: true, value: '' };
+    } else if (selection.includes('每年度「資產負債表」')) {
+      result.yearly = { checked: true, value: '' };
+    } else if (selection.includes('其他')) {
+      const match = selection.match(/其他[:：]\s*(.+)/);
+      result.other = { checked: true, value: match ? match[1] : '' };
     }
-  }
+  });
 
-  return 'other';
+  return result;
 }
 
 function parseOtherReport(text) {
