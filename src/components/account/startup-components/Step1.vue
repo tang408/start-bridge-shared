@@ -59,6 +59,26 @@
         :readonly="readonly"
     />
 
+    <!-- 預計開業區域/坪數/店面狀況 -->
+    <SharedInput
+        id="minAmount"
+        label="預計開業區域/坪數/店面狀況"
+        type="text"
+        v-model="local.expectedOpeningInfo"
+        :error="props.errors.expectedOpeningInfo"
+        :readonly="readonly"
+    />
+
+    <!-- 預計開業時間 -->
+    <SharedInput
+        id="minAmount"
+        label="預計開業時間"
+        type="text"
+        v-model="local.expectedOpeningDate"
+        :error="props.errors.expectedOpeningDate"
+        :readonly="readonly"
+    />
+
     <!-- 額度級距 -->
     <SharedInput
         id="amountRange"

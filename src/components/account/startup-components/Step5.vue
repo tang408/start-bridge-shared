@@ -22,14 +22,25 @@
           </thead>
           <tbody>
             <tr v-for="(row, idx) in local.prepBudget" :key="idx">
-              <td data-label="用途項目">{{ row.item }}</td>
-              <td data-label="金額（元）">
+              <td data-label="用途項目">
+                <!-- 如果是可編輯項目,顯示 input -->
+                <SharedInput
+                  v-if="row.editable"
+                  :id="`item-title-${idx}`"
+                  type="text"
+                  v-model="row.customTitle"
+                  placeholder="其他用途(請輸入)"
+                  :readonly="readonly"
+                />
+                <!-- 否則顯示固定文字 -->
+                <span v-else>{{ row.item }}</span>
+              </td>
+              <td data-label="金額(元)">
                 <SharedInput
                   :id="`amount-${idx}`"
                   type="number"
                   v-model="row.amount"
                   placeholder="輸入金額"
-                  class="p-510"
                   :readonly="readonly"
                 />
               </td>
@@ -217,6 +228,37 @@ watch(
       }
     }
 );
+
+watch(
+    () => local.prepBudget,
+    () => {
+      if (!isRecalculating) {
+        recalcPrepBudget();
+      }
+    },
+    { deep: true }
+);
+
+async function recalcPrepBudget() {
+  isRecalculating = true;
+
+  // 使用 nextTick 確保在下一個 tick 執行,避免同步更新問題
+  await nextTick();
+
+  const prepBudgetTotal = local.prepBudget
+    .slice(0, local.prepBudget.length - 1)
+    .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+
+  const lastRow = local.prepBudget[local.prepBudget.length - 1];
+  if (lastRow) {
+    lastRow.amount = prepBudgetTotal;
+  }
+
+  // 等待下一個 tick 再重置旗標和發送更新
+  await nextTick();
+
+  isRecalculating = false;
+}
 
 // 只監聽可編輯的成本項目的 percent
 watch(

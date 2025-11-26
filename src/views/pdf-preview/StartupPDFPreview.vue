@@ -345,7 +345,7 @@ async function loadPlanData() {
 
     if (response.code === 0) {
       const planData = response.data;
-      console.log(planData.startupBudget)
+      console.log('載入計畫資料:', planData)
 
       // Step1 - 基本資料
       Object.assign(formData.step1, {
@@ -356,6 +356,9 @@ async function loadPlanData() {
         minAmount: String(planData.minimumAmount || ''),
         amountRange: String(planData.amountRange || ''),
         partnerLimit: String(planData.limitPartner || ''),
+        expectedOpeningInfo: planData.expectedOpeningInfo || '',
+        expectedOpeningDate: planData.expectedOpeningDate || '',
+
       });
       console.log('formData.step1:', formData.step1)
       // Step3 - 創業經驗
@@ -403,7 +406,12 @@ async function loadPlanData() {
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
           {item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '')},
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
-          {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
+          {
+            item: "其他（請說明）",
+            amount: String(planData.otherCosts || ''),
+            customTitle: planData.otherCostsTitle || "",
+            editable: true
+          },
           {
             item: "總計", amount:  String(
                 Number(planData.franchiseFee || 0) +

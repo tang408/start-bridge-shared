@@ -204,6 +204,14 @@
                     <label>限制說明：</label>
                     <span>{{ planDetail.planDetail.constraintsExplanation }}</span>
                   </div>
+                  <div class="info-item" v-if="planDetail?.expectedOpeningInfo">
+                    <label>預計開業區域/坪數/店面狀況：</label>
+                    <span>{{ planDetail?.expectedOpeningInfo }}</span>
+                    </div>
+                  <div class="info-item" v-if="planDetail?.expectedOpeningDate">
+                    <label>預計開業時間：</label>
+                    <span>{{ planDetail?.expectedOpeningDate }}</span>
+                  </div>
                 </div>
               </div>
               <hr/>
@@ -288,11 +296,11 @@
                 <h4>籌備成本明細</h4>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>加盟費：</label>
+                    <label>品牌加盟的相關費用 ：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.franchiseFee?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>裝潢費用：</label>
+                    <label>店面的裝潢設計工程 ：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
@@ -300,27 +308,31 @@
                     <span>NT$ {{ planDetail.planPrepareCosts.storeRentCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>設備費用：</label>
+                    <label>營運設備、生財器具：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.equipmentCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>首批物料成本：</label>
+                    <label>開店前首批儲備物料：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.firstMaterialCost?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>薪資預算：</label>
+                    <label>創業者預計支薪預算：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.paySalaryBudget?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>其他人事成本：</label>
+                    <label>籌備期其他人事成本：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.otherPersonnelCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>行銷費用：</label>
+                    <label>開店前品牌行銷費用：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.marketingExpenses?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>其他費用：</label>
+                    <label>營運週轉金及現金流：</label>
+                    <span>NT$ {{ planDetail.planPrepareCosts.cashFlow?.toLocaleString() }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>{{planDetail.planPrepareCosts?.otherCostsTitle }}：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.otherCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item total">
@@ -339,7 +351,7 @@
                     <span>NT$ {{ planDetail.planOperatingCost.turnoverTarget?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>首批物料成本：</label>
+                    <label>物料成本：</label>
                     <span>{{
                         planDetail.planOperatingCost.firstMaterialCostsPercent
                       }}% (NT$ {{ planDetail.planOperatingCost.firstMaterialCostsAmount?.toLocaleString() }})</span>
@@ -354,11 +366,19 @@
                         planDetail.planOperatingCost.personnelCostsPercent
                       }}% (NT$ {{ planDetail.planOperatingCost.personnelCostsAmount?.toLocaleString() }})</span>
                   </div>
+                  <div class="info-item" v-if="planDetail.planOperatingCost.personnelCostsRemark">
+                    <label>備註：</label>
+                    <span>{{ planDetail.planOperatingCost.personnelCostsRemark }}</span>
+                  </div>
                   <div class="info-item">
                     <label>租金成本：</label>
                     <span>{{
                         planDetail.planOperatingCost.rentalCostsPercent
                       }}% (NT$ {{ planDetail.planOperatingCost.rentalCostsAmount?.toLocaleString() }})</span>
+                  </div>
+                  <div class="info-item" v-if="planDetail.planOperatingCost.rentalCostsRemark">
+                    <label>備註：</label>
+                    <span>{{ planDetail.planOperatingCost.rentalCostsRemark }}</span>
                   </div>
                   <div class="info-item">
                     <label>營運成本：</label>
@@ -366,12 +386,22 @@
                         planDetail.planOperatingCost.peratingCostsPercent
                       }}% (NT$ {{ planDetail.planOperatingCost.peratingCostsAmount?.toLocaleString() }})</span>
                   </div>
+                  <div class="info-item" v-if="planDetail.planOperatingCost.peratingCostsRemark">
+                    <label>備註：</label>
+                    <span>{{ planDetail.planOperatingCost.peratingCostsRemark }}</span>
+                  </div>
                   <div class="info-item">
-                    <label>其他成本：</label>
+                    <label>淨利：</label>
                     <span>{{
                         planDetail.planOperatingCost.otherCostsPercent
                       }}% (NT$ {{ planDetail.planOperatingCost.otherCostsAmount?.toLocaleString() }})</span>
                   </div>
+                  <div class="info-item" v-if="planDetail.planOperatingCost.otherCostsRemark">
+                    <label>備註：</label>
+                    <span>{{ planDetail.planOperatingCost.otherCostsRemark }}</span>
+                  </div>
+
+                  <br/>
                   <div class="info-item">
                     <label>獎勵門檻：</label>
                     <span>NT$ {{ planDetail.planOperatingCost.rewardThreshold?.toLocaleString() }}</span>
@@ -387,6 +417,7 @@
                 </div>
               </div>
               <hr/>
+
               <!-- 分潤條款 -->
               <div class="info-section">
                 <h4>分潤條款</h4>
@@ -1012,6 +1043,7 @@ const prepareConstsTotal = computed(() => {
       (costs.paySalaryBudget || 0) +
       (costs.otherPersonnelCosts || 0) +
       (costs.marketingExpenses || 0) +
+      (costs.cashFlow || 0) +
       (costs.otherCosts || 0)
   );
 });

@@ -1294,7 +1294,12 @@ async function loadPlanData(planId) {
           {item: "籌備期其他人事成本", amount: String(planData.otherPersonnelCosts || '')},
           {item: "開店前品牌行銷費用", amount: String(planData.marketingExpenses || '')},
           {item: "營運週轉金及現金流", amount: String(planData.cashFlow || '')},
-          {item: "其他（請說明）", amount: String(planData.otherCosts || '')},
+          {
+            item: "其他（請說明）",
+            amount: String(planData.otherCosts || ''),
+            customTitle: planData.otherCostsTitle || "",
+            editable: true
+          },
           {
             item: "總計", amount: String(
                 Number(planData.franchiseFee || 0) +
@@ -1685,6 +1690,9 @@ const formData = reactive({
     minAmount: "",
     amountRange: "",
     partnerLimit: "",
+    expectedOpeningInfo: "",
+    expectedOpeningDate: "",
+
   },
   step2: {file: null},
   step3: {
@@ -1721,8 +1729,8 @@ const formData = reactive({
       {item: "籌備期其他人事成本", amount: ""},
       {item: "開店前品牌行銷費用", amount: ""},
       {item: "營運週轉金及現金流", amount: ""},
-      {item: "其他（請說明）", amount: ""},
-      {item: "總計", amount: ""},
+  {item: "其他", amount: "", customTitle: "", editable: true},  // ✅ 新增 customTitle 和 editable 標記
+  {item: "總計", amount: ""},
     ],
     costStruct: [
       {
@@ -2216,6 +2224,8 @@ function convertFormData(formData, userId) {
     minimumAmount: parseInt(step1.minAmount) || 0,
     amountRange: parseInt(step1.amountRange) || 0,
     limitPartner: parseInt(step1.partnerLimit) || 0,
+    expectedOpeningInfo: step1.expectedOpeningInfo || "",
+    expectedOpeningDate: step1.expectedOpeningDate || "",
     brand: parseInt(step1.brand) || 0,
 
     // 創業經驗 (Step3)
@@ -2250,7 +2260,7 @@ function convertFormData(formData, userId) {
 
     // 財務規劃 (Step5) - 預算項目
     franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
-    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設工程"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設計工程"),
     storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
     equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備、生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
@@ -2258,7 +2268,15 @@ function convertFormData(formData, userId) {
     otherPersonnelCosts: getBudgetAmount(step5.prepBudget, "籌備期其他人事成本"),
     marketingExpenses: getBudgetAmount(step5.prepBudget, "開店前品牌行銷費用"),
     cashFlow: getBudgetAmount(step5.prepBudget, "營運週轉金及現金流"),
-    otherCosts: getBudgetAmount(step5.prepBudget, "其他（請說明）"),
+    // ✅ 從可編輯項目中提取「其他」費用和標題
+otherCosts: (() => {
+  const otherItem = step5.prepBudget.find(item => item.editable);
+  return otherItem ? parseInt(otherItem.amount) || 0 : 0;
+})(),
+otherCostsTitle: (() => {
+  const otherItem = step5.prepBudget.find(item => item.editable);
+  return otherItem?.customTitle || "";
+})(),
 
     // 財務規劃 (Step5) - 營業目標和成本結構
     turnoverTarget: parseInt(step5.targetRevenue) || 0,
@@ -2274,9 +2292,9 @@ function convertFormData(formData, userId) {
     peratingCostsPercent: getCostPercent(step5.costStruct, "經營管理成本"),
     peratingCostsAmount: getCostAmount(step5.costStruct, "經營管理成本"),
     peratingCostsRemark: getCostRemark(step5.costStruct, "經營管理成本"),
-    otherCostsPercent: getCostPercent(step5.costStruct, "其他"),
-    otherCostsAmount: getCostAmount(step5.costStruct, "其他"),
-    otherCostsRemark: getCostRemark(step5.costStruct, "其他"),
+    otherCostsPercent: getCostPercent(step5.costStruct, "淨利"),
+    otherCostsAmount: getCostAmount(step5.costStruct, "淨利"),
+    otherCostsRemark: getCostRemark(step5.costStruct, "淨利"),
 
     rewardThreshold: parseInt(step5.rewardAmount) || 0,
     rewardPercent: parseFloat(step5.rewardPercent) || 0,
