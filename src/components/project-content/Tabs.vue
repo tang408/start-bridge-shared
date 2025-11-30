@@ -205,8 +205,37 @@
           </div>
         </div>
 
-        <div v-else-if="t.key === 'project'">
-          <h1>報表內容</h1>
+        <div v-else-if="t.key === 'project'" class="d-flex-block">
+          <!-- 檢查 franchiseInfo 是否存在 -->
+          <template v-if="planData?.reportInfo">
+            <div class="franchise-section">
+              <!-- 顯示 info（HTML 內容）-->
+              <div
+                  v-if="planData.reportInfo.info"
+                  class="franchise-info-content"
+                  v-html="planData.reportInfo.info"
+              ></div>
+
+              <!-- 顯示 images（直接遍歷陣列）-->
+              <div v-if="planData.reportInfo.images?.length">
+                <h4 class="images-title">相關圖片</h4>
+                <div class="franchise-images">
+                  <img
+                      v-for="(image, index) in planData.reportInfo.images"
+                      :key="index"
+                      :src="image"
+                      :alt="`加盟圖片 ${index + 1}`"
+                      class="franchise-image"
+                  />
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- 沒有資料時顯示 -->
+          <div v-else class="no-franchise-info">
+            <p>暫無相關報表資訊</p>
+          </div>
         </div>
       </div>
     </div>

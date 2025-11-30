@@ -320,7 +320,7 @@ function submitStep() {
   }
 
   // 比對
-  const step1BudgetNum = Number(props.step1Budget)  * 10000 || 0;
+  const step1BudgetNum = Number(props.step1Budget) || 0;
   const prepBudgetTotal = local.prepBudget
     .slice(0, local.prepBudget.length - 1)
     .reduce((sum, row) => sum + Number(row.amount || 0), 0);

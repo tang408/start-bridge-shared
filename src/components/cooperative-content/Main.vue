@@ -49,6 +49,7 @@
         <div class="container">
           <div class="row">
             <div
+                v-if="allBrandContent.length > 0"
                 v-for="(item, index) in allBrandContent"
                 :key="index"
                 class="col-md-4 mb-3"
@@ -73,19 +74,6 @@
                   :alt="`品牌圖片 ${index + 1}`"
               />
             </div>
-
-            <!-- 如果沒有任何品牌內容，顯示預設圖片 -->
-            <template v-if="allBrandContent.length === 0">
-              <div class="col-md-4">
-                <img src="/src/assets/images/success1.jpg" class="w-100 rounded" />
-              </div>
-              <div class="col-md-4">
-                <img src="/src/assets/images/success2.jpg" class="w-100 rounded" />
-              </div>
-              <div class="col-md-4">
-                <img src="/src/assets/images/success3.jpg" class="w-100 rounded" />
-              </div>
-            </template>
           </div>
         </div>
       </div>
@@ -221,25 +209,29 @@ const youtubeUrls = computed(() => {
 const allBrandContent = computed(() => {
   const content = [];
 
-  // 加入圖片
-  brandImage.value.forEach(imageUrl => {
-    if (imageUrl) {
-      content.push({
-        type: 'image',
-        url: imageUrl
-      });
-    }
-  });
+  // 加入圖片（先檢查是否為陣列）
+  if (Array.isArray(brandImage.value)) {
+    brandImage.value.forEach(imageUrl => {
+      if (imageUrl && imageUrl.trim()) {
+        content.push({
+          type: 'image',
+          url: imageUrl
+        });
+      }
+    });
+  }
 
-  // 加入 YouTube 影片
-  youtubeUrls.value.forEach(youtubeUrl => {
-    if (youtubeUrl && isYouTubeUrl(youtubeUrl)) {
-      content.push({
-        type: 'youtube',
-        url: youtubeUrl
-      });
-    }
-  });
+  // 加入 YouTube 影片（先檢查是否為陣列）
+  if (Array.isArray(youtubeUrls.value)) {
+    youtubeUrls.value.forEach(youtubeUrl => {
+      if (youtubeUrl && youtubeUrl.trim() && isYouTubeUrl(youtubeUrl)) {
+        content.push({
+          type: 'youtube',
+          url: youtubeUrl
+        });
+      }
+    });
+  }
 
   return content;
 });

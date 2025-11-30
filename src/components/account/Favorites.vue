@@ -44,6 +44,7 @@
   <SharedModal
       v-model="showPlanInfoDialog"
       title="媒合中的創業計畫"
+      mode="close"
       :width="600"
   >
         <div class="dialog-body">

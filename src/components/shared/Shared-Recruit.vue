@@ -1,14 +1,14 @@
 <template>
   <div class="form-group">
-    <label class="fg-label"> {{ label }}</label>
-    <div class="checks" >
-      <label class="fg-label" v-if="type === 'recruit'"> 招聘管道：</label>
+    <label class="fg-label">{{ label }}</label>
+
+    <div class="checks">
+      <label class="fg-label" v-if="type === 'recruit'">招聘管道:</label>
 
       <div
           class="option"
           v-for="opt in options"
           :key="opt.key"
-          :for="`${uid}-${opt.key}`"
       >
         <input
             type="checkbox"
@@ -20,14 +20,25 @@
         <label class="option-label" :for="`${uid}-${opt.key}`">
           {{ opt.text }}
         </label>
+
+        <!-- ✅ 編輯模式 -->
         <input
-            v-if="opt.key === 'other'"
-            class="textline ms-2"
+            v-if="opt.key === 'other' && model[opt.key]?.checked && !readonly"
+            class="textInput"
             type="text"
             :value="model[opt.key]?.value || ''"
-            :disabled="readonly || !model[opt.key]?.checked"
-            :readonly="readonly"
             @input="onInput(opt.key, $event.target.value)"
+            placeholder="請輸入"
+        />
+
+        <!-- ✅ Readonly 模式 -->
+        <input
+            v-if="opt.key === 'other' && model[opt.key]?.checked && readonly"
+            class="textInput"
+            type="text"
+            :value="model[opt.key]?.value || ''"
+            readonly
+            disabled
         />
       </div>
     </div>
@@ -47,7 +58,7 @@ const props = defineProps({
   options: { type: Array, default: () => [] },
   error: { type: String, default: "" },
   type: { type: String, default: "" },
-  readonly: { type: Boolean, default: false }, // ✅ 新增
+  readonly: { type: Boolean, default: false },
 });
 
 const uid = computed(() => `rc-${Math.random().toString(36).slice(2, 9)}`);
@@ -57,14 +68,14 @@ function ensureKey(key) {
 }
 
 function onToggle(key, checked) {
-  if (props.readonly) return; // ✅ readonly 時不處理
+  if (props.readonly) return;
 
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], checked } };
 }
 
 function onInput(key, val) {
-  if (props.readonly) return; // ✅ readonly 時不處理
+  if (props.readonly) return;
 
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], value: val } };
@@ -72,55 +83,72 @@ function onInput(key, val) {
 </script>
 
 <style lang="scss" scoped>
-.checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  width: 100%;
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 
-.option {
+.fg-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  color: #333;
+}
+
+.checks {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto; /* 預設自動寬度 */
+  flex-direction: column;
+  gap: 12px;
+  flex-wrap: nowrap;
 
-  /* 有輸入框的選項 */
-  &:has(.textline) {
-    flex: 1 1 100%;
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     width: 100%;
-  }
 
-  input[type="checkbox"] {
-    flex-shrink: 0;
+    input[type="checkbox"] {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
 
-    /* ✅ readonly 樣式 */
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
     }
-  }
 
-  .option-label {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
+    .option-label {
+      flex: 0 1 auto; /* ✅ 可以縮小，不會無限擴大 */
+      max-width: 500px; /* ✅ 最大寬度限制 */
+      white-space: normal; /* ✅ 允許換行 */
+      word-wrap: break-word; /* ✅ 長文字換行 */
+      line-height: 1.5;
+    }
 
-  .textline {
-    flex: 1;
-    min-width: 0;
-    max-width: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
+    .textInput {
+      padding: 8px 12px;
+      margin-left: 8px;
+      width: 350px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
 
-    /* ✅ readonly 樣式 */
-    &:disabled,
-    &[readonly] {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-      opacity: 0.8;
+      @media (max-width: 768px) {
+        width: 100%;
+      }
+
+      &:disabled,
+      &[readonly] {
+        background-color: #f8f9fa;
+        color: #495057;
+        cursor: default;
+        border-color: #e9ecef;
+        opacity: 1;
+      }
     }
   }
 }
@@ -129,11 +157,5 @@ function onInput(key, val) {
   color: #f44336;
   font-size: 14px;
   margin-top: 6px;
-}
-
-.fg-label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
 }
 </style>

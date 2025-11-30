@@ -20,15 +20,21 @@
       <!-- 上傳檔案 -->
       <SharedUpload
         id="file"
-        label="創業計劃書電子版下載"
+        label="創業計劃書電子版上傳"
         v-model="local.file"
         :error="errors.file"
         accept=".jpg,.jpeg,.png,.gif,.pdf"
         :max-size="10 * 1024 * 1024"
         button-text="提交檔案"
+        :name="'plan-document'"
+        :max-size-mb="20"
         class="mt-3"
+        @upload-success="(result) => handleUploadSuccess('plan-document', result)"
+       account="startup-plan"
       />
     </div>
+
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step1')">上一步</button>
   </div>
 </template>
 
@@ -40,7 +46,7 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
 });
-const emit = defineEmits(["update:modelValue", "next"]);
+const emit = defineEmits(["update:modelValue", "next", "createPlanByDocument"]);
 
 const local = reactive({ ...props.modelValue });
 
@@ -51,7 +57,18 @@ function goNextStep() {
 }
 
 function downloadTemplate() {
-  window.open("/templates/startup-plan.pdf", "_blank");
+  window.open("/src/assets/plan-document/plan-document.pdf", "_blank");
+}
+
+function handleUploadSuccess(fileType, result) {
+  console.log(`${fileType} 上傳成功:`, result);
+
+  const fileId = result.data?.id;
+  const fileName = result.data?.displayName || result.data?.name;
+
+  if (fileType === "plan-document") {
+    local.file = {id: fileId, name: fileName};
+  }
 }
 
 watch(
@@ -62,7 +79,7 @@ watch(
       return;
     }
     props.errors.file = "";
-    emit("next", "step3");
+    emit("createPlanByDocument", "step3");
   }
 );
 </script>

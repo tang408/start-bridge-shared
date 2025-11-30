@@ -57,6 +57,7 @@
               ref="nameRef"
               id="name"
               label="姓名*"
+              placeholder="請輸入與身份證件（如護照）上完全一致的姓名。"
               v-model="form.name"
               :error="errors.name"
               @input="handleNameInput"
@@ -187,8 +188,7 @@ watch(
 
 function handleNameInput(event) {
   const value = event.target.value;
-  // 只保留中文、英文和空格
-  const filtered = value.replace(/[^\u4e00-\u9fa5a-zA-Z\s]/g, '');
+  const filtered = value.replace(/[^\u4e00-\u9fa5a-zA-Z\s,]/g, '');
 
   // 如果輸入了非法字符，顯示提示
   if (value !== filtered) {

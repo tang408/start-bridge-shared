@@ -11,7 +11,7 @@
         ← 返回列表
       </button>
 
-      <h5 class="form-title">一、加盟表單</h5>
+      <h5 class="form-title">【個人背景與信用參考】必填</h5>
 
       <!-- 是否有創業經驗 -->
       <SharedRadio

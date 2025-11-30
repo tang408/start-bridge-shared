@@ -1,8 +1,8 @@
 <template>
   <div class="fs-24">訊息</div>
   <SharedTabs
-    v-model="activeTab"
-    :tabs="[
+      v-model="activeTab"
+      :tabs="[
       { label: '創業者資料', value: 'founder' },
       { label: '共創者資料', value: 'cofounder' },
     ]"
@@ -10,10 +10,10 @@
 
   <div class="stack gap-3">
     <article
-      v-for="m in current.messages"
-      :key="m.id"
-      class="msg-card"
-      :class="[
+        v-for="m in current.messages"
+        :key="m.id"
+        class="msg-card"
+        :class="[
         { expanded: current.expandedId === m.id },
         { unread: !m.read },
         { tagged: m.tagged },
@@ -21,35 +21,49 @@
       ]"
     >
       <button
-        class="msg-header"
-        type="button"
-        @click="toggleCard(m.id)"
-        :aria-expanded="current.expandedId === m.id ? 'true' : 'false'"
-        :aria-controls="`panel-${m.id}`"
+          class="msg-header"
+          type="button"
+          @click="toggleCard(m.id)"
+          :aria-expanded="current.expandedId === m.id ? 'true' : 'false'"
+          :aria-controls="`panel-${m.id}`"
       >
         <span class="msg-title">{{ m.title }}</span>
       </button>
 
       <transition name="msg">
         <div
-          v-show="current.expandedId === m.id"
-          class="msg-body"
-          :id="`panel-${m.id}`"
-          role="region"
+            v-show="current.expandedId === m.id"
+            class="msg-body"
+            :id="`panel-${m.id}`"
+            role="region"
         >
           <div class="msg-content">
-            {{ m.content }}
+            <!-- 顯示主要內容 -->
+            <div class="main-content">{{ m.parsedContent.main }}</div>
+
+            <!-- 如果有銀行資訊，以特殊格式顯示 -->
+            <div v-if="m.parsedContent.bankInfo" class="bank-info">
+              <div class="bank-info-item">
+                <strong>銀行代碼：</strong>{{ m.parsedContent.bankInfo.code }}
+              </div>
+              <div class="bank-info-item">
+                <strong>銀行帳號：</strong>{{ m.parsedContent.bankInfo.account }}
+              </div>
+              <div class="bank-info-item">
+                <strong>戶名：</strong>{{ m.parsedContent.bankInfo.name }}
+              </div>
+            </div>
           </div>
 
           <SharedFabActions
-            :favorite="m.favorite"
-            iconType="star"
-            :showTrash="true"
-            size="md"
-            @favorite-toggle="(val) => setFavorite(m.id, val)"
-            @remove="removeMsg(m.id)"
-            :right="16"
-            :bottom="16"
+              :favorite="m.favorite"
+              iconType="star"
+              :showTrash="true"
+              size="md"
+              @favorite-toggle="(val) => setFavorite(m.id, val)"
+              @remove="removeMsg(m.id)"
+              :right="16"
+              :bottom="16"
           />
         </div>
       </transition>
@@ -73,25 +87,57 @@ const activeTab = ref("founder");
 
 const tabState = reactive({
   founder: {
-    messages: [
-
-    ],
-    expandedId: 1,
+    messages: [],
+    expandedId: null,
   },
   cofounder: {
-    messages: [
-
-    ],
+    messages: [],
     expandedId: null,
   },
 });
 
 const current = computed(() => tabState[activeTab.value]);
 
+// 解析內容，分離主要內容和銀行資訊
+function parseContent(content) {
+  const bankCodeRegex = /銀行代碼[:：]\s*[（(]?\s*(\d+)\s*[）)]?\s*([^\n]+)/;
+  const bankAccountRegex = /銀行帳號[:：]\s*([^\n]+)/;
+  const bankNameRegex = /戶名[:：]\s*([^\n]+)/;
+
+  const codeMatch = content.match(bankCodeRegex);
+  const accountMatch = content.match(bankAccountRegex);
+  const nameMatch = content.match(bankNameRegex);
+
+  if (codeMatch && accountMatch && nameMatch) {
+    // 有銀行資訊，分離主要內容
+    let mainContent = content;
+
+    // 移除銀行資訊部分
+    mainContent = mainContent.replace(/銀行代碼[:：][^\n]+\n?/g, '');
+    mainContent = mainContent.replace(/銀行帳號[:：][^\n]+\n?/g, '');
+    mainContent = mainContent.replace(/戶名[:：][^\n]+\n?/g, '');
+    mainContent = mainContent.trim();
+
+    return {
+      main: mainContent,
+      bankInfo: {
+        code: `${codeMatch[1]} ${codeMatch[2]}`.trim(),
+        account: accountMatch[1].trim(),
+        name: nameMatch[1].trim()
+      }
+    };
+  }
+
+  // 沒有銀行資訊，返回原始內容
+  return {
+    main: content,
+    bankInfo: null
+  };
+}
+
 async function toggleCard(id) {
   current.value.expandedId = current.value.expandedId === id ? null : id;
 
-  // 如果是收起卡片，直接返回
   if (current.value.expandedId === null) {
     return;
   }
@@ -114,7 +160,6 @@ async function toggleCard(id) {
       m.read = true;
       const notifyType = activeTab.value === 'founder' ? 1 : 2;
       decreaseUnreadCount(notifyType);
-
     } else {
       console.error('更新通知狀態失敗:', response.message);
     }
@@ -124,8 +169,6 @@ async function toggleCard(id) {
 }
 
 async function setFavorite(id, val) {
-  console.log(id, val)
-
   const m = current.value.messages.find((x) => x.id === id);
   if (m) m.favorite = val;
 
@@ -139,34 +182,28 @@ async function setFavorite(id, val) {
     const response = await notifyApi.updateUserNotify(formData);
 
     if (response.code !== 0) {
-      // API 失敗時，還原本地狀態
       if (m) m.favorite = !val;
       console.error('更新收藏失敗:', response.message);
     }
   } catch (error) {
-    // 發生錯誤時，還原本地狀態
     if (m) m.favorite = !val;
     console.error('更新收藏失敗:', error);
   }
 }
 
 async function removeMsg(id) {
-  // 先更新本地 UI
   const list = current.value.messages;
   const idx = list.findIndex((x) => x.id === id);
 
-  if (idx === -1) return; // 找不到訊息，直接返回
+  if (idx === -1) return;
 
-  // 暫存要刪除的訊息（以便失敗時還原）
   const removedMsg = list[idx];
 
-  // 立即從 UI 移除
   list.splice(idx, 1);
   if (current.value.expandedId === id) {
     current.value.expandedId = null;
   }
 
-  // 呼叫 API 刪除
   try {
     const formData = {
       userId: currentUser.value,
@@ -177,12 +214,10 @@ async function removeMsg(id) {
     if (response.code === 0) {
       console.log('訊息刪除成功');
     } else {
-      // API 失敗，還原訊息
       list.splice(idx, 0, removedMsg);
       console.error('刪除失敗:', response.message);
     }
   } catch (error) {
-    // 發生錯誤，還原訊息
     list.splice(idx, 0, removedMsg);
     console.error('刪除失敗:', error);
   }
@@ -197,29 +232,25 @@ async function getUserNotifies() {
   const response = await notifyApi.getUserNotifies(formData);
   userNotifies.value = response.data;
 
-  // 將 API 資料寫入 tabState
   if (response.code === 0 && response.data?.userNotifyDatas) {
     const notifies = response.data.userNotifyDatas;
 
-    // 清空現有資料
     tabState.founder.messages = [];
     tabState.cofounder.messages = [];
 
     let founderUnread = 0;
     let cofounderUnread = 0;
 
-    // 根據 type 分類資料
     notifies.forEach(notify => {
       const message = {
         id: notify.notifyId,
         title: notify.title,
         content: notify.content,
+        parsedContent: parseContent(notify.content), // 解析內容
         read: notify.status !== 1,
-        tagged: false, // API 資料中沒有這個欄位，可以根據需求調整
+        tagged: false,
         favorite: notify.favorite
       };
-
-      console.log(notifies)
 
       if (notify.type === 1) {
         tabState.founder.messages.push(message);
@@ -234,19 +265,16 @@ async function getUserNotifies() {
 
     updateUnreadCounts(founderUnread, cofounderUnread);
 
-
-    // 重置展開狀態
     tabState.founder.expandedId = null;
     tabState.cofounder.expandedId = null;
   }
 }
+
 onMounted(() => {
   if (isLoggedIn.value) {
     getUserNotifies();
   }
 })
-
-
 </script>
 
 <style lang="scss" scoped>
@@ -268,18 +296,13 @@ onMounted(() => {
   }
 
   &.unread {
-    background: rgba(255, 255, 255, 0.7);
+    background: #fff9e6;
+    border-left: 4px solid #ffcc41;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    border: 1px solid transparent;
   }
 
   &.unread.is-fav {
     box-shadow: 0 0 0 3px #ffcc4140 inset, 0 2px 10px #0000000f;
-  }
-  &.unread {
-    background: #fff9e6; // 淺黃背景
-    border-left: 4px solid #ffcc41; // 左側黃條
-
   }
 
   .msg-header {
@@ -303,61 +326,36 @@ onMounted(() => {
     padding: 0 24px 140px;
 
     .msg-content {
-      margin: 0;
-      color: #4b4f4a;
-      font-weight: 400;
-      font-size: 14px;
-      line-height: 20px;
-    }
-  }
+      .main-content {
+        margin-bottom: 16px;
+        color: #4b4f4a;
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 20px;
+        white-space: pre-line;
+      }
 
-  .msg-actions {
-    position: absolute;
-    right: 16px;
-    bottom: 16px;
-    display: flex;
-    gap: 12px;
-  }
+      .bank-info {
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 16px;
 
-  .circle-btn {
-    inline-size: 56px;
-    block-size: 56px;
-    border-radius: 50%;
-    border: 0;
-    background: #ffe07a;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-    transition: transform 0.08s ease, filter 0.15s ease;
+        .bank-info-item {
+          color: #333;
+          font-size: 16px;
+          line-height: 28px;
+          font-weight: 500;
 
-    &:active {
-      transform: translateY(1px) scale(0.98);
-    }
-    &:hover {
-      filter: brightness(0.98);
-    }
+          strong {
+            font-weight: 700;
+            margin-right: 8px;
+          }
 
-    &.favorite[aria-pressed="true"] {
-      background: #ffcc41;
-    }
-    &.danger {
-      background: #f2f2f2;
-    }
-
-    .icon {
-      inline-size: 24px;
-      block-size: 24px;
-      background: #333;
-      mask-position: center;
-      mask-size: contain;
-      mask-repeat: no-repeat;
-    }
-    .icon-star {
-      mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23000" d="m12 17.27l-6.18 3.73l1.64-7.03L2 9.24l7.19-.62L12 2l2.81 6.62L22 9.24l-5.46 4.73l1.64 7.03z"/></svg>');
-    }
-    .icon-trash {
-      mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="%23000" d="M9 3h6v2h5v2H4V5h5zm1 6h2v9h-2zm4 0h2v9h-2z"/></svg>');
+          &:not(:last-child) {
+            margin-bottom: 8px;
+          }
+        }
+      }
     }
   }
 }
@@ -367,6 +365,7 @@ onMounted(() => {
   height: 0;
   opacity: 0;
 }
+
 .msg-enter-active,
 .msg-leave-active {
   transition: all 0.18s ease;

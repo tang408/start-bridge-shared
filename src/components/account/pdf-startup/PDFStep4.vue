@@ -1,7 +1,7 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-2 d-grid">
-      <h5 class="form-title">二、創業企劃概要</h5>
+      <h5 class="form-title">創業計畫概要</h5>
 
       <SharedTextarea
           id="p4-q1"
@@ -57,7 +57,7 @@
             :options="[
             {
               key: 'total',
-              text: '總共需要多少人數：',
+              text: '包括以上本人及籌備團隊及員工,總共需要多少人數：',
               withInput: true,
               inputType: 'number',
             },
@@ -322,6 +322,8 @@ function submitStep() {
     emit("next", "step5");
   }
 }
+
+
 </script>
 
 <style scoped>
