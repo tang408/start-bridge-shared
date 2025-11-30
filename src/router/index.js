@@ -41,6 +41,7 @@ import Platform from "../views/Platform.vue";
 import TermsService from "../views/TermsService.vue";
 import Privacy from "../views/Privacy.vue";
 import Soon from "../views/Soon.vue";
+import RiskNotice from "../views/RiskNotice.vue";
 
 const routes = [
   {
@@ -137,6 +138,11 @@ const routes = [
             path: "service",
             name: "terms-service",
             component: TermsService,
+          },
+          {
+            path: "risk",
+            name: "terms-risk",
+            component: RiskNotice,
           },
         ],
       },

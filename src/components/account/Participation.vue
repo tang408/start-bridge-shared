@@ -316,13 +316,13 @@
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
-              <RouterLink class="agree-link" @click.stop>
-                參與風險聲明
-              </RouterLink>
+              <RouterLink to="/terms/risk" class="agree-link" @click.stop
+                >參與風險聲明</RouterLink
+              >
               及
-              <RouterLink class="agree-link" @click.stop>
-                平台免責聲明
-              </RouterLink>
+              <RouterLink to="/terms/risk" class="agree-link" @click.stop
+                >平台免責聲明</RouterLink
+              >
             </div>
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>

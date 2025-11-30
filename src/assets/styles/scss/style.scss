@@ -68,6 +68,9 @@ input {
   &-1 {
     background-color: #373838;
   }
+  &-2 {
+    background-color: #ffffff;
+  }
 }
 
 .br {
@@ -108,12 +111,9 @@ input {
 .logIn {
   height: 39px;
   width: 120px;
-  margin: 0 15px;
+  margin: 0;
   text-align: center;
   align-content: center;
-  @media (max-width: 576px) {
-    margin: 0;
-  }
 
   a {
     align-items: center;
@@ -277,8 +277,13 @@ span {
   }
 }
 
-.color-1 {
-  color: #ff6634;
+.color {
+  &-1 {
+    color: #ff6634;
+  }
+  &-2 {
+    color: #373838 !important;
+  }
 }
 
 .mw-60 {
@@ -781,6 +786,15 @@ section {
         -webkit-mask-size: contain;
         mask-size: contain;
       }
+    }
+  }
+
+  &-btn {
+    display: flex;
+    gap: 10px;
+    margin-left: 0;
+    @media (max-width: 576px) {
+      margin-left: 15px;
     }
   }
 }
