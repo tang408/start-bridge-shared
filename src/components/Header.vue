@@ -13,20 +13,10 @@
           >
             <span class="navbar-toggler-icon"></span>
           </button>
-
-          <button
-            v-if="isAccountPage"
-            class="user-toggler d-lg-none"
-            type="button"
-            aria-label="open account user page"
-            @click.stop="toggleMobileAccountSidebar()"
-          >
-            <img src="@/assets/icon/user.png" alt="user" />
-          </button>
         </div>
 
         <div :class="['navbar-collapse', { open: isMenuOpen }]" id="navbarNav">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <ul class="navbar-nav ms-auto mt-1 mb-3 mb-lg-0">
             <li
               class="nav-item"
               :class="{
@@ -104,31 +94,33 @@
             </li>
             <!-- 會員 icon -->
             <div class="d-flex-block">
-              <li class="member-icon">
-                <router-link class="nav-link d-flex align-items-center" to="">
-                  <img
-                    src="@/assets/icon/user.png"
-                    alt="會員"
-                    class="member-icon-img"
-                  />
-                </router-link>
-              </li>
-              <li class="bc-1 br-1 logIn" v-if="!isLoggedIn">
-                <router-link
-                  class="nav-link"
-                  to="/login"
-                  @click="handleLinkClick"
-                >
-                  <img src="@/assets/icon/menu-icon.svg" />
-                  登入
-                </router-link>
-              </li>
+              <li class="menu-btn">
+                <div class="bc-2 br-1 logIn">
+                  <router-link
+                    class="nav-link d-flex align-items-center color-2"
+                    to=""
+                  >
+                    <img src="@/assets/icon/member-icon.png" />
+                    會員管理
+                  </router-link>
+                </div>
 
-              <li class="nav-item bc-1 br-1 logIn" v-else>
-                <button class="nav-link" type="button" @click="handleLogout">
-                  <img src="@/assets/icon/menu-icon.svg" />
-                  登出
-                </button>
+                <div class="bc-1 br-1 logIn" v-if="!isLoggedIn">
+                  <router-link
+                    class="nav-link"
+                    to="/login"
+                    @click="handleLinkClick"
+                  >
+                    <img src="@/assets/icon/menu-icon.svg" />
+                    登入
+                  </router-link>
+                </div>
+                <div class="nav-item bc-1 br-1 logIn" v-else>
+                  <button class="nav-link" type="button" @click="handleLogout">
+                    <img src="@/assets/icon/menu-icon.svg" />
+                    登出
+                  </button>
+                </div>
               </li>
             </div>
           </ul>
@@ -290,7 +282,7 @@ const handleLogout = async () => {
     display: block;
     background: linear-gradient(to bottom, #ff714aee, #ff5f31ee);
     @media (max-width: 767px) {
-      border-radius: 5px 5px 15px 15px;
+      border-radius: 15px;
       margin-top: 1rem;
       position: absolute;
       top: 78%;
@@ -339,7 +331,7 @@ const handleLogout = async () => {
       cursor: pointer;
 
       @media (max-width: 992px) {
-        padding: 15px 20px;
+        padding: 15px 25px;
         width: 100%;
       }
     }
