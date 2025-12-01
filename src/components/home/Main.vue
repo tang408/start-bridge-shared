@@ -268,6 +268,8 @@ function transformApiDataToCards(apiData) {
     price: item.daysLeft ? `${item.daysLeft}天` : "99天",
     supporters: item.views ? `${item.views} 人瀏覽` : "0 人瀏覽",
     progress: item.progress,
+    isFeatured: item.isFeatured || false,
+    isRemainingPartner: item.isRemainingPartner > 0,
     to: { name: "ProjectDetail", params: { id: item.id } },
   }));
 }

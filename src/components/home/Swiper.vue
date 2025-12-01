@@ -54,6 +54,8 @@ defineProps({
   mode: { type: String, default: "progress" },
   linkBase: { type: String, default: "/project" },
   routeName: { type: String, default: "ProjectDetail" },
+  isFeatured: { type: Boolean, default: false },
+  isRemainingPartners: { type: Boolean, default: false },
 });
 
 const slidesPerView = ref(4);
