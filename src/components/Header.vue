@@ -98,7 +98,7 @@
                 <div class="bc-2 br-1 logIn">
                   <router-link
                     class="nav-link d-flex align-items-center color-2"
-                    to=""
+                    to="/account/profile"
                   >
                     <img src="@/assets/icon/member-icon.png" />
                     會員管理
