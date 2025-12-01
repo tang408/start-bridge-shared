@@ -1,7 +1,7 @@
 <template>
   <form class="form mt-4" @submit.prevent="submitStep">
     <div class="gap-2 d-grid">
-      <h5 class="form-title">二、創業企劃概要</h5>
+      <h5 class="form-title">創業計畫概要</h5>
 
       <SharedTextarea
           id="p4-q1"

@@ -54,7 +54,7 @@
 
         <!-- Step 4: 創業計畫 -->
         <div class="pdf-page pdf-section" data-section="step4">
-          <h2 class="section-title">三、創業計畫</h2>
+          <h2 class="section-title">二、創業計畫書</h2>
           <PDFStep4
             v-model="formData.step4"
             :errors="{}"
@@ -394,6 +394,12 @@ async function loadPlanData() {
         q9LocationNote: parseCoFounderValue(planData.coFounderAddedValue).note,
       });
 
+      // ✅ 加入這些 log 來檢查
+      console.log('=== Step4 Q5 資料賦值 ===');
+      console.log('expectedNumberPeople:', planData.expectedNumberPeople);
+      console.log('formData.step4.q5:', formData.step4.q5);
+      console.log('formData.step4.q5.total:', formData.step4.q5.total);
+
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
@@ -510,6 +516,7 @@ async function loadPlanData() {
       await nextTick();
       console.log('載入計畫資料成功');
       console.log('formData:', formData);
+      console.log('expectedNumberPeople 原始資料:', planData.expectedNumberPeople);
     } else {
       await NewAlert.show('錯誤！', '載入計畫資料失敗，請洽客服人員。');
     }
@@ -583,7 +590,7 @@ function parseRecruitmentPipeline(text) {
       result.other = {checked: true, value: match ? match[1] : ''};
     }
   });
-
+  console.log('解析招募管道結果:', result);
   return result;
 }
 

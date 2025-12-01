@@ -27,12 +27,12 @@
             :aria-controls="`details-${p.id}`"
         >
           <header class="card-head">
-            <span class="status-pill" :class="statusClass(p.status)">
-              {{ statusLabel(p.status) }}
-            </span>
+        <span class="status-pill" :class="statusClass(p.status)">
+          {{ statusLabel(p.status) }}
+        </span>
             <span class="time" v-if="isRunning(p.status)">
-              剩餘 {{ p.lastUpdate }}
-            </span>
+          剩餘 {{ p.lastUpdate }}
+        </span>
           </header>
 
           <div class="gap-1 d-grid">
@@ -40,24 +40,40 @@
             <div class="content mt-2">{{ p.content }}</div>
           </div>
 
-          <div class="progress-wrap" v-if="p.status !== 'applying'">
-            <div
-                class="progress-bar"
-                role="progressbar"
-                :aria-valuemin="0"
-                :aria-valuemax="100"
-                :aria-valuenow="p.progress"
-            >
-              <div
-                  class="progress-inner"
-                  :style="{ width: p.progress + '%' }"
-              ></div>
-              <div class="progress-text">募資進度 {{ p.progress }}%</div>
+          <!-- 🆕 修改進度條部分 -->
+          <div class="progress-wrap">
+            <!-- 雙層進度條 -->
+            <div class="progress-bar-container">
+              <div class="progress-bar-wrapper">
+                <!-- 橘色進度條（已完成）-->
+                <div
+                    class="progress-bar-fill completed"
+                    :style="{ width: `${p.completedProgress || 0}%` }"
+                >
+              <span class="progress-text" v-if="(p.completedProgress || 0) > 5">
+                {{ p.completedProgress }}%
+              </span>
+                </div>
+
+                <!-- 灰色進度條（審核中）-->
+                <div
+                    class="progress-bar-fill pending"
+                    :style="{
+                  width: `${p.pendingProgress || 0}%`,
+                  left: `${p.completedProgress || 0}%`
+                }"
+                >
+              <span class="progress-text" v-if="(p.pendingProgress || 0) > 5">
+                {{ p.pendingProgress }}%
+              </span>
+                </div>
+              </div>
             </div>
 
+            <!-- 保持原有的文字顯示 -->
             <div class="progress-footer mt-2">
-              <span class="dollar">已達成金額 {{ fmtMoney(p.dollar) }}</span>
-              <span class="remain">還差 {{ fmtMoney(p.remain) }}</span>
+              <span class="dollar">已達成金額 {{ fmtMoney(p.completedAmount) }}</span>
+              <span class="remain">還差 {{ fmtMoney(p.remainingAmount) }}</span>
             </div>
           </div>
         </button>
@@ -115,7 +131,7 @@
                         type="button"
                         @click="handleSignCoreContractSubmit(t, p)"
                     >
-                      我已簽屬完成
+                      我已簽署完成
                     </button>
 
                     <button
@@ -300,13 +316,13 @@
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
-              <RouterLink class="agree-link" @click.stop>
+              <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
                 參與風險聲明
-              </RouterLink>
+              </a>
               及
-              <RouterLink class="agree-link" @click.stop>
+              <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
                 平台免責聲明
-              </RouterLink>
+              </a>
             </div>
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
@@ -630,6 +646,11 @@ async function getAllParticipantPlanByUser() {
           title: plan.planName,
           content: statusLabel(status),
           progress: progress,
+          completedProgress: plan.completedProgress || 0,
+          pendingProgress: plan.pendingProgress || 0,
+          completedAmount: plan.completedAmount || 0,
+          pendingAmount: plan.pendingAmount || 0,
+          remainingAmount: plan.remainingAmount || 0,
           dollar: plan.totalParticipantAmount,
           remain: remain,
           goal: plan.targetAmount,
@@ -700,7 +721,7 @@ async function getAllParticipantPlanRecordByUser() {
         };
 
         const statusMap = {
-          0: '處理中',
+          0: '平台審核中',
           1: '成功',
           2: '失敗',
         };
@@ -1754,4 +1775,66 @@ hr {
     }
   }
 }
+
+.progress-wrap {
+  margin-top: 16px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.progress-bar-wrapper {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  background-color: #f0f0f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease, left 0.3s ease;
+
+  &.completed {
+    background: linear-gradient(90deg, #ff9a56 0%, #ff7b3d 100%);
+    left: 0;
+    z-index: 2;
+  }
+
+  &.pending {
+    background: linear-gradient(90deg, #d0d0d0 0%, #b0b0b0 100%);
+    z-index: 1;
+  }
+
+  .progress-text {
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.progress-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+
+  .dollar {
+    color: #ff7b3d;
+    font-weight: 600;
+  }
+
+  .remain {
+    color: #666;
+  }
+}
+
 </style>

@@ -76,8 +76,8 @@
         <div>姓名：{{ selectedMemberDetail.name }}</div>
         <div>手機號碼：{{ selectedMemberDetail.phone }}</div>
         <div>電子信箱：{{ selectedMemberDetail.email }}</div>
-        <div>出生年月日：{{selectedMemberDetail.birthday}}</div>
-        <div>其他聯繫方式(Line)：{{selectedMemberDetail.line}}</div>
+        <div>出生年月日：{{ selectedMemberDetail.birthday }}</div>
+        <div>其他聯繫方式(Line)：{{ selectedMemberDetail.line }}</div>
         <div>會員身分：
           <span v-if="selectedMemberDetail.type?.includes(1)">創業者</span>
           <span v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.type?.includes(2)">、</span>
@@ -118,29 +118,41 @@
           <div>
             <span class="doc-label">上傳資訊：</span>
             <span
-                v-if="selectedMemberDetail.founderInfo.fileInfo?.pcrUrl"
-                class="doc-tag clickable px-1"
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.pcrUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.pcrUrl
+              }"
                 @click="openDocDialog('pcr', selectedMemberDetail.founderInfo.fileInfo.pcrUrl)"
             >
             良民證
           </span>
             <span
-                v-if="selectedMemberDetail.founderInfo.fileInfo?.identifyUrl"
-                class="doc-tag clickable px-1"
-                @click="openDocDialog('identify', selectedMemberDetail.founderInfo.fileInfo.identifyUrl)"
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.identifyUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.identifyUrl
+              }"
+                @click="selectedMemberDetail.founderInfo.fileInfo?.identifyUrl && openDocDialog('identify', selectedMemberDetail.founderInfo.fileInfo.identifyUrl)"
             >
-            身分證明
-          </span>
+              身分證明
+            </span>
             <span
-                v-if="selectedMemberDetail.founderInfo.fileInfo?.assetsUrl"
-                class="doc-tag clickable px-1"
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.assetsUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.assetsUrl
+              }"
                 @click="openDocDialog('assets', selectedMemberDetail.founderInfo.fileInfo.assetsUrl)"
             >
             資產證明
           </span>
             <span
-                v-if="selectedMemberDetail.founderInfo.companyInfo?.companyName"
-                class="doc-tag clickable px-1"
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.companyInfo?.companyName,
+                'disabled': !selectedMemberDetail.founderInfo.companyInfo?.companyName
+              }"
                 @click="openCompanyDialog(selectedMemberDetail.founderInfo.companyInfo)"
             >
             公司資料
@@ -188,13 +200,13 @@
             最高可投入資產：{{ formatAmount(selectedMemberDetail.coreFounderInfo.maxBudget) }} 元
           </div>
           <div>
-            可接受投入參與年限：{{ selectedMemberDetail.coreFounderInfo.investLimitYearShow ? selectedMemberDetail.coreFounderInfo.investLimitYear + ' 年' : '不公開'}}
+            可接受投入參與年限：{{ selectedMemberDetail.coreFounderInfo.investLimitYearShow ? selectedMemberDetail.coreFounderInfo.investLimitYear + ' 年' : '不公開' }}
           </div>
           <div>
-            理財經驗描述：{{ selectedMemberDetail.coreFounderInfo.experienceShow ? selectedMemberDetail.coreFounderInfo.experience : '不公開'}}
+            理財經驗描述：{{ selectedMemberDetail.coreFounderInfo.experienceShow ? selectedMemberDetail.coreFounderInfo.experience : '不公開' }}
           </div>
           <div>
-            自我介紹：{{ selectedMemberDetail.coreFounderInfo.introduceShow ? selectedMemberDetail.coreFounderInfo.introduce : '不公開'}}
+            自我介紹：{{ selectedMemberDetail.coreFounderInfo.introduceShow ? selectedMemberDetail.coreFounderInfo.introduce : '不公開' }}
           </div>
           <div>
 
@@ -245,7 +257,7 @@
               class="doc-label mb-2"
           >
             {{ plan.planName }} |
-            狀態: {{ plan.status }} |
+            狀態: {{ plan.statusInfo }} |
             金額: {{ formatAmount(plan.amount) }} 元
             <span v-if="plan.remark" class="text-muted"> ({{ plan.remark }})</span>
           </div>
@@ -288,7 +300,7 @@
               class="doc-label mb-2"
           >
 
-            {{ participant.name }} | {{ participant.sex }} | {{ participant.salesName }} | {{ participant.createdAt}}
+            {{ participant.name }} | {{ participant.sex }} | {{ participant.salesName }} | {{ participant.createdAt }}
             <br/>
             投入金額：{{ formatAmount(participant.amount) }} 元 -
             狀態：{{ getParticipantStatus(participant.status) }}
@@ -342,7 +354,7 @@ const showModal = ref(false);
 const selectedMember = ref({});
 
 const columns = [
-  { key: "formattedType", label: "身分" },
+  {key: "formattedType", label: "身分"},
   {key: "createdAt", label: "時間"},
   {key: "name", label: "會員名字"},
   {key: "planName", label: "專案名稱"},
@@ -394,12 +406,14 @@ const displayedMembers = computed(() => {
 });
 
 const cities = ref([]);
+
 async function getCities() {
   const response = await cityApi.getCities();
   cities.value = response.data;
 }
 
 const SalesLevels = ref([]);
+
 async function getSalesLevel() {
   const response = await salesLevelApi.getSalesLevel();
   SalesLevels.value = response.data;
@@ -413,6 +427,7 @@ async function getAllPlanStep() {
   const response = await stepApi.getAllPlanStep();
   planSteps.value = response.data;
 }
+
 function getPlanStatusText(stepId) {
   const step = planSteps.value.find(s => s.id === stepId);
   return step ? step.step : '未知狀態';
@@ -457,7 +472,6 @@ function formatAmount(amount) {
 }
 
 
-
 onMounted(async () => {
   if (isLoggedIn.value) {
     await getCities();
@@ -470,6 +484,7 @@ onMounted(async () => {
 
 const showPlanDialog = ref(false);
 const planDetail = ref({});
+
 async function openPlanDialog(row) {
   const formData = {
     salesId: currentSales.value,
@@ -478,7 +493,7 @@ async function openPlanDialog(row) {
     participantPlanId: row.participantPlanId || undefined,
   }
 
-    const response = await salesApi.getUserPlanInfoBySales(formData)
+  const response = await salesApi.getUserPlanInfoBySales(formData)
   planDetail.value = response.data;
   showPlanDialog.value = true;
 }
@@ -516,6 +531,7 @@ async function viewMember(row) {
   showModal.value = true;
   await openMemberDetail(row.id);
 }
+
 async function openMemberDetail(userId) {
   const formData = {
     salesId: currentSales.value,
@@ -571,8 +587,8 @@ const docDialogTitle = computed(() => {
 })
 const docDialogUrl = ref('')
 // 打開文件對話框
-const openDocDialog = (type,url) => {
-  console.log(type,url)
+const openDocDialog = (type, url) => {
+  console.log(type, url)
   showDocDialog.value = true
   docDialogUrl.value = url
 
@@ -591,9 +607,6 @@ const openDocDialog = (type,url) => {
   }
 }
 
-.doc-tag {
-  color: $btn-orange;
-}
 
 .co-list {
   display: flex;
@@ -677,17 +690,28 @@ const openDocDialog = (type,url) => {
 .doc-tag {
   font-size: 14px;
   cursor: default;
-}
+  transition: all 0.2s ease;
 
-.doc-tag.clickable {
-  color: #409eff;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.3s;
-}
+  // 可點擊狀態
+  &.clickable {
+    color: #409eff;
+    cursor: pointer;
+    text-decoration: underline;
 
-.doc-tag.clickable:hover {
-  color: #66b1ff;
+    &:hover {
+      color: #66b1ff;
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+  }
+
+  // 禁用狀態
+  &.disabled {
+    color: #9e9e9e;
+    cursor: not-allowed;
+    opacity: 0.6;
+    pointer-events: none; // 只在 disabled 時禁用點擊
+  }
 }
 
 /* Dialog 樣式 */
@@ -864,6 +888,21 @@ const openDocDialog = (type,url) => {
     font-size: 16px;
     margin-bottom: 12px;
     color: #333;
+  }
+}
+
+.doc-tag {
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none; // 禁止點擊
+  }
+
+  &.clickable {
+    cursor: pointer;
+    &:hover {
+      // 你的 hover 效果
+    }
   }
 }
 </style>

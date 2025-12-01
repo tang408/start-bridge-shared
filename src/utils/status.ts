@@ -56,7 +56,7 @@ export const TX_STATUS_MAP: Record<
   { label: string; rowClass: string }
 > = {
   success: { label: "成功", rowClass: "is-success" },
-  pending: { label: "核對中", rowClass: "is-pending" },
+  pending: { label: "平台審核中", rowClass: "is-pending" },
   failed: { label: "失敗", rowClass: "is-failed" },
 };
 

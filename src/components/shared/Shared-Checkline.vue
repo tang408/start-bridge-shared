@@ -9,7 +9,6 @@
           class="option"
           v-for="opt in options"
           :key="opt.key"
-          :for="`${uid}-${opt.key}`"
       >
         <input
             type="checkbox"
@@ -21,14 +20,24 @@
         <label class="option-label" :for="`${uid}-${opt.key}`">
           {{ opt.text }}
         </label>
+
+        <!-- ✅ 編輯模式 -->
         <input
-            v-if="opt.withInput !== false"
+            v-if="opt.withInput !== false && model[opt.key]?.checked && !readonly"
             class="textline"
             :type="opt.inputType || 'text'"
             :value="model[opt.key]?.value || ''"
-            :disabled="!model[opt.key]?.checked || readonly"
-            :readonly="readonly"
             @input="onInput(opt.key, $event.target.value)"
+            :placeholder="opt.placeholder || '請輸入'"
+        />
+
+        <input
+            v-if="opt.withInput !== false && model[opt.key]?.checked && readonly"
+            class="textline w-auto"
+            :type="opt.inputType || 'text'"
+            :value="model[opt.key]?.value || ''"
+            readonly
+            disabled
         />
       </div>
     </div>
@@ -38,7 +47,7 @@
 </template>
 
 <script setup>
-import {computed, watch} from "vue";
+import { computed, watch } from "vue";
 
 defineOptions({ name: "SharedCheckline" });
 
@@ -62,7 +71,6 @@ function ensureKey(key) {
 }
 
 function onToggle(key, checked) {
-  // 預覽模式不允許切換
   if (props.readonly) return;
 
   ensureKey(key);
@@ -81,9 +89,7 @@ function onToggle(key, checked) {
     }
     model.value = newModel;
   } else {
-    // 特殊邏輯：處理 'anytime' 的互斥
     if (key === 'anytime' && checked) {
-      // 選擇 anytime 時，清除其他所有選項
       const newModel = {};
       props.options.forEach((opt) => {
         newModel[opt.key] = { checked: false, value: "" };
@@ -91,7 +97,6 @@ function onToggle(key, checked) {
       newModel.anytime = { checked: true, value: "" };
       model.value = newModel;
     } else if (key !== 'anytime' && checked) {
-      // 選擇其他選項時，清除 anytime
       const newModel = { ...model.value };
       if (newModel.anytime) {
         newModel.anytime = { checked: false, value: "" };
@@ -99,21 +104,18 @@ function onToggle(key, checked) {
       newModel[key] = { ...model.value[key], checked };
       model.value = newModel;
     } else {
-      // 取消勾選的情況
       model.value = { ...model.value, [key]: { ...model.value[key], checked } };
     }
   }
 }
 
 function onInput(key, val) {
-  // 預覽模式不允許輸入
   if (props.readonly) return;
 
   ensureKey(key);
   model.value = { ...model.value, [key]: { ...model.value[key], value: val } };
 }
 
-// 監聽 modelValue 變化
 watch(
     () => props.modelValue,
     (newVal) => {
@@ -170,34 +172,35 @@ input[type="checkbox"] {
 }
 
 .option-label {
-  flex-shrink: 0;
-  white-space: nowrap;
-  margin: 0;
-  cursor: pointer;
-  font-size: 15px;
+  flex: 0 1 auto; /* ✅ 可以縮小，不會無限擴大 */
+  max-width: 500px; /* ✅ 最大寬度限制 */
+  white-space: normal; /* ✅ 允許換行 */
+  word-wrap: break-word; /* ✅ 長文字換行 */
+  line-height: 1.5;
 }
 
 .textline {
-  flex: 1;
-  min-width: 0;
-  width: auto;
-  max-width: none;
+  /* ✅ 修改這裡：給一個固定的合理寬度 */
+  width: 300px; /* 或 150px, 根據需求調整 */
+  min-width: 200px; /* 最小寬度 */
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 15px;
   box-sizing: border-box;
 
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-    color: #999;
+  /* 響應式 */
+  @media (max-width: 768px) {
+    width: 150px;
   }
 
-  &:read-only {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-    opacity: 0.7;
+  &:disabled,
+  &[readonly] {
+    background-color: #f8f9fa;
+    color: #495057;
+    cursor: default;
+    border-color: #e9ecef;
+    opacity: 1;
   }
 
   &:not(:disabled):not(:read-only):focus {
@@ -207,8 +210,10 @@ input[type="checkbox"] {
   }
 }
 
+/* ✅ 針對 number 類型的特別處理 */
 input[type="number"].textline {
   text-align: right;
+  width: 120px; /* 數字輸入框可以更窄 */
 }
 
 .checks.inline {

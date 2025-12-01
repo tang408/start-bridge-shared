@@ -13,7 +13,7 @@
     <SharedInput
         id="budget"
         v-model="local.budget"
-        label="預計總費用(萬元)"
+        label="預計總費用(元)"
         type="number"
         :error="props.errors.budget"
         :readonly="readonly"
@@ -23,7 +23,7 @@
     <SharedInput
         id="selfFund"
         v-model="local.selfFund"
-        label="創業者自備款(萬元)"
+        label="創業者自備款(元)"
         type="number"
         :error="props.errors.selfFund"
         :readonly="readonly"
@@ -33,7 +33,7 @@
     <SharedInput
         id="totalFunding"
         v-model="local.totalFunding"
-        label="募資總額(萬元)"
+        label="募資總額(元)"
         type="number"
         :error="props.errors.totalFunding"
         readonly
@@ -42,7 +42,7 @@
     <!-- 單筆最低金額度 -->
     <SharedInput
         id="minAmount"
-        label="單筆最低額度(萬元)"
+        label="單筆最低額度(元)"
         type="number"
         v-model="local.minAmount"
         :error="props.errors.minAmount"
@@ -52,7 +52,7 @@
     <!-- 單筆最高金額度 -->
     <SharedInput
         id="amountRange"
-        label="額度級距(萬元) (一單位多少)"
+        label="額度級距(元) (一單位多少)"
         type="number"
         v-model="local.amountRange"
         :error="props.errors.amountRange"
@@ -151,11 +151,16 @@ async function getOfficialPartner() {
   try {
     const response = await officialPartnerApi.getOfficialPartner(formData);
     if (response && response.data) {
-      brandInfo.value = `【${response.data.name}】 【加盟預算: $${response.data.franchiseFee}萬】`;
+      brandInfo.value = `【${response.data.name}】 【加盟預算: $${fmtMoney(response.data.franchiseFee)}】`;
     }
   } catch (error) {
     console.error('載入品牌資訊失敗:', error);
   }
+}
+
+function fmtMoney(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  return Number(n).toLocaleString("zh-Hant-TW");
 }
 
 // 初始化

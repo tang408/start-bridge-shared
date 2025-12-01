@@ -33,6 +33,43 @@
 
           <div class="title">{{ p.title }}</div>
 
+          <!-- 🆕 修改進度條部分 -->
+          <div class="progress-wrap">
+            <!-- 雙層進度條 -->
+            <div class="progress-bar-container">
+              <div class="progress-bar-wrapper">
+                <!-- 橘色進度條（已完成）-->
+                <div
+                    class="progress-bar-fill completed"
+                    :style="{ width: `${p.completedProgress || 0}%` }"
+                >
+              <span class="progress-text" v-if="(p.completedProgress || 0) > 5">
+                {{ p.completedProgress }}%
+              </span>
+                </div>
+
+                <!-- 灰色進度條（審核中）-->
+                <div
+                    class="progress-bar-fill pending"
+                    :style="{
+                  width: `${p.pendingProgress || 0}%`,
+                  left: `${p.completedProgress || 0}%`
+                }"
+                >
+              <span class="progress-text" v-if="(p.pendingProgress || 0) > 5">
+                {{ p.pendingProgress }}%
+              </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 保持原有的文字顯示 -->
+            <div class="progress-footer mt-2">
+              <span class="dollar">已達成金額 {{ fmtMoney(p.completedAmount) }}</span>
+              <span class="remain">還差 {{ fmtMoney(p.remainingAmount) }}</span>
+            </div>
+          </div>
+
           <div class="steps-wrap">
             <div class="steps-bar">
           <span
@@ -96,12 +133,12 @@
             :disabled="p.paymentStatus === 1"
             @click.stop="handleUploadData(p)"
         >
-          上傳資料
+          上傳支付憑證
         </button>
 
         <!-- 簽約立案按鈕 -->
         <button
-            v-if="(p.status === 4 || p.status === 5)"
+            v-if="(p.status === 4 || p.status === 5 || p.status === 6 || p.status === 7)"
             type="button"
             class="btn-upload"
             :disabled="p.contractStatus === 1"
@@ -116,7 +153,7 @@
             class="btn-upload"
             @click.stop="handleButtonClick(p)"
         >
-          我已簽屬完成
+          我已簽署完成
         </button>
 
         <button
@@ -456,6 +493,7 @@
         v-model="formData[docStep]"
         :errors="formErrors[docStep]"
         @next="goNext"
+        @createPlanByDocument="createPlan"
         :step1Budget="formData.step1.budget"
         @submit="createPlan"
     />
@@ -995,6 +1033,11 @@ const router = useRouter();
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
 
+function fmtMoney(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  return Number(n).toLocaleString("zh-Hant-TW");
+}
+
 // PDF 相關引入
 import {usePdfGenerator} from "@/composables/usePDFGenerateor.js";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
@@ -1392,12 +1435,12 @@ async function loadPlanData(planId) {
 
       function parseReportSelectedMulti(text) {
         if (!text) return {};
-        
+
         const result = {};
-        const parts = text.split(", "); 
-        
+        const parts = text.split(", ");
+
         const reportOptions = formData.step5.reportOptions;
-        
+
         parts.forEach(part => {
           // Check if it matches any standard option
           const option = reportOptions.find(opt => opt.text === part);
@@ -1409,7 +1452,7 @@ async function loadPlanData(planId) {
             result.other = { checked: true, value: value };
           }
         });
-        
+
         return result;
       }
 
@@ -2030,7 +2073,7 @@ function convertFormData(formData, userId) {
     step5.reportOptions.forEach(option => {
       const key = option.key;
       const selection = step5.reportSelected[key];
-      
+
       if (selection && selection.checked) {
         if (key === 'other') {
           // For 'other', get the custom value
@@ -2245,6 +2288,7 @@ function convertFormData(formData, userId) {
 
 
   const step1 = formData.step1;
+  const step2 = formData.step2;
   const step3 = formData.step3;
   const step4 = formData.step4;
   const step5 = formData.step5;
@@ -2264,6 +2308,9 @@ function convertFormData(formData, userId) {
     expectedOpeningInfo: step1.expectedOpeningInfo || "",
     expectedOpeningDate: step1.expectedOpeningDate || "",
     brand: parseInt(step1.brand) || 0,
+
+    // (Step2)
+    document: step2.file.id || 0,
 
     // 創業經驗 (Step3)
     hasExperience: stringToBool(step3.hasStartupExp),
@@ -2344,6 +2391,7 @@ otherCostsTitle: (() => {
   };
 }
 
+
 async function createPlan() {
   const data = convertFormData(formData, currentUser.value);
 
@@ -2379,8 +2427,6 @@ async function createPlan() {
     isEditMode.value = false;
     editPlanId.value = null;
 
-    await router.push("/account/startup");
-    await getAllPlanByUser();
   } else {
     await NewAlert.show("操作失敗，請洽客服人員。");
   }
@@ -2454,6 +2500,20 @@ async function getAllPlanByUser() {
       paymentStatus: plan.paymentStatus || 0,
       contractStatus: plan.contractStatus || 0,
       companyStatus: plan.companyStatus || 0,
+
+      completedProgress: plan.completedProgress || 0,
+      pendingProgress: plan.pendingProgress || 0,
+      totalProgress: plan.totalProgress || 0,
+      completedAmount: plan.completedAmount || 0,
+      pendingAmount: plan.pendingAmount || 0,
+      totalParticipantAmount: plan.totalParticipantAmount || 0,
+      totalParticipants: plan.totalParticipants || 0,
+      pendingParticipants: plan.pendingParticipants || 0,
+      totalUniqueParticipants: plan.totalUniqueParticipants || 0,
+      remainingAmount: plan.remainingAmount || 0,
+      remainingParticipants: plan.remainingParticipants || 0,
+      canParticipate: plan.canParticipate,
+      maxParticipateAmount: plan.maxParticipateAmount || 0,
     }))
   } else {
     await NewAlert.show("注意！", response.message + " ,取得創業計劃列表失敗，請洽客服人員。");
@@ -3040,7 +3100,6 @@ async function getIndustryTypes() {
 
 .steps-wrap {
   position: relative;
-  background: #fff;
   margin-bottom: 2px;
   width: 80%;
   @media (max-width: 576px) {
@@ -4284,6 +4343,67 @@ hr {
       width: 100%;
       text-align: left;
     }
+  }
+}
+
+.progress-wrap {
+  margin-top: 16px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.progress-bar-wrapper {
+  position: relative;
+  width: 100%;
+  height: 32px;
+  background-color: #f0f0f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease, left 0.3s ease;
+
+  &.completed {
+    background: linear-gradient(90deg, #ff9a56 0%, #ff7b3d 100%);
+    left: 0;
+    z-index: 2;
+  }
+
+  &.pending {
+    background: linear-gradient(90deg, #d0d0d0 0%, #b0b0b0 100%);
+    z-index: 1;
+  }
+
+  .progress-text {
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.progress-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+
+  .dollar {
+    color: #ff7b3d;
+    font-weight: 600;
+  }
+
+  .remain {
+    color: #666;
   }
 }
 

@@ -1,130 +1,174 @@
 <template>
   <div class="form-group">
-    <label>{{ label }}</label>
-    <p v-if="desc" class="fs-14">{{ desc }}</p>
-    <div class="checks mt-2">
-      <div class="option" v-for="opt in options" :key="opt.value">
+    <label v-if="label" class="fg-label">{{ label }}</label>
+    <div class="radio-options">
+      <div
+          v-for="option in options"
+          :key="option.value"
+          class="radio-option"
+      >
         <input
-          type="radio"
-          :id="`${uid}-${opt.value}`"
-          :name="name || uid"
-          :value="opt.value"
-          :disabled="disabled"
-          v-model="model"
+            type="radio"
+            :id="`${uid}-${option.value}`"
+            :name="name"
+            :value="option.value"
+            :checked="modelValue === option.value"
+            @change="$emit('update:modelValue', option.value)"
+            :disabled="disabled"
         />
-        <label class="option-label" :for="`${uid}-${opt.value}`" :class="{ 'disabled': disabled }">
-          {{ opt.text }}
-        </label>
-        <input
-          v-if="opt.withInput"
-          class="textline ms-2"
-          type="text"
-          :value="(extra && extra[opt.value]) || ''"
-          :disabled="model !== opt.value"
-          @input="updateExtra($event.target.value, opt.value)"
-        />
+        <label :for="`${uid}-${option.value}`">{{ option.text }}</label>
+
+        <!-- ✅ 當選項被選中且有 withInput 時顯示輸入框 -->
+        <template v-if="option.withInput && modelValue === option.value">
+          <!-- 編輯模式 -->
+          <input
+              v-if="!disabled"
+              type="text"
+              :value="extra?.[option.value] || ''"
+              @input="$emit('update:extra', { ...extra, [option.value]: $event.target.value })"
+              class="radio-input"
+              placeholder="請輸入"
+          />
+
+          <!-- ✅ Readonly 模式 -->
+          <input
+              v-else
+              type="text"
+              :value="extra?.[option.value] || ''"
+              readonly
+              disabled
+              class="radio-input"
+          />
+        </template>
       </div>
     </div>
-    <p class="error-msg" v-if="error">{{ error }}</p>
+    <span v-if="error" class="error-text">{{ error }}</span>
   </div>
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-const model = defineModel({ type: String, default: "" });
-const extra = defineModel("extra");
+import { computed } from 'vue';
+
+defineOptions({ name: "SharedRadio" });
 
 const props = defineProps({
-  label: { type: String, required: true },
-  desc: { type: String, default: "" },
-  options: { type: Array, required: true },
-  required: { type: Boolean, default: false },
-  error: { type: String, default: "" },
-  name: { type: String, default: "" },
-  disabled: { type: Boolean, default: false },
+  id: String,
+  label: String,
+  modelValue: String,
+  extra: Object,
+  name: String,
+  options: Array,
+  error: String,
+  disabled: Boolean
 });
-const uid = computed(() => `rg-${Math.random().toString(36).slice(2, 9)}`);
-function updateExtra(val, optValue) {
-  extra.value = { ...extra.value, [optValue]: val };
-}
+
+defineEmits(['update:modelValue', 'update:extra']);
+
+const uid = computed(() => props.id || `radio-${Math.random().toString(36).slice(2, 9)}`);
 </script>
+
 <style lang="scss" scoped>
-.checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  width: 100%;
+.form-group {
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 
-.option {
+.fg-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-size: 15px;
+  color: #333;
+}
+
+.radio-options {
   display: flex;
-  align-items: flex-start; // 改成 flex-start,讓多行文字對齊更好看
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radio-option {
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
 
-  /* 沒有 textline 的選項,自動寬度 */
-  &:not(:has(.textline)) {
-    flex: 0 0 auto;
-  }
-
-  /* 有 textline 的選項,延伸到最右邊 */
-  &:has(.textline) {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
-  @media (max-width: 576px) {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
   input[type="radio"] {
-    flex-shrink: 0;
-    margin-top: 2px; // 微調對齊
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
   }
 
-  .option-label {
-    flex: 0 1 auto; // 改成 0 1 auto,允許文字換行
-    white-space: normal; // 允許換行
-    max-width: 100%; // 限制最大寬度
-    word-break: break-word; // 長英文單詞自動斷行
+  label {
+    padding-left: 28px;
+    position: relative;
     cursor: pointer;
+    line-height: 1.6;
+    font-weight: 400;
+    flex-shrink: 0;
 
-    &.disabled {
-      cursor: not-allowed;
-      opacity: 0.6;
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #bbb;
+      border-radius: 50%;
+      background: #fff;
+      position: absolute;
+      left: 0;
+      top: 2px;
+      transition: all 0.2s;
+      box-sizing: border-box;
     }
   }
 
-  .textline {
+  input:checked + label::before {
+    background: #ff6634;
+    border-color: #ff6634;
+    box-shadow: 0 0 0 2px rgba(255, 102, 52, 0.2);
+  }
+
+  input:checked + label::after {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  input:disabled + label {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .radio-input {
+    padding: 8px 12px;
+    margin-left: 0.5rem;
     flex: 1;
-    min-width: 0;
-    max-width: none;
-    padding: 6px 12px;
-    border: 1px solid #ccc;
+    max-width: 100%;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: 14px;
 
-    &:disabled {
-      background-color: #f5f5f5;
-      cursor: not-allowed;
-    }
-
-    @media (max-width: 576px) {
-      flex: 1 1 100%;
-      margin-left: 0;
+    /* ✅ Readonly 樣式 */
+    &:disabled,
+    &[readonly] {
+      background-color: #f8f9fa;
+      color: #495057;
+      cursor: default;
+      border-color: #e9ecef;
     }
   }
 }
 
-.error-msg {
-  color: #f44336;
-  font-size: 14px;
-  margin-top: 6px;
-}
-
-.fs-14 {
-  font-size: 14px;
-  color: #666;
+.error-text {
+  font-size: 13px;
+  color: #db3838;
   margin-top: 4px;
-  margin-bottom: 8px;
+  display: block;
 }
 </style>
