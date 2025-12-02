@@ -1062,7 +1062,7 @@ function getStatusText(status) {
     case 0:
       return '無須審核';
     case 1:
-      return '創業者資料待審核';
+      return '創業計劃書與身分文件審核中';
     case 2:
       return '業務初審通過';
     case 3:

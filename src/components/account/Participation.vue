@@ -6,7 +6,6 @@
         v-model="activeTab"
         :tabs="[
         { label: '共創進度', value: 'progress' },
-        { label: '共創明細', value: 'details' },
         { label: '共創紀錄', value: 'records' },
       ]"
     />
@@ -77,117 +76,88 @@
             </div>
           </div>
         </button>
-      </article>
-    </div>
 
-    <!-- 共創明細 -->
-    <div v-else-if="activeTab === 'details'" class="details">
-      <article
-          v-for="p in details"
-          :key="p.id"
-          class="article-card"
-          :class="{ expanded: expandedDetailsId === p.id }"
-      >
-        <button
-            type="button"
-            class="summary"
-            @click="toggleDetails(p.id)"
-            :aria-expanded="expandedDetailsId === p.id ? 'true' : 'false'"
-            :aria-controls="`details-${p.id}`"
-        >
-          <header class="card-head">
-            <span class="status-pill" :class="statusClass(p.status)">
-              {{ statusLabel(p.status) }}
-            </span>
-            <span class="time" v-if="isRunning(p.status)">
-              剩餘 {{ p.lastUpdate }}
-            </span>
-            <span class="time" v-if="p.status === 'match-failed'">退款中</span>
-          </header>
+        <!-- 展開的明細內容 -->
+        <div v-if="expandedId === p.id" class="detail-panel" :id="`details-${p.id}`">
+          <hr/>
+          <div class="tx-list">
+            <div
+                v-for="(t, i) in p.transactions"
+                :key="i"
+                class="tx-row"
+            >
+              <div class="tx-date">{{ t.date }}</div>
 
-          <div class="title">{{ p.title }}</div>
-          <div>
-            <div class="detail-panel" :id="`details-${p.id}`">
-              <div class="tx-list">
-                <div
-                    v-for="(t, i) in p.transactions"
-                    :key="i"
-                    class="tx-row"
+              <!-- 根據狀態顯示不同按鈕 -->
+              <div class="tx-btn">
+                <button
+                    v-if="t.status === 5 || t.status === 6"
+                    type="button"
+                    @click="handleSignCoreContract(t, p)"
                 >
-                  <div class="tx-date">{{ t.date }}</div>
+                  簽署平台合約
+                </button>
 
-                  <!-- 根據狀態顯示不同按鈕 -->
-                  <div class="tx-btn">
-                    <button
-                        v-if="t.status === 5 || t.status === 6"
-                        type="button"
-                        @click="handleSignCoreContract(t, p)"
-                    >
-                      簽署平台合約
-                    </button>
+                <button
+                    v-if="t.status === 6"
+                    type="button"
+                    @click="handleSignCoreContractSubmit(t, p)"
+                >
+                  我已簽署完成
+                </button>
 
-                    <button
-                        v-if="t.status === 6"
-                        type="button"
-                        @click="handleSignCoreContractSubmit(t, p)"
-                    >
-                      我已簽署完成
-                    </button>
+                <button
+                    v-if="t.status === 11"
+                    type="button"
+                    @click="handlePayServiceFee(t, p)"
+                >
+                  支付服務費
+                </button>
 
-                    <button
-                        v-if="t.status === 11"
-                        type="button"
-                        @click="handlePayServiceFee(t, p)"
-                    >
-                      支付服務費
-                    </button>
-
-                    <button
-                        v-if="t.status === 13"
-                        type="button"
-                        @click="handleUploadCorePlanFinalContract(t, p)"
-                    >
-                      上傳合約
-                    </button>
-                  </div>
-                  <div class="tx-label">{{ t.invest }}</div>
-                  <div class="tx-status">
-                    {{ txStatusLabel(t.statusKey) }}
-                  </div>
-                  <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
-                </div>
+                <button
+                    v-if="t.status === 13"
+                    type="button"
+                    @click="handleUploadCorePlanFinalContract(t, p)"
+                >
+                  上傳合約
+                </button>
               </div>
-              <hr/>
-            </div>
-
-            <div class="details-dollar d-flex justify-content-end">
-              <span>共創總額</span>
-              <span class="details-dollar-content">
-                {{ fmtMoney(p.dollar) }}
-              </span>
-            </div>
-
-            <!-- 增加金額表單 -->
-            <div class="form-row mt-5" v-if="p.status === 'running'">
-              <input
-                  type="text"
-                  class="form-input"
-                  v-model="p.increaseAmountStr"
-                  @input="onAmountInput(p)"
-                  @blur="onAmountBlur(p)"
-                  inputmode="numeric"
-                  placeholder="請輸入追加金額"
-              />
-              <button
-                  type="button"
-                  class="btn-dollar"
-                  @click="handleIncrease(p)"
-              >
-                增加金額
-              </button>
+              <div class="tx-label">{{ t.invest }}</div>
+              <div class="tx-status">
+                {{ txStatusLabel(t.statusKey) }}
+              </div>
+              <div class="tx-amount">{{ fmtMoney(t.amount) }}</div>
             </div>
           </div>
-        </button>
+          <hr/>
+
+          <div class="details-dollar d-flex justify-content-end">
+            <span>共創總額</span>
+            <span class="details-dollar-content">
+              {{ fmtMoney(p.totalAmount) }}
+            </span>
+          </div>
+
+          <!-- 增加金額表單 -->
+          <div class="form-row mt-5" v-if="p.status === 'running'">
+            <input
+                type="text"
+                class="form-input"
+                v-model="p.increaseAmountStr"
+                @input="onAmountInput(p)"
+                @blur="onAmountBlur(p)"
+                inputmode="numeric"
+                placeholder="請輸入追加金額"
+            />
+            <button
+                type="button"
+                class="btn-dollar"
+                @click="handleIncrease(p)"
+            >
+              增加金額
+            </button>
+          </div>
+        </div>
       </article>
     </div>
 
@@ -465,7 +435,6 @@ const props = defineProps({
 // ==================== 狀態管理 ====================
 const activeTab = ref("progress");
 const expandedId = ref(null);
-const expandedDetailsId = ref(null);
 const mode = ref("account");
 
 // 表單
@@ -474,7 +443,6 @@ const errors = reactive({agree: ""});
 
 // 數據
 const projects = ref([]);
-const details = ref([]);
 const records = ref([]);
 const projectsData = ref([]);
 
@@ -574,10 +542,6 @@ function toggle(id) {
   expandedId.value = expandedId.value === id ? null : id;
 }
 
-function toggleDetails(id) {
-  expandedDetailsId.value = expandedDetailsId.value === id ? null : id;
-}
-
 // 格式化金額
 function fmtMoney(n) {
   if (n === null || n === undefined || isNaN(n)) return "—";
@@ -631,6 +595,30 @@ async function getAllParticipantPlanByUser() {
     });
 
     if (response.code === 0 && response.data !== null) {
+      // 同時獲取明細數據
+      const detailsResponse = await planApi.getAllParticipantPlanDetailByUser({
+        userId: currentUser.value,
+      });
+
+      // 創建一個 map 來存儲每個計畫的交易明細
+      const transactionsMap = new Map();
+      const totalAmountMap = new Map();
+      
+      if (detailsResponse.code === 0 && detailsResponse.data !== null) {
+        detailsResponse.data.forEach((plan) => {
+          const transactions = plan.participantData.map((tx) => ({
+            id: tx.id,
+            date: tx.date,
+            status: tx.status,
+            statusKey: formatStatusKey(tx.status),
+            amount: tx.amount,
+            invest: tx.action === 1 ? '初次投入' : '追加投入',
+          }));
+          transactionsMap.set(plan.planId, transactions);
+          totalAmountMap.set(plan.planId, plan.participantTotalAmount);
+        });
+      }
+
       projects.value = response.data.map((plan) => {
         const progress = plan.targetAmount > 0
             ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
@@ -656,6 +644,10 @@ async function getAllParticipantPlanByUser() {
           goal: plan.targetAmount,
           showFundBox: true,
           fav: false,
+          // 新增交易明細和總額
+          transactions: transactionsMap.get(plan.planId) || [],
+          totalAmount: totalAmountMap.get(plan.planId) || 0,
+          increaseAmountStr: '',
         };
       });
     } else {
@@ -663,43 +655,6 @@ async function getAllParticipantPlanByUser() {
     }
   } catch (error) {
     console.error('獲取參與計畫錯誤:', error);
-  }
-}
-
-// 獲取參與計畫明細
-async function getAllParticipantPlanDetailByUser() {
-  try {
-    const response = await planApi.getAllParticipantPlanDetailByUser({
-      userId: currentUser.value,
-    });
-
-    if (response.code === 0 && response.data !== null) {
-      details.value = response.data.map((plan) => {
-        const status = mapPlanStatus(plan.currentStep);
-        const transactions = plan.participantData.map((tx) => ({
-          id: tx.id,
-          date: tx.date,
-          status: tx.status,
-          statusKey: formatStatusKey(tx.status),
-          amount: tx.amount,
-          invest: tx.action === 1 ? '初次投入' : '追加投入',
-        }));
-
-        return {
-          id: plan.planId,
-          status: status,
-          lastUpdate: calculateTimeRemaining(plan.endDate),
-          title: plan.planName,
-          dollar: plan.participantTotalAmount,
-          transactions: transactions,
-          increaseAmountStr: '',
-        };
-      });
-    } else {
-      console.error('獲取計畫明細失敗:', response.message);
-    }
-  } catch (error) {
-    console.error('獲取計畫明細錯誤:', error);
   }
 }
 
@@ -1053,7 +1008,6 @@ async function refreshAllData() {
   await Promise.all([
     getSystemSetting(),
     getAllParticipantPlanByUser(),
-    getAllParticipantPlanDetailByUser(),
     getAllParticipantPlanRecordByUser(),
   ]);
 }
@@ -1263,6 +1217,15 @@ async function handleCorePlanFinalContractSubmit() {
     border: 1px solid #dfdfdf;
     background: #dfdfdf;
     color: #555555;
+  }
+}
+
+.detail-panel {
+  padding: 20px 4px 4px;
+  margin-top: 10px;
+  
+  hr {
+    margin: 16px 0;
   }
 }
 
