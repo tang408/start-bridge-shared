@@ -158,19 +158,11 @@ SwiperCore.use([Pagination]);
 
 const isLoggedIn = () => !!localStorage.getItem("token");
 const handleStartup = () => {
-  if (isLoggedIn()) {
-    router.push("/account/startup?step=step1");
-  } else {
-    router.push("/login");
-  }
+    router.push("/cooperative-brand");
 };
 
 const handleCoCreate = () => {
-  if (isLoggedIn()) {
-    router.push("/account/participation");
-  } else {
-    router.push("/login");
-  }
+    router.push("/project");
 };
 
 const goToBrand = () => {

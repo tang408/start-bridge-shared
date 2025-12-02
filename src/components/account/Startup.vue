@@ -100,7 +100,7 @@
                 <button
                     type="button"
                     class="text-link"
-                    @click.stop="handlePDFPreviewClick(p.id)"
+                    @click.stop="handlePDFPreviewClick(p)"
                 >
                   創業計劃書
                 </button>
@@ -141,7 +141,6 @@
             v-if="(p.status === 4 || p.status === 5 || p.status === 6 || p.status === 7)"
             type="button"
             class="btn-upload"
-            :disabled="p.contractStatus === 1"
             @click.stop="handleSignContract(p)"
         >
           簽署平台合約
@@ -1258,11 +1257,17 @@ async function handleBtn2Click(planId) {
 }
 
 // PDF 預覽功能
-async function handlePDFPreviewClick(planId) {
+async function handlePDFPreviewClick(plan) {
+  if (plan.documentUrl != null && plan.documentUrl !== '') {
+    // 如果已有上傳的 PDF 文件，直接在新分頁打開
+    window.open(plan.documentUrl, '_blank');
+    return;
+  }
+
   // 跳轉到獨立的 PDF 預覽頁面
   const routeData = router.resolve({
     name: 'StartupPDFPreview',
-    params: {planId: planId}
+    params: {planId: plan.id}
   });
 
   window.open(routeData.href, '_blank');
@@ -1905,6 +1910,8 @@ const formErrors = reactive({
 });
 
 function goNext(nextStep) {
+  // 顯示資料
+  console.log("目前表單資料:", JSON.stringify(formData));
   if (Object.keys(STEPS).includes(nextStep)) {
     docStep.value = nextStep;
 
@@ -2414,9 +2421,12 @@ async function createPlan() {
     if (!isEditMode.value) {
 
       // 前往個人頁面上傳文件
-      const result = await NewAlert.confirm("創業計劃書提交成功", "請前往「個人專區」上傳相關文件。")
+      const result = await NewAlert.confirm("創業計劃書提交成功", "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。")
       if (result) {
-        await router.push({path: "/account/profile"});
+        await router.push({
+          path: "/account/profile",
+          query: { tab: "founder"}
+        });
       }
     } else {
       // 編輯模式下的提示
@@ -2500,6 +2510,7 @@ async function getAllPlanByUser() {
       paymentStatus: plan.paymentStatus || 0,
       contractStatus: plan.contractStatus || 0,
       companyStatus: plan.companyStatus || 0,
+      documentUrl: plan.documentUrl || '',
 
       completedProgress: plan.completedProgress || 0,
       pendingProgress: plan.pendingProgress || 0,

@@ -38,7 +38,8 @@
               <td data-label="金額(元)">
                 <SharedInput
                   :id="`amount-${idx}`"
-                  type="number"
+                  type="text"
+                  :format-number="true"
                   v-model="row.amount"
                   placeholder="輸入金額"
                   :readonly="readonly"
@@ -55,6 +56,25 @@
       <div>
         <div class="mb-3">
           <label class="fg-label">2. 「營運期間」損益成本結構 (%數)</label>
+          <!-- 手機版：表格外顯示 -->
+          <div class="revenue-target-mobile">
+            <div class="th-number">
+              以營業額目標：
+              <SharedInput
+                  id="targetRevenue-mobile"
+                  v-model="local.targetRevenue"
+                  type="text"
+                  :format-number="true"
+                  placeholder="輸入金額"
+                  class="inline-input w-110 p-510 border-1"
+                  :readonly="readonly"
+              />
+              為標準預期所需比例之佔比：
+            </div>
+            <p v-if="errors.targetRevenue" class="error-msg">
+              {{ errors.targetRevenue }}
+            </p>
+          </div>
           <table class="records-table w-100 mt-2">
             <thead>
               <tr>
@@ -64,6 +84,8 @@
                     <SharedInput
                       id="targetRevenue"
                       v-model="local.targetRevenue"
+                      type="text"
+                      :format-number="true"
                       placeholder="輸入金額"
                       class="inline-input w-110 p-510 border-1"
                       :readonly="readonly"
@@ -103,7 +125,8 @@
                 <td data-label="金額">
                   <SharedInput
                     :id="`amount-dollar-${idx}`"
-                    type="number"
+                    type="text"
+                    :format-number="true"
                     v-model="row.amount"
                     placeholder="金額"
                     class="p-510"
@@ -139,7 +162,8 @@
               若當月營業額達
               <SharedInput
                 id="rewardAmount"
-                type="number"
+                type="text"
+                :format-number="true"
                 v-model="local.rewardAmount"
                 placeholder="金額"
                 class="inline-input w-110 p-510"
@@ -538,6 +562,32 @@ function submitStep() {
         flex: 0 0 40%;
       }
     }
+  }
+}
+
+// 預設隱藏手機版
+.revenue-target-mobile {
+  display: none;
+}
+
+// 手機版：顯示手機版，隱藏桌面版
+@media (max-width: 576px) {
+  .revenue-target-mobile {
+    display: block;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .revenue-target-desktop {
+    display: none;
+  }
+
+  .th-number {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
 </style>

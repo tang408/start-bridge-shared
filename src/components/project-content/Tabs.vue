@@ -353,26 +353,26 @@ async function goToParticipation() {
   if (response.code === 0) {
     userData.value = response.data;
 
-    // 檢查用戶基本資料
-    if (userData.value.userInfoData) {
-      const userInfo = userData.value.userInfoData;
-
-      if (!userInfo.lineId || userInfo.lineId === "") {
-        const result = await NewAlert.favorite(
-            "資料不齊全",
-            "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
-        );
-
-        if (result === 'favorite') {
-          await handleUserFavoritePlan();
-          return;
-        } else if (result === 'push') {
-          await router.push({path: "/account/profile"});
-          return;
-        }
-        return;
-      }
-    }
+    // // 檢查用戶基本資料
+    // if (userData.value.userInfoData) {
+    //   const userInfo = userData.value.userInfoData;
+    //
+    //   if (!userInfo.lineId || userInfo.lineId === "") {
+    //     const result = await NewAlert.favorite(
+    //         "資料不齊全",
+    //         "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+    //     );
+    //
+    //     if (result === 'favorite') {
+    //       await handleUserFavoritePlan();
+    //       return;
+    //     } else if (result === 'push') {
+    //       await router.push({path: "/account/profile"});
+    //       return;
+    //     }
+    //     return;
+    //   }
+    // }
 
     // 檢查創業者資料
     if (userData.value.coreFounderData) {

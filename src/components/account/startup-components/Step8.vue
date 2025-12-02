@@ -103,32 +103,65 @@ function submitStep() {
   min-width: 576px;
   margin: 0 auto;
 
+  @media (max-width: 576px) {
+    min-width: auto; // 移除最小寬度限制
+    width: 100%;
+    padding: 0 16px; // 增加左右內距
+  }
 }
+
 .desc {
   font-size: $fs-15;
   margin-bottom: 12px;
+
+  @media (max-width: 576px) {
+    font-size: 14px; // 稍微縮小字體
+  }
 }
+
 .desc-list {
   font-size: $fs-15;
   line-height: 1.6;
   padding-left: 0;
+
+  @media (max-width: 576px) {
+    font-size: 14px;
+    padding-left: 0;
+  }
+
   li {
     margin-bottom: 8px;
+    word-break: break-word; // 新增：允許長單詞換行
+
+    @media (max-width: 576px) {
+      margin-bottom: 12px; // 增加間距提升可讀性
+    }
   }
+
   .sub {
     margin-top: 6px;
     margin-left: 1em;
     font-size: $fs-15;
     line-height: 1.5;
+    word-break: break-word; // 新增：允許長單詞換行
+
+    @media (max-width: 576px) {
+      font-size: 13px;
+      margin-left: 0.5em; // 縮小縮排
+    }
   }
 }
+
 .agree-box {
   font-size: $fs-15;
   margin-top: 20px;
   gap: 10px;
   display: flex;
+
   @media (max-width: 576px) {
-    display: grid;
+    display: flex; // 改為 flex 而不是 grid
+    flex-direction: column; // 垂直排列
+    gap: 12px;
   }
 }
 
@@ -139,6 +172,11 @@ function submitStep() {
   cursor: pointer;
   margin-right: 16px;
   font-size: 15px;
+
+  @media (max-width: 576px) {
+    margin-right: 0;
+    font-size: 14px;
+  }
 
   input[type="radio"] {
     position: absolute;
@@ -152,6 +190,7 @@ function submitStep() {
     border: 2px solid #bbb;
     border-radius: 50%;
     margin-right: 8px;
+    flex-shrink: 0; // 新增：防止圓圈被壓縮
     box-sizing: border-box;
     transition: border-color 0.2s, background-color 0.2s;
   }
@@ -170,6 +209,19 @@ function submitStep() {
     height: 8px;
     border-radius: 50%;
     background: #fff;
+  }
+}
+
+// 新增：針對整個表單的響應式處理
+@media (max-width: 576px) {
+  .fs-14 {
+    font-size: 13px !important;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  .error-msg {
+    font-size: 12px;
   }
 }
 </style>

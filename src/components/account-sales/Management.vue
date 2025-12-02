@@ -136,9 +136,12 @@
           <div
               v-for="participant in planInfo.participantPlanInfo"
               :key="participant.id"
-              class="mb-2"
+              class="participant-item mb-2"
+              :class="{ 'highlight-participant': isParticipantHighlighted(participant.id) }"
           >
-            <div>姓名：{{ participant.name }} | 狀態：{{ getParticipantStatus(participant.status) }} |
+            <div>
+              姓名：{{ participant.name }} |
+              狀態：{{ getParticipantStatus(participant.status) }} |
               投入金額：{{ formatAmount(participant.amount) }} 元
             </div>
           </div>
@@ -474,6 +477,7 @@
       @update:modelValue="handleCloseDocDialog"
       class="doc-modal"
       titleAlign="center"
+      :large="true"
   >
     <div class="modal-content-wrapper">
       <div class="modal-section text-center">
@@ -638,10 +642,20 @@ const displayedProjects = computed(() => {
   return list;
 });
 
-// 查看專案詳情
+// 添加高亮狀態
+const highlightParticipantId = ref(null);
+
+// 修改 viewProject 函數
 async function viewProject(row) {
   selectedProject.value = row;
-  // 一般專案詳情
+
+  // 如果是共創者（planType === 2），記錄當前的 participantPlanId 用於高亮
+  if (row.planType === 2 && row.participantPlanId) {
+    highlightParticipantId.value = row.participantPlanId;
+  } else {
+    highlightParticipantId.value = null;
+  }
+
   const formData = {
     salesId: currentSales.value,
     userId: row.userId,
@@ -659,6 +673,7 @@ async function viewProject(row) {
     if (response.code === 0) {
       planInfo.value = response.data;
       showModal.value = true;
+
     }
   } catch (error) {
     console.error('獲取專案詳情失敗:', error);
@@ -673,11 +688,15 @@ async function viewProject(row) {
   const contractRes = await salesApi.getPlanFinalContractBySales(contractFormData);
   if (contractRes.code === 0) {
     planContractInfo.value = contractRes.data;
-    console.log(planContractInfo.value)
   } else {
     planContractInfo.value = {};
-    console.log(planContractInfo.value)
   }
+}
+
+
+// 檢查是否需要高亮
+function isParticipantHighlighted(participantId) {
+  return highlightParticipantId.value === participantId;
 }
 
 // 格式化金額
@@ -928,12 +947,14 @@ const openCertificationDialog = (type,url) => {
 
 
 
-// 關閉 Modal 時清空資料
+// 關閉 Modal 時清空高亮
 function handleClose() {
   showModal.value = false;
   selectedProject.value = {};
   planInfo.value = {};
+  highlightParticipantId.value = null; // 清空高亮
 }
+
 
 // 組件掛載
 onMounted(async () => {
@@ -1285,4 +1306,27 @@ const getStatusClass = (type, status) =>
   background-color: #faad14;
   color: white;
 }
+
+// 共創者列表項目
+.participant-item {
+  padding: 4px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+
+  div {
+    font-size: 14px;
+    line-height: 1.8;
+  }
+}
+
+// 高亮的共創者
+.highlight-participant {
+  background-color: #fff5f5;
+  div {
+    color: #ff6634;
+    font-weight: 600;
+  }
+}
+
 </style>

@@ -55,6 +55,7 @@ const props = defineProps({
   confirmText: { type: String, default: "送出" },
   mode: { type: String, default: "confirm" },
   titleAlign: { type: String, default: "left" },
+  large: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -113,6 +114,11 @@ function submit() {
   width: 100%;
   background: #ffffffe6;
   box-shadow: 4px 4px 20px #0000000d;
+
+  &.has-image {
+    max-width: 90vw; // 使用視窗寬度的 90%
+    max-height: 90vh; // 使用視窗高度的 90%
+  }
 }
 
 .modal-title {
@@ -132,6 +138,14 @@ function submit() {
   font-size: 14px;
   line-height: 1.6;
   color: #333;
+
+  .doc-image {
+    width: 100%;
+    height: auto;
+    max-height: 70vh; // 最大高度為視窗的 70%
+    object-fit: contain; // 保持比例，完整顯示
+    border-radius: 8px;
+  }
 }
 
 .modal-footer {

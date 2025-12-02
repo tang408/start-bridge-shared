@@ -119,11 +119,11 @@
                   <!-- 根據狀態顯示不同按鈕 -->
                   <div class="tx-btn">
                     <button
-                        v-if="t.status === 5"
+                        v-if="t.status === 5 || t.status === 6"
                         type="button"
                         @click="handleSignCoreContract(t, p)"
                     >
-                      簽名
+                      簽署平台合約
                     </button>
 
                     <button
@@ -725,12 +725,19 @@ async function getAllParticipantPlanRecordByUser() {
           1: '成功',
           2: '失敗',
         };
+
+        const getStatusInfo = (status) => {
+          if (status >= 10) return 1; // 成功
+          if (status === 2 || status === 9 || status < 0) return 2; // 失敗
+          return 0; // 審核中
+        };
+
         return {
           id: record.id,
           date: record.date,
           title: record.planName,
           action: actionMap[record.action] || '未知',
-          status: statusMap[record.transactionStatus] || '未知',
+          status: statusMap[getStatusInfo(record.status)] || '未知',
           amount: record.amount,
         };
       });
@@ -840,15 +847,18 @@ async function participate(p) {
     });
 
     if (response.code === 0) {
-      const result = await NewAlert.confirm("共創專案提交成功","請前往「個人專區」上傳相關文件。")
+      const result = await NewAlert.confirm("共創專案提交成功","將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。")
       if (result) {
-        await router.push({ path: "/account/profile" });
+        await router.push({
+          path: "/account/profile",
+          query: { tab: "cofounder" }
+        });
       } else {
         await router.push('/account/participation');
         await refreshAllData();
       }
     } else {
-      await NewAlert.show("參與失敗", response.message + " ,請洽客服人員。");
+      await NewAlert.show("參與失敗", response.message + " ,若欲增加媒合額度，請聯繫客服人員諮詢。");
     }
   } catch (error) {
     console.error('參與共創錯誤:', error);

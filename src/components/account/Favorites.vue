@@ -133,6 +133,7 @@ const creatorCards = computed(() => {
     price: `${plan.remainingDays}天`,
     supporters: `${plan.views}人關注`,
     favorite: true, // 在收藏頁面中預設為已收藏
+    documentUrl: plan.documentUrl || "",
   }));
 });
 
@@ -196,18 +197,18 @@ async function handleCreatePlan(card) {
     // 檢查創業者資料
     if (userData.value.founderInfoData) {
       const founderInfo = userData.value.founderInfoData;
-      const userInfo = userData.value.userInfoData;
+      // const userInfo = userData.value.userInfoData;
 
       if (
           founderInfo.city === 0 ||
           founderInfo.workStatus === "" ||
-          founderInfo.expectIndustryType === 0 ||
-          userInfo.lineId === ""
+          founderInfo.expectIndustryType === 0
+          // userInfo.lineId === ""
       ) {
         // ✅ 使用 favorite 模式彈窗
         const result = await NewAlert.confirm(
             "資料不齊全",
-            "請完善會員資料(其他聯繫方式、所在的區域、工作狀態、預計加盟產業)後，再申請創業計畫，您可以選擇先收藏此計畫或前往完善資料"
+            "請完善會員資料(所在的區域、工作狀態、預計加盟產業)後，再申請創業計畫，您可以選擇先收藏此計畫或前往完善資料"
         );
 
         if (result === 'confirm') {
@@ -256,6 +257,10 @@ async function handleCreatePlan(card) {
 }
 
 async function handlePDFPreviewClick(plan) {
+  if (plan.documentUrl !== "" && plan.documentUrl !== null) {
+    window.open(plan.documentUrl, '_blank');
+    return;
+  }
   // 跳轉到獨立的 PDF 預覽頁面
   const routeData = router.resolve({
     name: 'StartupPDFPreview',
