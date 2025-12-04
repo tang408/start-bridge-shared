@@ -62,6 +62,22 @@
             ></div>
             <p v-else class="text-muted">暫無品牌介紹</p>
           </div>
+          <div class="brand-intro-section">
+            <h3 class="section-title">預計開業區域/坪數/店面狀況：</h3>
+            <div
+                v-if="props.planData?.expectedOpeningInfo"
+                class="brand-intro-content"
+            >{{ props.planData?.expectedOpeningInfo}}</div>
+            <p v-else class="text-muted">未提供</p>
+          </div>
+          <div class="brand-intro-section">
+            <h3 class="section-title">預計開業時間：</h3>
+            <div
+                v-if="props.planData?.expectedOpeningDate"
+                class="brand-intro-content"
+            >{{ props.planData?.expectedOpeningDate}}</div>
+            <p v-else class="text-muted">未提供</p>
+          </div>
 
           <!-- 專案進度 -->
           <div class="project-progress-section">
@@ -428,6 +444,11 @@ const handleViewBusinessPlan = async () => {
 
   if (!props.planData?.id) {
     await NewAlert.show("錯誤", "無法取得計劃書資訊");
+    return;
+  }
+
+  if (props.planData.documentUrl != null && props.planData.documentUrl !== '' ) {
+    window.open(props.planData.documentUrl, '_blank');
     return;
   }
 

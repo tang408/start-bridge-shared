@@ -85,6 +85,7 @@ function transformApiDataToItems(apiData) {
     supporters: `${item.views} 人瀏覽`,
     progress: Math.round(item.progress || 0),
     favorite: userFavorites.value.includes(item.id), // 檢查是否在收藏列表中
+    expectedOpeningInfo: item.expectedOpeningInfo || '', // 預計開業區域
     to: { name: "ProjectDetail", params: { id: item.id } },
   }));
 }
@@ -100,7 +101,7 @@ async function getAllPlan(refreshFavorites = false) {
       feature: currentFilters.value.feature || 0,
     };
 
-    const promises = [PlanApi.getAllPlan(formData)];
+    const promises = [await PlanApi.getAllPlan(formData)];
 
     // 只在需要時重新獲取收藏狀態
     if (refreshFavorites) {
@@ -157,7 +158,7 @@ const filtersA = computed(() => [
     anyLabel: "不限",
     options: [
       { value: 1, label: "缺創業夥伴" },
-      { value: 2, label: "有募資進度" },
+      { value: 2, label: "有媒合進度" },
       { value: 3, label: "已結束" },
       { value: 4, label: "最新上架" },
     ],

@@ -355,7 +355,9 @@ function submitStep() {
   const costStructTotalAmount = local.costStruct.find(
     (row) => row.item === "總計"
   )?.amount;
-  if (costStructTotalAmount !== local.targetRevenue) {
+  if (Number(costStructTotalAmount) !== Number(local.targetRevenue)) {
+    console.log('costStructTotalAmount:', costStructTotalAmount, typeof costStructTotalAmount);
+    console.log('targetRevenue:', local.targetRevenue, typeof local.targetRevenue);
     props.errors.costStruct = "成本結構總計金額須等於營業額目標金額";
   }
 

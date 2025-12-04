@@ -35,6 +35,10 @@ export const userCheckApi = {
 
     async updateCompanyInfoByUser(params = {}) {
         return api.post("/f/private/user-check/update-company-info-by-user", params);
+    },
+
+    async agreeContractTermsByUser(params = {}) {
+        return api.post("/f/private/user-check/agree-contract-terms-by-user", params);
     }
 
 }

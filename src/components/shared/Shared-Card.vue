@@ -49,6 +49,11 @@
         {{ card.title }}
       </div>
 
+      <!-- 預計開業區域 -->
+      <div v-if="card.expectedOpeningInfo" class="expected-opening-info">
+        📍 {{ card.expectedOpeningInfo }}
+      </div>
+
       <div class="progress-section-card-progress-bar" v-if="showProgress">
         <div
             class="progress-section-card-progress-bar-inner"
@@ -269,6 +274,19 @@ async function toggleFavorite(newVal) {
   }
 }
 
+/* 品牌卡片的圖片樣式 - 保持原始比例 */
+.progress-section-card:has(.progress-sction-card-info-extra .info-row) .common-image {
+  height: auto;
+  min-height: 150px;
+  max-height: 250px;
+  object-fit: contain;
+  
+  @media (max-width: 767px) {
+    min-height: 145px;
+    max-height: 200px;
+  }
+}
+
 /* 標籤覆蓋層 - 貼近圖片底部並排顯示 */
 .card-tags-overlay {
   position: absolute;
@@ -353,6 +371,12 @@ async function toggleFavorite(newVal) {
       margin: auto;
       gap: $gap-5;
     }
+    
+    // 品牌卡片使用自適應高度
+    &:has(.progress-sction-card-info-extra .info-row) {
+      height: auto;
+      min-height: 320px;
+    }
 
     &-tags {
       margin: 10px 0;
@@ -396,10 +420,27 @@ async function toggleFavorite(newVal) {
       text-overflow: ellipsis;
       display: -webkit-box;
       -webkit-line-clamp: 2; // 最多顯示 2 行
+      line-clamp: 2; // 標準屬性
       -webkit-box-orient: vertical;
 
       @media (max-width: 767px) {
         font-size: $fs-15;
+      }
+    }
+
+    // 預計開業區域樣式
+    .expected-opening-info {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      @media (max-width: 767px) {
+        font-size: 12px;
       }
     }
 

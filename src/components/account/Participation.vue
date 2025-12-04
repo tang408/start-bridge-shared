@@ -138,6 +138,40 @@
             </span>
           </div>
 
+          <!-- 合約檢視區塊 -->
+          <div v-if="p.planFinalContractUrl" class="contract-section mt-4">
+            <div class="contract-link-wrapper">
+              <a
+                  :href="p.planFinalContractUrl"
+                  target="_blank"
+                  class="contract-link"
+                  @click.stop
+              >
+                📄 檢視合約
+              </a>
+            </div>
+
+            <div class="contract-actions mt-3">
+              <button
+                  type="button"
+                  class="btn-contract-agree"
+                  @click.stop="agreeContractTermsByUser(p)"
+              >
+                我同意雙方合約條例
+              </button>
+
+              <button
+                  type="button"
+                  class="btn-contract-adjust"
+                  :class="{ 'notified': p.adjustmentRequested }"
+                  :disabled="p.adjustmentRequested"
+                  @click.stop="handleRequestAdjustment(p)"
+              >
+                {{ p.adjustmentRequested ? '已通知' : '尚有調整意願' }}
+              </button>
+            </div>
+          </div>
+
           <!-- 增加金額表單 -->
           <div class="form-row mt-5" v-if="p.status === 'running'">
             <input
@@ -270,7 +304,7 @@
                   class="progress-inner"
                   :style="{ width: p.progress + '%' }"
               ></div>
-              <div class="progress-text">募資進度 {{ p.progress }}%</div>
+              <div class="progress-text">媒合進度 {{ p.progress }}%</div>
             </div>
 
             <div class="progress-footer mt-2">
@@ -370,26 +404,52 @@
   </SharedModal>
 
   <SharedModal
-    v-model="showCorePlanFinalContractDialog"
-    title="合約上傳"
-    mode="submit"
-    confirmText="確認上傳"
-    cancelText="取消"
-    :showCancel="true"
-    @submit="handleCorePlanFinalContractSubmit"
+      v-model="showCorePlanFinalContractDialog"
+      title="合約上傳"
+      mode="submit"
+      confirmText="確認上傳"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleCorePlanFinalContractSubmit"
   >
     <div class="form-group">
       <SharedUpload
-        id="corePlanFinalContractFile"
-        accept=".pdf,.jpg,.jpeg,.png"
-        :max-size="10"
-        name="corePlanFinalContract"
-        v-model="corePlanFinalContractFileName"
-        :error="corePlanFinalContractError"
-        :account="uploadAccount"
-        :type="'共創者上傳合約'"
-        :id="currentUser"
-       label="上傳最終合約文件*"/>
+          id="corePlanFinalContractFile"
+          accept=".pdf,.jpg,.jpeg,.png"
+          :max-size="10"
+          name="corePlanFinalContract"
+          v-model="corePlanFinalContractFileName"
+          :error="corePlanFinalContractError"
+          :account="uploadAccount"
+          :type="'共創者上傳合約'"
+          :id="currentUser"
+          label="上傳最終合約文件*"/>
+    </div>
+  </SharedModal>
+
+  <!-- 合約調整意願 Modal -->
+  <SharedModal
+      v-model="showAdjustmentDialog"
+      title="合約調整意願"
+      mode="submit"
+      confirmText="確認提交"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleAdjustmentSubmit"
+  >
+    <div class="adjustment-form">
+      <div class="form-group">
+        <label class="form-label">請說明您的調整意願 *</label>
+        <textarea
+            v-model="adjustmentRemark"
+            class="form-textarea"
+            rows="5"
+            placeholder="請詳細說明您希望調整的內容..."
+            maxlength="500"
+        ></textarea>
+        <div class="char-count">{{ adjustmentRemark.length }}/500</div>
+        <p v-if="adjustmentError" class="error-msg">{{ adjustmentError }}</p>
+      </div>
     </div>
   </SharedModal>
 </template>
@@ -469,6 +529,12 @@ const paymentErrors = reactive({
   accountLast5: "",
   paymentProof: "",
 });
+
+// 調整意願表單
+const showAdjustmentDialog = ref(false);
+const adjustmentRemark = ref('');
+const adjustmentError = ref('');
+const selectedPlanForAdjustment = ref(null);
 
 // 當前選中的數據
 const selectedTransaction = ref(null);
@@ -569,10 +635,10 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-    if (status > 0 && status <= 8) return 'pending';
-    if (status > 8 && status !== 9) return 'success';
-    if (status === 9 || status < 0) return 'failed';
-    return 'unknown';
+  if (status > 0 && status <= 8) return 'pending';
+  if (status > 8 && status !== 9) return 'success';
+  if (status === 9 || status < 0) return 'failed';
+  return 'unknown';
 }
 
 // 映射計畫狀態
@@ -603,7 +669,7 @@ async function getAllParticipantPlanByUser() {
       // 創建一個 map 來存儲每個計畫的交易明細
       const transactionsMap = new Map();
       const totalAmountMap = new Map();
-      
+
       if (detailsResponse.code === 0 && detailsResponse.data !== null) {
         detailsResponse.data.forEach((plan) => {
           const transactions = plan.participantData.map((tx) => ({
@@ -648,6 +714,9 @@ async function getAllParticipantPlanByUser() {
           transactions: transactionsMap.get(plan.planId) || [],
           totalAmount: totalAmountMap.get(plan.planId) || 0,
           increaseAmountStr: '',
+          // 新增合約相關字段
+          planFinalContractUrl: plan.planFinalContractUrl || '',
+          adjustmentRequested: false, // 初始狀態為未通知
         };
       });
     } else {
@@ -682,7 +751,7 @@ async function getAllParticipantPlanRecordByUser() {
         };
 
         const getStatusInfo = (status) => {
-          if (status >= 10) return 1; // 成功
+          if (status > 8 && status !== 9) return 1; // 成功
           if (status === 2 || status === 9 || status < 0) return 2; // 失敗
           return 0; // 審核中
         };
@@ -773,12 +842,12 @@ async function participate(p) {
   }
 
   if (p.increaseAmount < p.minimumAmount) {
-    await NewAlert.show("輸入錯誤", `參與金額不可低於最低參與金額 ${fmtMoney(p.minimumAmount)} 元。`);
+    await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.minimumAmount)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
   if (p.increaseAmount > p.goal - p.dollar) {
-    await NewAlert.show("輸入錯誤", `參與金額不可超過剩餘可參與金額 ${fmtMoney(p.goal - p.dollar)} 元。`);
+    await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.goal - p.dollar)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
@@ -786,7 +855,6 @@ async function participate(p) {
     await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;
   }
-
 
 
   if (!form.agree) {
@@ -802,11 +870,11 @@ async function participate(p) {
     });
 
     if (response.code === 0) {
-      const result = await NewAlert.confirm("共創專案提交成功","將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。")
+      const result = await NewAlert.confirm("共創專案提交成功", "將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。")
       if (result) {
         await router.push({
           path: "/account/profile",
-          query: { tab: "cofounder" }
+          query: {tab: "cofounder"}
         });
       } else {
         await router.push('/account/participation');
@@ -855,7 +923,7 @@ async function handleSignCoreContract(transaction, plan) {
   const signUrl = coreFounderSignUrl.value
 
   if (!signUrl) {
-   await NewAlert.show("系統錯誤", "簽署連結未設定，請聯繫管理員。")
+    await NewAlert.show("系統錯誤", "簽署連結未設定，請聯繫管理員。")
     return
   }
 
@@ -1001,6 +1069,70 @@ function onAmountBlur(plan) {
   }
 }
 
+// ==================== 合約處理函數 ====================
+
+// 同意合約
+async function agreeContractTermsByUser(plan) {
+  const result = await NewAlert.confirm(
+      "確認同意合約",
+      "您確定要同意雙方合約條例嗎？"
+  );
+   if (result === 'confirm') {
+    const formData = {
+      planId: plan.planId,
+      userId: currentUser.value,
+      agree: true,
+    }
+
+    const res = await userCheckApi.agreeContractTermsByUser(formData)
+    if (res.code === 0) {
+      await NewAlert.show("成功", "您已同意合約條例");
+      console.log('同意合約:', plan.id);
+    } else {
+      await NewAlert.show("失敗", res.message + " ,請洽客服人員。");
+    }
+  }
+}
+
+// 請求調整合約 - 打開對話框
+async function handleRequestAdjustment(plan) {
+  selectedPlanForAdjustment.value = plan;
+  adjustmentRemark.value = '';
+  adjustmentError.value = '';
+  showAdjustmentDialog.value = true;
+}
+
+// 提交調整意願
+async function handleAdjustmentSubmit() {
+  // 驗證
+  if (!adjustmentRemark.value || adjustmentRemark.value.trim() === '') {
+    adjustmentError.value = '請填寫調整意願說明';
+    return;
+  }
+
+  if (adjustmentRemark.value.trim().length < 10) {
+    adjustmentError.value = '請至少填寫 10 個字的說明';
+    return;
+  }
+
+  const plan = selectedPlanForAdjustment.value;
+
+  const formData = {
+    planId: plan.planId,
+    userId: currentUser.value,
+    agree: false,
+    remark: adjustmentRemark.value.trim(),
+  };
+  const response = await userCheckApi.agreeContractTermsByUser(formData);
+  if (response.code === 0) {
+    plan.adjustmentRequested = true;
+    showAdjustmentDialog.value = false;
+    await NewAlert.show("已通知", "您的調整意願已通知");
+  } else {
+    adjustmentError.value = response.message;
+  }
+}
+
 // ==================== 輔助函數 ====================
 
 // 刷新所有數據
@@ -1048,6 +1180,7 @@ watch(
 const showCorePlanFinalContractDialog = ref(false)
 const corePlanFinalContractFileName = ref('')
 const corePlanFinalContractError = ref('')
+
 async function handleCorePlanFinalContractSubmit() {
   if (!corePlanFinalContractFileName.value) {
     corePlanFinalContractError.value = '請上傳最終合約文件';
@@ -1223,7 +1356,7 @@ async function handleCorePlanFinalContractSubmit() {
 .detail-panel {
   padding: 20px 4px 4px;
   margin-top: 10px;
-  
+
   hr {
     margin: 16px 0;
   }
@@ -1508,7 +1641,7 @@ async function handleCorePlanFinalContractSubmit() {
 
     .tx-status {
       text-align: end;
-      width: 8%;
+      width: 12%;
       color: $text-dark;
       font-weight: 400;
       font-size: 16px;
@@ -1807,6 +1940,147 @@ hr {
 
   .remain {
     color: #666;
+  }
+}
+
+// 合約區塊樣式
+.contract-section {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.contract-link-wrapper {
+  margin-bottom: 12px;
+}
+
+.contract-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ff6634;
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s;
+
+  &:hover {
+    color: #ff8855;
+    text-decoration: underline;
+  }
+}
+
+.contract-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+  }
+}
+
+.btn-contract-agree,
+.btn-contract-adjust {
+  flex: 1;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+}
+
+.btn-contract-agree {
+  background: linear-gradient(90deg, #45b665 0%, #3da857 100%);
+  color: white;
+
+  &:hover {
+    background: linear-gradient(90deg, #3da857 0%, #359a4a 100%);
+    box-shadow: 0 2px 8px rgba(69, 182, 101, 0.3);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.btn-contract-adjust {
+  background: linear-gradient(90deg, #ffa726 0%, #ff9800 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(90deg, #ff9800 0%, #fb8c00 100%);
+    box-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &.notified,
+  &:disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+// 調整意願表單樣式
+.adjustment-form {
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .form-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.3s;
+
+    &:focus {
+      outline: none;
+      border-color: #ff6634;
+      box-shadow: 0 0 0 3px rgba(255, 102, 52, 0.1);
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 12px;
+    color: #999;
+    margin-top: 4px;
+  }
+
+  .error-msg {
+    color: #f44336;
+    font-size: 14px;
+    margin-top: 8px;
+    margin-bottom: 0;
   }
 }
 

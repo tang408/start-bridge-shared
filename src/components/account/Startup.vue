@@ -563,11 +563,12 @@
       <div class="warning-section">
         <div class="warning-icon">⚠️</div>
         <div class="warning-text">
-          此專案將延長合2個月，結束時間將延至 {{ extendedDate }}
+          此專案將延長媒合2個月，結束時間將延至 {{ extendedDate }}
         </div>
       </div>
       <div class="form-group">
-        <label>提醒您：延長媒合期間已投入資源的創業夥伴有權撤回資源。</label>
+        <label>提醒您：延長媒合期間，已投入的共同創業者有權撤回、取消參與。
+        </label>
       </div>
 
       <div class="confirm-question">
@@ -1333,9 +1334,9 @@ async function loadPlanData(planId) {
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
-          {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
-          {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
-          {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
+          {item: "品牌加盟相關費用", amount: String(planData.franchiseFee || '')},
+          {item: "店面裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "店面租賃兩押一租", amount: String(planData.storeRentCosts || '')},
           {item: "營運設備、生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
@@ -1791,9 +1792,9 @@ const formData = reactive({
   },
   step5: {
     prepBudget: [
-      {item: "品牌加盟的相關費用", amount: ""},
-      {item: "店面的裝潢設計工程", amount: ""},
-      {item: "店面租賃兩壓一租", amount: ""},
+      {item: "品牌加盟相關費用", amount: ""},
+      {item: "店面裝潢設計工程", amount: ""},
+      {item: "店面租賃兩押一租", amount: ""},
       {item: "營運設備、生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
@@ -2317,7 +2318,7 @@ function convertFormData(formData, userId) {
     brand: parseInt(step1.brand) || 0,
 
     // (Step2)
-    document: step2.file.id || 0,
+    document: step2.file?.id || 0,
 
     // 創業經驗 (Step3)
     hasExperience: stringToBool(step3.hasStartupExp),
@@ -2350,9 +2351,9 @@ function convertFormData(formData, userId) {
     coFounderAddedValue: getCoFounderValueText(step4.q9Location, step4.q9LocationNote) || "",
 
     // 財務規劃 (Step5) - 預算項目
-    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
-    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設計工程"),
-    storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
+    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟相關費用"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店面裝潢設計工程"),
+    storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩押一租"),
     equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備、生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
     paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業者預計支薪預算"),

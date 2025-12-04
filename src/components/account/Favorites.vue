@@ -84,7 +84,7 @@
                           class="progress-inner"
                           :style="{ width: calculateProgress(p) + '%' }"
                       ></div>
-                      <div class="progress-text">募資進度 {{ calculateProgress(p) }}%</div>
+                      <div class="progress-text">媒合進度 {{ calculateProgress(p) }}%</div>
                     </div>
 
                     <div class="progress-footer mt-2">

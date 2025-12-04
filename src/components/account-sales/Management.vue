@@ -147,6 +147,25 @@
           </div>
         </div>
         <div v-else>暫無共創者</div>
+
+        <!-- 合約操作按鈕 -->
+        <div v-if="shouldShowContractButtons()" class="contract-buttons mt-4">
+          <button
+              class="btn-save-contract"
+              :disabled="planInfo.saveContract"
+              @click="handleSaveContract"
+          >
+            {{ planInfo.saveContract ? '已保存合約' : '保存此合約' }}
+          </button>
+
+          <button
+              class="btn-notify-contract"
+              :disabled="!planInfo.saveContract || planInfo.isNotify"
+              @click="handleNotifyAllUser"
+          >
+            {{ planInfo.isNotify ? '已通知雙方' : '通知雙方簽約' }}
+          </button>
+        </div>
       </div>
     </div>
 
@@ -299,15 +318,15 @@
                 <h4>籌備成本明細</h4>
                 <div class="info-grid">
                   <div class="info-item">
-                    <label>品牌加盟的相關費用 ：</label>
+                    <label>品牌加盟相關費用 ：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.franchiseFee?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>店面的裝潢設計工程 ：</label>
+                    <label>店面裝潢設計工程 ：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.decorationCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>店面租賃兩壓一租：</label>
+                    <label>店面租賃兩押一租：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.storeRentCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
@@ -721,15 +740,10 @@ const formatPlanInfoStatus = () => {
   if (!planInfo.value.planStatus) return '未知狀態';
 
   // 根據是否有 participantPlanId 決定查詢哪個步驟列表
-  if (planInfo.value.participantPlanId && planInfo.value.participantPlanId > 0) {
-    // 共創者
-    const step = corePlanStep.value.find(s => s.id === planInfo.value.planStatus);
-    return step ? step.step : '未知狀態';
-  } else {
     // 創業者
     const step = planSteps.value.find(s => s.id === planInfo.value.planStatus);
     return step ? step.step : '未知狀態';
-  }
+
 }
 
 // 判斷是否應該顯示審核按鈕
@@ -751,7 +765,7 @@ const shouldShowReviewButtons = () => {
     if (!planInfo.value.planStatus) return false;
 
     // 創業者可審核的步驟
-    const founderReviewableSteps = [1, 13, 15, 17, 19]; // 可以審核的步驟
+    const founderReviewableSteps = [1, 22,13, 15, 17, 19]; // 可以審核的步驟
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
 }
@@ -1069,6 +1083,77 @@ const prepareConstsTotal = computed(() => {
   );
 });
 
+// ==================== 合約操作相關 ====================
+
+function shouldShowContractButtons() {
+  if (planInfo.value.planStatus < 1 ||
+      planInfo.value.planStatus === 2 ||
+      planInfo.value.planStatus === 9) {
+    return false;
+  }
+
+  // 檢查是否有共創者
+  if (!planInfo.value.participantPlanInfo || planInfo.value.participantPlanInfo.length === 0) {
+    return false;
+  }
+
+  // 檢查所有共創者是否都同意合約條款
+  const allAgreed = planInfo.value.participantPlanInfo.every(
+      participant => participant.agreeTerms === true
+  );
+
+  return allAgreed;
+}
+
+// 保存合約
+async function handleSaveContract() {
+  try {
+    const formData = {
+      salesId: currentSales.value,
+      planId: planInfo.value.planId,
+    };
+
+    const response = await salesCheckApi.saveContractBySales(formData);
+
+    if (response.code === 0) {
+      planInfo.value.saveContract = true;
+      await NewAlert.show("成功", "合約已保存");
+      showModal.value = false;
+    } else {
+      await NewAlert.show("失敗", response.message || "保存合約失敗");
+      showModal.value = false;
+
+    }
+  } catch (error) {
+    console.error('保存合約失敗:', error);
+    await NewAlert.show("錯誤", "保存合約時發生錯誤");
+  }
+}
+
+// 通知雙方簽約
+async function handleNotifyAllUser() {
+  try {
+    const formData = {
+      salesId: currentSales.value,
+      planId: planInfo.value.planId,
+    };
+
+    const response = await salesCheckApi.notifyAllUserBySales(formData);
+
+    if (response.code === 0) {
+      planInfo.value.isNotify = true;
+      await NewAlert.show("成功", "已通知雙方簽約");
+      showModal.value = false;
+    } else {
+      await NewAlert.show("失敗", response.message || "通知失敗");
+      showModal.value = false;
+    }
+  } catch (error) {
+    console.error('通知失敗:', error);
+    await NewAlert.show("錯誤", "通知時發生錯誤");
+  }
+}
+
 
 // Dialog 狀態
 const showAddressDialog = ref(false)
@@ -1326,6 +1411,69 @@ const getStatusClass = (type, status) =>
   div {
     color: #ff6634;
     font-weight: 600;
+  }
+}
+
+// 合約操作按鈕
+.contract-buttons {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+  }
+}
+
+.btn-save-contract,
+.btn-notify-contract {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  @media (max-width: 576px) {
+    width: 100%;
+  }
+
+  &:disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.btn-save-contract {
+  background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(90deg, #45a049 0%, #3d8b40 100%);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+}
+
+.btn-notify-contract {
+  background: linear-gradient(90deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(90deg, #f57c00 0%, #e65100 100%);
+    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
   }
 }
 

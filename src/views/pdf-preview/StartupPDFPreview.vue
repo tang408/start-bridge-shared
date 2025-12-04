@@ -194,8 +194,8 @@ const formData = reactive({
   },
   step5: {
     prepBudget: [
-      {item: "品牌加盟的相關費用", amount: ""},
-      {item: "店面的裝潢設計工程", amount: ""},
+      {item: "品牌加盟相關費用", amount: ""},
+      {item: "店面裝潢設計工程", amount: ""},
       {item: "營運設備、生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
@@ -403,9 +403,9 @@ async function loadPlanData() {
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
-          {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
-          {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
-          {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
+          {item: "品牌加盟相關費用", amount: String(planData.franchiseFee || '')},
+          {item: "店面裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "店面租賃兩押一租", amount: String(planData.storeRentCosts || '')},
           {item: "營運設備、生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
