@@ -105,7 +105,11 @@ const uid = computed(() => props.id || `radio-${Math.random().toString(36).slice
     cursor: pointer;
     line-height: 1.6;
     font-weight: 400;
-    flex-shrink: 0;
+    flex: 1; // 改為 flex: 1，讓 label 可以自適應寬度
+    // 移除 flex-shrink: 0;
+    word-break: break-word; // 新增：允許長單詞換行
+    white-space: normal; // 新增：允許文字換行
+    max-width: 100%; // 新增：限制最大寬度
 
     &::before {
       content: "";
@@ -154,7 +158,6 @@ const uid = computed(() => props.id || `radio-${Math.random().toString(36).slice
     border-radius: 4px;
     font-size: 14px;
 
-    /* ✅ Readonly 樣式 */
     &:disabled,
     &[readonly] {
       background-color: #f8f9fa;
@@ -164,7 +167,6 @@ const uid = computed(() => props.id || `radio-${Math.random().toString(36).slice
     }
   }
 }
-
 .error-text {
   font-size: 13px;
   color: #db3838;

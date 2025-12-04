@@ -2,10 +2,7 @@
   <div class="fs-24">訊息</div>
   <SharedTabs
       v-model="activeTab"
-      :tabs="[
-      { label: '創業者資料', value: 'founder' },
-      { label: '共創者資料', value: 'cofounder' },
-    ]"
+      :tabs="tabsWithBadges"
   />
 
   <div class="stack gap-3">
@@ -79,7 +76,12 @@ import {notifyApi} from "@/api/modules/notify.js";
 import {useAuth} from "@/composables/useAuth.js";
 import { useNotifications } from '@/composables/useNotifications.ts';
 
-const { updateUnreadCounts, decreaseUnreadCount } = useNotifications('user');
+const {
+  founderUnreadCount,
+  cofounderUnreadCount,
+  updateUnreadCounts,
+  decreaseUnreadCount
+} = useNotifications('user');
 
 const {isLoggedIn, currentUser} = useAuth();
 
@@ -96,6 +98,20 @@ const tabState = reactive({
   },
 });
 
+// 計算帶有 badge 的 tabs
+const tabsWithBadges = computed(() => [
+  {
+    label: '創業者資料',
+    value: 'founder',
+    badge: founderUnreadCount.value
+  },
+  {
+    label: '共創者資料',
+    value: 'cofounder',
+    badge: cofounderUnreadCount.value
+  },
+]);
+
 const current = computed(() => tabState[activeTab.value]);
 
 // 解析內容，分離主要內容和銀行資訊
@@ -109,10 +125,7 @@ function parseContent(content) {
   const nameMatch = content.match(bankNameRegex);
 
   if (codeMatch && accountMatch && nameMatch) {
-    // 有銀行資訊，分離主要內容
     let mainContent = content;
-
-    // 移除銀行資訊部分
     mainContent = mainContent.replace(/銀行代碼[:：][^\n]+\n?/g, '');
     mainContent = mainContent.replace(/銀行帳號[:：][^\n]+\n?/g, '');
     mainContent = mainContent.replace(/戶名[:：][^\n]+\n?/g, '');
@@ -128,7 +141,6 @@ function parseContent(content) {
     };
   }
 
-  // 沒有銀行資訊，返回原始內容
   return {
     main: content,
     bankInfo: null
@@ -246,7 +258,7 @@ async function getUserNotifies() {
         id: notify.notifyId,
         title: notify.title,
         content: notify.content,
-        parsedContent: parseContent(notify.content), // 解析內容
+        parsedContent: parseContent(notify.content),
         read: notify.status !== 1,
         tagged: false,
         favorite: notify.favorite

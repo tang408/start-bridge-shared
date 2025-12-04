@@ -62,6 +62,22 @@
             ></div>
             <p v-else class="text-muted">暫無品牌介紹</p>
           </div>
+          <div class="brand-intro-section">
+            <h3 class="section-title">預計開業區域/坪數/店面狀況：</h3>
+            <div
+                v-if="props.planData?.expectedOpeningInfo"
+                class="brand-intro-content"
+            >{{ props.planData?.expectedOpeningInfo}}</div>
+            <p v-else class="text-muted">未提供</p>
+          </div>
+          <div class="brand-intro-section">
+            <h3 class="section-title">預計開業時間：</h3>
+            <div
+                v-if="props.planData?.expectedOpeningDate"
+                class="brand-intro-content"
+            >{{ props.planData?.expectedOpeningDate}}</div>
+            <p v-else class="text-muted">未提供</p>
+          </div>
 
           <!-- 專案進度 -->
           <div class="project-progress-section">
@@ -353,26 +369,26 @@ async function goToParticipation() {
   if (response.code === 0) {
     userData.value = response.data;
 
-    // 檢查用戶基本資料
-    if (userData.value.userInfoData) {
-      const userInfo = userData.value.userInfoData;
-
-      if (!userInfo.lineId || userInfo.lineId === "") {
-        const result = await NewAlert.favorite(
-            "資料不齊全",
-            "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
-        );
-
-        if (result === 'favorite') {
-          await handleUserFavoritePlan();
-          return;
-        } else if (result === 'push') {
-          await router.push({path: "/account/profile"});
-          return;
-        }
-        return;
-      }
-    }
+    // // 檢查用戶基本資料
+    // if (userData.value.userInfoData) {
+    //   const userInfo = userData.value.userInfoData;
+    //
+    //   if (!userInfo.lineId || userInfo.lineId === "") {
+    //     const result = await NewAlert.favorite(
+    //         "資料不齊全",
+    //         "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+    //     );
+    //
+    //     if (result === 'favorite') {
+    //       await handleUserFavoritePlan();
+    //       return;
+    //     } else if (result === 'push') {
+    //       await router.push({path: "/account/profile"});
+    //       return;
+    //     }
+    //     return;
+    //   }
+    // }
 
     // 檢查創業者資料
     if (userData.value.coreFounderData) {
@@ -428,6 +444,11 @@ const handleViewBusinessPlan = async () => {
 
   if (!props.planData?.id) {
     await NewAlert.show("錯誤", "無法取得計劃書資訊");
+    return;
+  }
+
+  if (props.planData.documentUrl != null && props.planData.documentUrl !== '' ) {
+    window.open(props.planData.documentUrl, '_blank');
     return;
   }
 

@@ -41,5 +41,12 @@ export const salesCheckApi = {
         return api.post("/f/private/sales-check/contact-user-by-sales", params);
     },
 
+    async saveContractBySales(params = {}) {
+        return api.post("/f/private/sales-check/save-contract-by-sales", params);
+    },
+
+    async notifyAllUserBySales(params = {}) {
+        return api.post("/f/private/sales-check/notify-all-user-by-sales", params);
+    }
 
 }

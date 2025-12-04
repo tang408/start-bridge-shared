@@ -23,7 +23,7 @@
 
         <!-- ✅ 編輯模式 -->
         <input
-            v-if="opt.withInput !== false && model[opt.key]?.checked && !readonly"
+            v-if="(opt.placeholder !== undefined || opt.withInput === true) && model[opt.key]?.checked && !readonly"
             class="textline"
             :type="opt.inputType || 'text'"
             :value="model[opt.key]?.value || ''"
@@ -32,7 +32,7 @@
         />
 
         <input
-            v-if="opt.withInput !== false && model[opt.key]?.checked && readonly"
+            v-if="(opt.placeholder !== undefined || opt.withInput === true) && model[opt.key]?.checked && readonly"
             class="textline w-auto"
             :type="opt.inputType || 'text'"
             :value="model[opt.key]?.value || ''"

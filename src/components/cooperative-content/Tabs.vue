@@ -323,13 +323,13 @@ async function goToStartup() {
     // 檢查創業者資料
     if (userData.value.founderInfoData) {
       const founderInfo = userData.value.founderInfoData;
-      const userInfo = userData.value.userInfoData;
+      // const userInfo = userData.value.userInfoData;
 
       if (
           founderInfo.city === 0 ||
           founderInfo.workStatus === "" ||
-          founderInfo.expectIndustryType === 0 ||
-          userInfo.lineId === ""
+          founderInfo.expectIndustryType === 0
+          // userInfo.lineId === ""
       ) {
         // ✅ 使用 favorite 模式彈窗
         const result = await NewAlert.favorite(

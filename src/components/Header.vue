@@ -97,11 +97,12 @@
               <li class="menu-btn">
                 <div class="bc-2 br-1 logIn">
                   <router-link
-                    class="nav-link d-flex align-items-center color-2"
-                    to="/account/profile"
+                      class="nav-link d-flex align-items-center color-2"
+                      @click="handleProfileClick"
+                      :to="isLoggedIn ? '/account/profile' : '/login'"
                   >
                     <img src="@/assets/icon/member-icon.png" />
-                    會員管理
+                    {{ '會員管理' }}
                   </router-link>
                 </div>
 
@@ -161,13 +162,18 @@ const toggleSubMenu = (index) => {
 };
 
 const handleProfileClick = () => {
-  console.log('click')
+  // 未登入 跳轉到登入頁
+  if (!isLoggedIn) {
+    router.push("/login");
+    return;
+  }
   if (currentUser.value) {
     router.push(`/account/profile`);
   } else {
     router.push("/account-sales/member");
   }
 };
+
 const handleLinkClick = () => {
   if (isBelowLg()) {
     isMenuOpen.value = false;

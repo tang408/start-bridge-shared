@@ -158,19 +158,11 @@ SwiperCore.use([Pagination]);
 
 const isLoggedIn = () => !!localStorage.getItem("token");
 const handleStartup = () => {
-  if (isLoggedIn()) {
-    router.push("/account/startup?step=step1");
-  } else {
-    router.push("/login");
-  }
+    router.push("/cooperative-brand");
 };
 
 const handleCoCreate = () => {
-  if (isLoggedIn()) {
-    router.push("/account/participation");
-  } else {
-    router.push("/login");
-  }
+    router.push("/project");
 };
 
 const goToBrand = () => {
@@ -268,6 +260,8 @@ function transformApiDataToCards(apiData) {
     price: item.daysLeft ? `${item.daysLeft}天` : "99天",
     supporters: item.views ? `${item.views} 人瀏覽` : "0 人瀏覽",
     progress: item.progress,
+    isFeatured: item.isFeatured || false,
+    isRemainingPartner: item.isRemainingPartner > 0,
     to: { name: "ProjectDetail", params: { id: item.id } },
   }));
 }

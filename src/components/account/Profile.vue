@@ -210,53 +210,59 @@
               placeholder="請選擇多個選項"
           />
 
-          <!-- 身分證明上傳* -->
-          <SharedUpload
-              id="assetProof"
-              label="身分證明上傳"
-              v-model="formFounder.founderIdProof"
-              :error="errFounder.founderIdProof"
-              :required="true"
-              accept=".pdf,.jpg,.jpeg,.png"
-              button-text="重新上傳"
-              :account="formFounder.fullname"
-              :name="'founderIdProof'"
-              :max-size-mb="10"
-              @upload-success="(result) => handleUploadSuccess('founderIdProof', result)"
-              :disabled="ro('founderIdProof')"
-          />
+          <!-- 身分證明上傳* - 添加高亮 -->
+          <div :class="{ 'highlight-field': isHighlighted('founderIdProof') }">
+            <SharedUpload
+                id="founderIdProof"
+                label="身分證明上傳"
+                v-model="formFounder.founderIdProof"
+                :error="errFounder.founderIdProof"
+                :required="true"
+                accept=".pdf,.jpg,.jpeg,.png"
+                button-text="重新上傳"
+                :account="formFounder.fullname"
+                :name="'founderIdProof'"
+                :max-size-mb="10"
+                @upload-success="(result) => handleUploadSuccess('founderIdProof', result)"
+                :disabled="ro('founderIdProof')"
+            />
+          </div>
 
-          <!-- 資產證明上傳* -->
-          <SharedUpload
-              id="assetProof"
-              label="資產證明上傳"
-              v-model="formFounder.assetProof"
-              :error="errFounder.assetProof"
-              :required="true"
-              accept=".pdf,.jpg,.jpeg,.png"
-              button-text="重新上傳"
-              :account="formFounder.fullname"
-              :name="'assetProof'"
-              :max-size-mb="10"
-              @upload-success="(result) => handleUploadSuccess('assetProof', result)"
-              :disabled="ro('assetProof')"
-          />
+          <!-- 資產證明上傳* - 添加高亮 -->
+          <div :class="{ 'highlight-field': isHighlighted('assetProof') }">
+            <SharedUpload
+                id="assetProof"
+                label="資產證明上傳"
+                v-model="formFounder.assetProof"
+                :error="errFounder.assetProof"
+                :required="true"
+                accept=".pdf,.jpg,.jpeg,.png"
+                button-text="重新上傳"
+                :account="formFounder.fullname"
+                :name="'assetProof'"
+                :max-size-mb="10"
+                @upload-success="(result) => handleUploadSuccess('assetProof', result)"
+                :disabled="ro('assetProof')"
+            />
+          </div>
 
-          <!-- 良民證上傳* -->
-          <SharedUpload
-              id="policeRecord"
-              label="良民證上傳"
-              v-model="formFounder.policeRecord"
-              :error="errFounder.policeRecord"
-              :required="true"
-              accept=".pdf,.jpg,.jpeg,.png"
-              button-text="重新上傳"
-              :account="formFounder.fullname"
-              :name="'policeRecord'"
-              :max-size-mb="10"
-              @upload-success="(result) => handleUploadSuccess('policeRecord', result)"
-              :disabled="ro('policeRecord')"
-          />
+          <!-- 良民證上傳* - 添加高亮 -->
+          <div :class="{ 'highlight-field': isHighlighted('policeRecord') }">
+            <SharedUpload
+                id="policeRecord"
+                label="良民證上傳"
+                v-model="formFounder.policeRecord"
+                :error="errFounder.policeRecord"
+                :required="true"
+                accept=".pdf,.jpg,.jpeg,.png"
+                button-text="重新上傳"
+                :account="formFounder.fullname"
+                :name="'policeRecord'"
+                :max-size-mb="10"
+                @upload-success="(result) => handleUploadSuccess('policeRecord', result)"
+                :disabled="ro('policeRecord')"
+            />
+          </div>
 
           <!-- 最高學歷/專長背景 -->
           <SharedInput
@@ -308,39 +314,43 @@
             <span class="ps-2">{{ formCo.status }}</span>
           </div>
 
-          <!-- 身分證明*（持證件自拍） -->
-          <SharedUpload
-              id="idProof"
-              label="身分證明*（持證件自拍）"
-              v-model="formCo.idProof"
-              :error="errCo.idProof"
-              :required="true"
-              accept=".jpg,.jpeg,.png"
-              placeholder="檔案名稱.jpg"
-              :account="formCo.fullname"
-              :name="'idProof'"
-              @upload-success="(result) => handleUploadSuccess('idProof', result)"
-              button-text="上傳"
-              @invalid="(msg) => (errCo.idProof = msg)"
-              :disabled="ro('idProof')"
-          />
+          <!-- 身分證明*（持證件自拍） - 添加高亮 class -->
+          <div :class="{ 'highlight-field': isHighlighted('idProof') }">
+            <SharedUpload
+                id="idProof"
+                label="身分證明*（持證件自拍）"
+                v-model="formCo.idProof"
+                :error="errCo.idProof"
+                :required="true"
+                accept=".jpg,.jpeg,.png"
+                placeholder="檔案名稱.jpg"
+                :account="formCo.fullname"
+                :name="'idProof'"
+                @upload-success="(result) => handleUploadSuccess('idProof', result)"
+                button-text="上傳"
+                @invalid="(msg) => (errCo.idProof = msg)"
+                :disabled="ro('idProof')"
+            />
+          </div>
 
-          <!-- 第二證件＊（必填） -->
-          <SharedUpload
-              id="idProofSecond"
-              label="第二證件*"
-              v-model="formCo.idProofSecond"
-              :error="errCo.idProofSecond"
-              :required="true"
-              accept=".jpg,.jpeg,.png,.pdf"
-              placeholder="檔案名稱.jpg"
-              button-text="上傳"
-              :account="formCo.fullname"
-              :name="'idProofSecond'"
-              @upload-success="(result) => handleUploadSuccess('idProofSecond', result)"
-              @invalid="(msg) => (errCo.idProofSecond = msg)"
-              :disabled="ro('idProofSecond')"
-          />
+          <!-- 第二證件＊（必填） - 添加高亮 class -->
+          <div :class="{ 'highlight-field': isHighlighted('idProofSecond') }">
+            <SharedUpload
+                id="idProofSecond"
+                label="第二證件*"
+                v-model="formCo.idProofSecond"
+                :error="errCo.idProofSecond"
+                :required="true"
+                accept=".jpg,.jpeg,.png,.pdf"
+                placeholder="檔案名稱.jpg"
+                button-text="上傳"
+                :account="formCo.fullname"
+                :name="'idProofSecond'"
+                @upload-success="(result) => handleUploadSuccess('idProofSecond', result)"
+                @invalid="(msg) => (errCo.idProofSecond = msg)"
+                :disabled="ro('idProofSecond')"
+            />
+          </div>
 
           <!-- 工作狀況* -->
           <SharedInput
@@ -483,7 +493,7 @@
 
 <script setup>
 import {ref, reactive, onMounted, watch, onBeforeUnmount} from "vue";
-import {onBeforeRouteLeave} from 'vue-router';
+import {onBeforeRouteLeave, useRoute, useRouter} from 'vue-router';
 import SharedTabs from "@/components/shared/Shared-Tabs.vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
@@ -499,6 +509,8 @@ import {cityApi} from "@/api/modules/city.js";
 import {NewAlert} from "@/composables/useAlert.js";
 import SharedMultiSelect from "@/components/shared/Shared-Multi-Select.vue";
 
+const route = useRoute();
+const router = useRouter();
 const {isLoggedIn, currentUser, logout} = useAuth();
 
 // 追蹤表單變更
@@ -776,6 +788,34 @@ onMounted(async () => {
     getIndustryTypes(),
     getCities()
   ]);
+  console.log(route.query.tab)
+  // 檢查 URL 中是否有 tab 參數
+  if (route.query.tab) {
+    activeTab.value = route.query.tab;
+
+    // 如果是 cofounder tab，高亮身分證明和第二證件
+    if (route.query.tab === 'cofounder') {
+      highlightFields.value = ['idProof', 'idProofSecond'];
+
+      // 3秒後移除高亮（可選）
+      setTimeout(() => {
+        highlightFields.value = [];
+      }, 5000);
+    } else if (route.query.tab === 'founder') {
+      highlightFields.value = ['founderIdProof', 'assetProof', 'policeRecord'];
+
+      // 3秒後移除高亮（可選）
+      setTimeout(() => {
+        highlightFields.value = [];
+      }, 5000);
+    }
+
+    // 清除 query 參數（可選）
+    router.replace({
+      path: route.path,
+      query: {}
+    });
+  }
 
   // 資料載入完成後,儲存原始資料
   saveOriginalData();
@@ -788,6 +828,12 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload);
 });
+
+const highlightFields = ref([]); // 需要高亮的欄位
+// 檢查欄位是否需要高亮
+function isHighlighted(fieldName) {
+  return highlightFields.value.includes(fieldName);
+}
 
 watch(userProfile, (newValue) => {
   if (newValue) {
@@ -1016,7 +1062,7 @@ function getStatusText(status) {
     case 0:
       return '無須審核';
     case 1:
-      return '創業者資料待審核';
+      return '創業計劃書與身分文件審核中';
     case 2:
       return '業務初審通過';
     case 3:
@@ -1253,5 +1299,13 @@ async function handleUpdatePassword() {
   color: #db3838;
   font-size: 13px;
   margin: 10px 0;
+}
+
+.highlight-field {
+  :deep(label) {
+    color: #ff4444 !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+  }
 }
 </style>

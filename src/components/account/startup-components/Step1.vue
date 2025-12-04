@@ -24,7 +24,8 @@
         id="budget"
         v-model="local.budget"
         label="預計總費用(元)"
-        type="number"
+        type="text"
+        :format-number="true"
         :error="props.errors.budget"
         :readonly="readonly"
     />
@@ -34,17 +35,19 @@
         id="selfFund"
         v-model="local.selfFund"
         label="創業者自備款(元)"
-        type="number"
+        type="text"
+        :format-number="true"
         :error="props.errors.selfFund"
         :readonly="readonly"
     />
 
-    <!-- 募資總額 -->
+    <!-- 申請媒合總額 -->
     <SharedInput
         id="totalFunding"
         v-model="local.totalFunding"
-        label="募資總額(元)"
-        type="number"
+        label="申請媒合總額(元)"
+        type="text"
+        :format-number="true"
         :error="props.errors.totalFunding"
         readonly
     />
@@ -52,12 +55,15 @@
     <!-- 單筆最低金額度 -->
     <SharedInput
         id="minAmount"
-        label="單筆最低額度(元)"
-        type="number"
+        label="【共同創業者】單筆最低額度(元)"
+        type="text"
+        :format-number="true"
         v-model="local.minAmount"
         :error="props.errors.minAmount"
         :readonly="readonly"
     />
+    <span class="small"
+    >* 系統將依單筆最低額度及媒合總額，自動計算可媒合之共同創業者人數上限。</span>
 
     <!-- 預計開業區域/坪數/店面狀況 -->
     <SharedInput
@@ -83,7 +89,8 @@
     <SharedInput
         id="amountRange"
         label="額度級距(元) (一單位多少)"
-        type="number"
+        type="text"
+        :format-number="true"
         v-model="local.amountRange"
         :error="props.errors.amountRange"
         readonly
@@ -92,12 +99,14 @@
     <!-- 夥伴人數上限 -->
     <SharedInput
         id="partnerLimit"
-        label="夥伴人數上限"
-        type="number"
+        label="【共同創業者】媒合人數上限"
+        type="text"
+        :format-number="true"
         v-model="local.partnerLimit"
         :error="props.errors.partnerLimit"
         readonly
     />
+
 
     <!-- 按鈕區塊 -->
     <div class="button-group mt-4">
@@ -301,6 +310,15 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.small {
+  display: block;
+  margin-top: -20px; /* 負邊距縮短間距 */
+  font-size: 11px;
+  color: #666;
+  border-radius: 4px;
+  line-height: 1.5;
+}
+
 .btn-back {
   background: transparent;
   border: 1px solid #ddd;

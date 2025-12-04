@@ -14,7 +14,8 @@
         id="budget"
         v-model="local.budget"
         label="預計總費用(元)"
-        type="number"
+        type="text"
+        :format-number="true"
         :error="props.errors.budget"
         :readonly="readonly"
     />
@@ -24,7 +25,8 @@
         id="selfFund"
         v-model="local.selfFund"
         label="創業者自備款(元)"
-        type="number"
+        type="text"
+        :format-number="true"
         :error="props.errors.selfFund"
         :readonly="readonly"
     />
@@ -34,7 +36,8 @@
         id="totalFunding"
         v-model="local.totalFunding"
         label="募資總額(元)"
-        type="number"
+        type="text"
+        :format-number="true"
         :error="props.errors.totalFunding"
         readonly
     />
@@ -42,8 +45,9 @@
     <!-- 單筆最低金額度 -->
     <SharedInput
         id="minAmount"
-        label="單筆最低額度(元)"
-        type="number"
+        label="【共同創業者】單筆最低額度(元)"
+        type="text"
+        :format-number="true"
         v-model="local.minAmount"
         :error="props.errors.minAmount"
         :readonly="readonly"
@@ -53,7 +57,8 @@
     <SharedInput
         id="amountRange"
         label="額度級距(元) (一單位多少)"
-        type="number"
+        type="text"
+        :format-number="true"
         v-model="local.amountRange"
         :error="props.errors.amountRange"
         readonly
@@ -82,8 +87,9 @@
     <!-- 夥伴人數上限 -->
     <SharedInput
         id="partnerLimit"
-        label="夥伴人數上限"
-        type="number"
+        label="【共同創業者】媒合人數上限"
+        type="text"
+        :format-number="true"
         v-model="local.partnerLimit"
         :error="props.errors.partnerLimit"
         readonly

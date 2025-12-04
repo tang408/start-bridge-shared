@@ -100,7 +100,7 @@
                 <button
                     type="button"
                     class="text-link"
-                    @click.stop="handlePDFPreviewClick(p.id)"
+                    @click.stop="handlePDFPreviewClick(p)"
                 >
                   創業計劃書
                 </button>
@@ -141,7 +141,6 @@
             v-if="(p.status === 4 || p.status === 5 || p.status === 6 || p.status === 7)"
             type="button"
             class="btn-upload"
-            :disabled="p.contractStatus === 1"
             @click.stop="handleSignContract(p)"
         >
           簽署平台合約
@@ -564,11 +563,12 @@
       <div class="warning-section">
         <div class="warning-icon">⚠️</div>
         <div class="warning-text">
-          此專案將延長合2個月，結束時間將延至 {{ extendedDate }}
+          此專案將延長媒合2個月，結束時間將延至 {{ extendedDate }}
         </div>
       </div>
       <div class="form-group">
-        <label>提醒您：延長媒合期間已投入資源的創業夥伴有權撤回資源。</label>
+        <label>提醒您：延長媒合期間，已投入的共同創業者有權撤回、取消參與。
+        </label>
       </div>
 
       <div class="confirm-question">
@@ -1258,11 +1258,17 @@ async function handleBtn2Click(planId) {
 }
 
 // PDF 預覽功能
-async function handlePDFPreviewClick(planId) {
+async function handlePDFPreviewClick(plan) {
+  if (plan.documentUrl != null && plan.documentUrl !== '') {
+    // 如果已有上傳的 PDF 文件，直接在新分頁打開
+    window.open(plan.documentUrl, '_blank');
+    return;
+  }
+
   // 跳轉到獨立的 PDF 預覽頁面
   const routeData = router.resolve({
     name: 'StartupPDFPreview',
-    params: {planId: planId}
+    params: {planId: plan.id}
   });
 
   window.open(routeData.href, '_blank');
@@ -1328,9 +1334,9 @@ async function loadPlanData(planId) {
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
-          {item: "品牌加盟的相關費用", amount: String(planData.franchiseFee || '')},
-          {item: "店面的裝潢設計工程", amount: String(planData.decorationCosts || '')},
-          {item: "店面租賃兩壓一租", amount: String(planData.storeRentCosts || '')},
+          {item: "品牌加盟相關費用", amount: String(planData.franchiseFee || '')},
+          {item: "店面裝潢設計工程", amount: String(planData.decorationCosts || '')},
+          {item: "店面租賃兩押一租", amount: String(planData.storeRentCosts || '')},
           {item: "營運設備、生財器具", amount: String(planData.equipmentCosts || '')},
           {item: "開店前首批儲備物料", amount: String(planData.firstMaterialCost || '')},
           {item: "創業者預計支薪預算", amount: String(planData.paySalaryBudget || '')},
@@ -1786,9 +1792,9 @@ const formData = reactive({
   },
   step5: {
     prepBudget: [
-      {item: "品牌加盟的相關費用", amount: ""},
-      {item: "店面的裝潢設計工程", amount: ""},
-      {item: "店面租賃兩壓一租", amount: ""},
+      {item: "品牌加盟相關費用", amount: ""},
+      {item: "店面裝潢設計工程", amount: ""},
+      {item: "店面租賃兩押一租", amount: ""},
       {item: "營運設備、生財器具", amount: ""},
       {item: "開店前首批儲備物料", amount: ""},
       {item: "創業者預計支薪預算", amount: ""},
@@ -1905,6 +1911,8 @@ const formErrors = reactive({
 });
 
 function goNext(nextStep) {
+  // 顯示資料
+  console.log("目前表單資料:", JSON.stringify(formData));
   if (Object.keys(STEPS).includes(nextStep)) {
     docStep.value = nextStep;
 
@@ -2310,7 +2318,7 @@ function convertFormData(formData, userId) {
     brand: parseInt(step1.brand) || 0,
 
     // (Step2)
-    document: step2.file.id || 0,
+    document: step2.file?.id || 0,
 
     // 創業經驗 (Step3)
     hasExperience: stringToBool(step3.hasStartupExp),
@@ -2343,9 +2351,9 @@ function convertFormData(formData, userId) {
     coFounderAddedValue: getCoFounderValueText(step4.q9Location, step4.q9LocationNote) || "",
 
     // 財務規劃 (Step5) - 預算項目
-    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟的相關費用"),
-    decorationCosts: getBudgetAmount(step5.prepBudget, "店面的裝潢設計工程"),
-    storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩壓一租"),
+    franchiseFee: getBudgetAmount(step5.prepBudget, "品牌加盟相關費用"),
+    decorationCosts: getBudgetAmount(step5.prepBudget, "店面裝潢設計工程"),
+    storeRentCosts: getBudgetAmount(step5.prepBudget, "店面租賃兩押一租"),
     equipmentCosts: getBudgetAmount(step5.prepBudget, "營運設備、生財器具"),
     firstMaterialCost: getBudgetAmount(step5.prepBudget, "開店前首批儲備物料"),
     paySalaryBudget: getBudgetAmount(step5.prepBudget, "創業者預計支薪預算"),
@@ -2414,9 +2422,12 @@ async function createPlan() {
     if (!isEditMode.value) {
 
       // 前往個人頁面上傳文件
-      const result = await NewAlert.confirm("創業計劃書提交成功", "請前往「個人專區」上傳相關文件。")
+      const result = await NewAlert.confirm("創業計劃書提交成功", "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。")
       if (result) {
-        await router.push({path: "/account/profile"});
+        await router.push({
+          path: "/account/profile",
+          query: { tab: "founder"}
+        });
       }
     } else {
       // 編輯模式下的提示
@@ -2500,6 +2511,7 @@ async function getAllPlanByUser() {
       paymentStatus: plan.paymentStatus || 0,
       contractStatus: plan.contractStatus || 0,
       companyStatus: plan.companyStatus || 0,
+      documentUrl: plan.documentUrl || '',
 
       completedProgress: plan.completedProgress || 0,
       pendingProgress: plan.pendingProgress || 0,

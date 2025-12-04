@@ -7,7 +7,10 @@
         <input
             :id="id"
             :type="computedType"
-            v-model="model"
+            :value="displayValue"
+            @input="handleInput"
+            @blur="handleBlur"
+            @focus="handleFocus"
             :placeholder="placeholder"
             :autocomplete="autocomplete"
             :required="required"
@@ -23,7 +26,6 @@
             @click="togglePasswordVisibility"
             tabindex="-1"
         >
-
           <svg v-if="showPassword" viewBox="0 0 24 24" width="20" height="20">
             <path
                 fill="currentColor"
@@ -74,13 +76,16 @@
         <input
             :id="id"
             :type="computedType"
-            v-model="model"
+            :value="displayValue"
+            @input="handleInput"
+            @blur="handleBlur"
+            @focus="handleFocus"
             :placeholder="placeholder"
-        :autocomplete="autocomplete"
-        :required="required"
-        :readonly="readonly"
-        :class="{ 'is-invalid': error }"
-        v-bind="$attrs"
+            :autocomplete="autocomplete"
+            :required="required"
+            :readonly="readonly"
+            :class="{ 'is-invalid': error }"
+            v-bind="$attrs"
         />
         <!-- 密碼顯示/隱藏按鈕 -->
         <button
@@ -150,11 +155,13 @@ const props = defineProps({
   readonly: {type: Boolean, default: false},
   buttonReadonly: {type: Boolean, default: false},
   showEye: {type: Boolean, default: true},
+  formatNumber: {type: Boolean, default: false}, // 新增：是否格式化為千分位
 });
 
 const emit = defineEmits(["button-click", "resend"]);
 
 const showPassword = ref(false);
+const isFocused = ref(false);
 
 const computedType = computed(() => {
   if (props.type === 'password' && showPassword.value) {
@@ -162,6 +169,64 @@ const computedType = computed(() => {
   }
   return props.type;
 });
+
+// 顯示值：輸入時顯示原始值，失焦時顯示格式化值
+const displayValue = computed(() => {
+  if (!props.formatNumber) {
+    return model.value;
+  }
+
+  // 正在輸入時，不格式化
+  if (isFocused.value) {
+    return model.value;
+  }
+
+  // 失焦時格式化顯示
+  if (!model.value && model.value !== 0) return '';
+  return formatNumberWithCommas(model.value);
+});
+
+// 格式化數字為千分位
+function formatNumberWithCommas(value) {
+  if (!value && value !== 0) return '';
+  const numStr = value.toString().replace(/,/g, '');
+  return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// 處理輸入
+function handleInput(event) {
+  let value = event.target.value;
+
+  if (props.formatNumber) {
+    // 移除所有逗號，只保留數字
+    value = value.replace(/,/g, '');
+    // 只允許數字
+    value = value.replace(/[^\d]/g, '');
+    model.value = value ? parseInt(value, 10) : '';
+  } else {
+    model.value = value;
+  }
+}
+
+// 失焦時格式化
+function handleBlur(event) {
+  isFocused.value = false;
+
+  if (props.formatNumber && model.value) {
+    // 觸發重新渲染以顯示格式化後的值
+    event.target.value = formatNumberWithCommas(model.value);
+  }
+}
+
+// 聚焦時取消格式化
+function handleFocus(event) {
+  isFocused.value = true;
+
+  if (props.formatNumber && model.value) {
+    // 顯示原始數字，方便編輯
+    event.target.value = model.value.toString();
+  }
+}
 
 function togglePasswordVisibility() {
   showPassword.value = !showPassword.value;
