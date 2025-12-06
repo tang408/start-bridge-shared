@@ -404,14 +404,17 @@ async function goToParticipation() {
       ) {
         const result = await NewAlert.favorite(
             "資料不齊全",
-            "請完善會員資料（所在區域、工作狀態、最高可投入資源、預計參與產業）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
+            "請完善會員資料（所在區域、工作狀態、最高可投入資源、預計參與產業）後，再參與專案。您可以選擇先收藏此計畫或前往完善資料"
         );
 
         if (result === 'favorite') {
           await handleUserFavoritePlan();
           return;
         } else if (result === 'push') {
-          await router.push({path: "/account/profile"});
+          await router.push({
+            path: "/account/profile",
+            query: { tab: "cofounder"}
+          });
           return;
         }
         return;
@@ -475,7 +478,7 @@ async function handleUserFavoritePlan() {
   if (response.code === 0) {
     await NewAlert.show("已收藏", "此計畫已成功加入您的收藏清單");
   } else {
-    await NewAlert.show("收藏失敗", response.message + " ,加入收藏失敗，請洽客服人員");
+    await NewAlert.show("已收藏", "此計畫已在您的收藏清單中");
   }
 }
 

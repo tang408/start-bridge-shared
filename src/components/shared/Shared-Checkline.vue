@@ -29,6 +29,7 @@
             :value="model[opt.key]?.value || ''"
             @input="onInput(opt.key, $event.target.value)"
             :placeholder="opt.placeholder || '請輸入'"
+            :min="opt.min"
         />
 
         <input
@@ -38,6 +39,7 @@
             :value="model[opt.key]?.value || ''"
             readonly
             disabled
+            :min="opt.min"
         />
       </div>
     </div>
@@ -73,38 +75,44 @@ function ensureKey(key) {
 function onToggle(key, checked) {
   if (props.readonly) return;
 
-  ensureKey(key);
-
   if (props.single) {
+    // Single selection mode - uncheck all others
     const newModel = {};
     props.options.forEach((opt) => {
-      newModel[opt.key] = { checked: false, value: "" };
-    });
-    if (checked) {
-      newModel[key] = {
-        ...newModel[key],
-        checked: true,
-        value: model.value[key]?.value || "",
+      newModel[opt.key] = { 
+        checked: opt.key === key && checked, 
+        value: opt.key === key ? (model.value[key]?.value || "") : "" 
       };
-    }
+    });
     model.value = newModel;
   } else {
+    // Multiple selection mode
     if (key === 'anytime' && checked) {
+      // If 'anytime' is checked, uncheck all others
       const newModel = {};
       props.options.forEach((opt) => {
-        newModel[opt.key] = { checked: false, value: "" };
+        newModel[opt.key] = { 
+          checked: opt.key === 'anytime', 
+          value: "" 
+        };
       });
-      newModel.anytime = { checked: true, value: "" };
-      model.value = newModel;
-    } else if (key !== 'anytime' && checked) {
-      const newModel = { ...model.value };
-      if (newModel.anytime) {
-        newModel.anytime = { checked: false, value: "" };
-      }
-      newModel[key] = { ...model.value[key], checked };
       model.value = newModel;
     } else {
-      model.value = { ...model.value, [key]: { ...model.value[key], checked } };
+      // For other checkboxes
+      const currentValue = model.value[key]?.value || "";
+      
+      // Create a new object to trigger reactivity
+      const newModel = { ...model.value };
+      
+      // If checking a non-anytime option, uncheck anytime
+      if (checked && key !== 'anytime' && newModel.anytime) {
+        newModel.anytime = { checked: false, value: "" };
+      }
+      
+      // Update the current key
+      newModel[key] = { checked, value: currentValue };
+      
+      model.value = newModel;
     }
   }
 }
@@ -113,7 +121,20 @@ function onInput(key, val) {
   if (props.readonly) return;
 
   ensureKey(key);
-  model.value = { ...model.value, [key]: { ...model.value[key], value: val } };
+  
+  // Find the option config for this key
+  const option = props.options.find(opt => opt.key === key);
+  
+  // If it's a number input with a min value, enforce the minimum
+  let finalValue = val;
+  if (option?.inputType === 'number' && option?.min !== undefined) {
+    const numValue = Number(val);
+    if (!isNaN(numValue) && numValue < option.min) {
+      finalValue = String(option.min);
+    }
+  }
+  
+  model.value = { ...model.value, [key]: { ...model.value[key], value: finalValue } };
 }
 
 watch(

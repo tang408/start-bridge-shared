@@ -57,9 +57,9 @@
               ref="nameRef"
               id="name"
               label="姓名*"
-              placeholder="請輸入與身份證件（如護照）上完全一致的姓名。"
               v-model="form.name"
               :error="errors.name"
+              hint="請輸入與身份證件（如護照）上完全一致的姓名。"
               @input="handleNameInput"
           />
 

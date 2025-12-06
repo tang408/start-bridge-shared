@@ -169,7 +169,7 @@ const getUserInfo = async () => {
 
 // 強制下載檔案
 async function downloadFile(contract) {
-  if (founderData.value.status !== 2 || coreFounderData.value.status !== 2  ) {
+  if (founderData.value.status >= 1 || coreFounderData.value.status >= 1  ) {
       await NewAlert.show("注意！", "請先完成創業者或共創者認證，才能下載合約內容");
     return;
   }

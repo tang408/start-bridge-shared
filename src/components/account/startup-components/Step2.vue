@@ -57,7 +57,7 @@ function goNextStep() {
 }
 
 function downloadTemplate() {
-  window.open("/src/assets/plan-document/plan-document.pdf", "_blank");
+  window.open("http://43.213.118.243:8080/static/download_plan_document/plan_document.pdf", "_blank");
 }
 
 function handleUploadSuccess(fileType, result) {

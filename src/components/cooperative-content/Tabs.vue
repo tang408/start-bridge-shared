@@ -343,7 +343,10 @@ async function goToStartup() {
           return;
         } else if (result === 'push') {
           // 用戶選擇前往完善資料
-          await router.push({ path: "/account/profile" });
+          await router.push({
+            path: "/account/profile",
+            query: { tab: "founder"}
+          });
           return;
         }
         // result === false 表示用戶關閉彈窗，不做任何操作

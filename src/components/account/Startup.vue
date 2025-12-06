@@ -1296,6 +1296,8 @@ async function loadPlanData(planId) {
         minAmount: String(planData.minimumAmount || ''),
         amountRange: String(planData.amountRange || ''),
         partnerLimit: String(planData.limitPartner || ''),
+        expectedOpeningInfo: planData.expectedOpeningInfo || '',
+        expectedOpeningDate: planData.expectedOpeningDate || '',
       });
 
       // Step3 - 創業經驗
@@ -2653,7 +2655,7 @@ async function handleButtonClick(plan) {
     docStep.value = 'step1';
 
     // 5. 更新路由
-    router.push({
+    await router.push({
       path: '/account/startup',
       query: {
         source: 'business',
