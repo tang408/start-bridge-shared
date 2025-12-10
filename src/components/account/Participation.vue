@@ -15,16 +15,9 @@
       <article
           v-for="p in projects"
           :key="p.id"
-          class="article-card"
-          :class="{ expanded: expandedId === p.id }"
+          class="article-card expanded"
       >
-        <button
-            type="button"
-            class="summary"
-            @click="toggle(p.id)"
-            :aria-expanded="expandedId === p.id ? 'true' : 'false'"
-            :aria-controls="`details-${p.id}`"
-        >
+        <div class="summary">
           <header class="card-head">
         <span class="status-pill" :class="statusClass(p.status)">
           {{ statusLabel(p.status) }}
@@ -75,10 +68,10 @@
               <span class="remain">還差 {{ fmtMoney(p.remainingAmount) }}</span>
             </div>
           </div>
-        </button>
+        </div>
 
         <!-- 展開的明細內容 -->
-        <div v-if="expandedId === p.id" class="detail-panel" :id="`details-${p.id}`">
+        <div class="detail-panel" :id="`details-${p.id}`">
           <hr/>
           <div class="tx-list">
             <div
@@ -153,18 +146,20 @@
 
             <div class="contract-actions mt-3">
               <button
+                  :disabled="p.agreeTerms"
                   type="button"
                   class="btn-contract-agree"
+                  :class="{ 'agreed': p.agreeTerms }"
                   @click.stop="agreeContractTermsByUser(p)"
               >
-                我同意雙方合約條例
+                {{ p.agreeTerms ? '已同意合約條例' : '我同意雙方合約條例' }}
               </button>
 
               <button
                   type="button"
                   class="btn-contract-adjust"
                   :class="{ 'notified': p.adjustmentRequested }"
-                  :disabled="p.adjustmentRequested"
+                  :disabled="p.agreeTerms || p.adjustmentRequested"
                   @click.stop="handleRequestAdjustment(p)"
               >
                 {{ p.adjustmentRequested ? '已通知' : '尚有調整意願' }}
@@ -635,9 +630,9 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-  if (status > 0 && status <= 8) return 'pending';
+  if (status > 0 && status <= 8 && status !== 2) return 'pending';
   if (status > 8 && status !== 9) return 'success';
-  if (status === 9 || status < 0) return 'failed';
+  if (status === 9 || status < 0 || status === 2) return 'failed';
   return 'unknown';
 }
 
@@ -716,7 +711,8 @@ async function getAllParticipantPlanByUser() {
           increaseAmountStr: '',
           // 新增合約相關字段
           planFinalContractUrl: plan.planFinalContractUrl || '',
-          adjustmentRequested: false, // 初始狀態為未通知
+          adjustmentRequested: plan.adjustmentRequested || false,
+          agreeTerms: plan.agreeTerms || false,
         };
       });
     } else {
@@ -1077,9 +1073,9 @@ async function agreeContractTermsByUser(plan) {
       "確認同意合約",
       "您確定要同意雙方合約條例嗎？"
   );
-   if (result === 'confirm') {
+   if (result === true) {
     const formData = {
-      planId: plan.planId,
+      planId: plan.id,
       userId: currentUser.value,
       agree: true,
     }
@@ -1087,7 +1083,7 @@ async function agreeContractTermsByUser(plan) {
     const res = await userCheckApi.agreeContractTermsByUser(formData)
     if (res.code === 0) {
       await NewAlert.show("成功", "您已同意合約條例");
-      console.log('同意合約:', plan.id);
+      await refreshAllData()
     } else {
       await NewAlert.show("失敗", res.message + " ,請洽客服人員。");
     }
@@ -1118,7 +1114,7 @@ async function handleAdjustmentSubmit() {
   const plan = selectedPlanForAdjustment.value;
 
   const formData = {
-    planId: plan.planId,
+    planId: plan.id,
     userId: currentUser.value,
     agree: false,
     remark: adjustmentRemark.value.trim(),
@@ -1137,6 +1133,7 @@ async function handleAdjustmentSubmit() {
 
 // 刷新所有數據
 async function refreshAllData() {
+  console.log("刷新所有數據")
   await Promise.all([
     getSystemSetting(),
     getAllParticipantPlanByUser(),

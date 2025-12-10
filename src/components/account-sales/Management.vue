@@ -493,14 +493,27 @@
       v-model="showCertificationDialog"
       :title="certificationDialogTitle"
       mode="close"
-      @update:modelValue="handleCloseDocDialog"
+      @update:modelValue="handleCloseCertificationDialog"
       class="doc-modal"
       titleAlign="center"
       :large="true"
   >
     <div class="modal-content-wrapper">
       <div class="modal-section text-center">
-        <img :src="docDialogUrl" alt="文件預覽" class="doc-image"/>
+        <!-- 根據文件類型顯示不同內容 -->
+        <img
+          v-if="!isPdfFile(docDialogUrl)"
+          :src="docDialogUrl"
+          alt="文件預覽"
+          class="doc-image"
+        />
+        <div v-else class="pdf-container">
+          <iframe
+            :src="docDialogUrl"
+            class="pdf-viewer"
+            title="PDF 預覽"
+          ></iframe>
+        </div>
       </div>
     </div>
   </SharedModal>
@@ -606,25 +619,13 @@ const cityOptions = computed(() => {
 
 // 狀態篩選選項（合併創業者和共創者的步驟）
 const statusOptions = computed(() => {
-  const options = [{label: '全部', value: ''}];
-
-  // 添加創業者步驟
-  planSteps.value.forEach(step => {
-    options.push({
-      label: `${step.step} (創業)`,
-      value: `founder-${step.id}`
-    });
-  });
-
-  // 添加共創者步驟
-  corePlanStep.value.forEach(step => {
-    options.push({
-      label: `${step.step} (共創)`,
-      value: `core-${step.id}`
-    });
-  });
-
-  return options;
+  return [
+    { label: '全部', value: '' },
+    { label: '創業者 (由小到大)', value: 'founder-asc' },
+    { label: '創業者 (由大到小)', value: 'founder-desc' },
+    { label: '共創者 (由小到大)', value: 'core-asc' },
+    { label: '共創者 (由大到小)', value: 'core-desc' }
+  ];
 });
 
 // 篩選和排序後的專案列表
@@ -636,26 +637,39 @@ const displayedProjects = computed(() => {
     list = list.filter(p => p.city === projectFilter.city);
   }
 
-  // 狀態篩選
+  // 狀態篩選和排序
   if (projectFilter.status) {
-    const [type, stepId] = projectFilter.status.split('-');
-    const id = parseInt(stepId);
+    const [type, order] = projectFilter.status.split('-');
 
-    list = list.filter(p => {
-      if (type === 'founder' && p.planType === 1) {
-        return p.currentStep === id;
-      } else if (type === 'core' && p.planType === 2) {
-        return p.currentCoreStep === id;
+    // 先篩選類型
+    if (type === 'founder') {
+      list = list.filter(p => p.planType === 1);
+
+      // 再排序
+      if (order === 'asc') {
+        list.sort((a, b) => a.currentStep - b.currentStep);
+      } else if (order === 'desc') {
+        list.sort((a, b) => b.currentStep - a.currentStep);
       }
-      return false;
-    });
+    } else if (type === 'core') {
+      list = list.filter(p => p.planType === 2);
+
+      // 再排序
+      if (order === 'asc') {
+        list.sort((a, b) => a.currentCoreStep - b.currentCoreStep);
+      } else if (order === 'desc') {
+        list.sort((a, b) => b.currentCoreStep - a.currentCoreStep);
+      }
+    }
   }
 
-  // 日期排序
-  if (projectFilter.dateOrder === 'desc') {
-    list.sort((a, b) => new Date(b.date) - new Date(a.date));
-  } else if (projectFilter.dateOrder === 'asc') {
-    list.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // 日期排序 (只在沒有選擇狀態排序時才用日期排序)
+  if (projectFilter.dateOrder && !projectFilter.status) {
+    if (projectFilter.dateOrder === 'desc') {
+      list.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (projectFilter.dateOrder === 'asc') {
+      list.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
   }
 
   return list;
@@ -765,7 +779,7 @@ const shouldShowReviewButtons = () => {
     if (!planInfo.value.planStatus) return false;
 
     // 創業者可審核的步驟
-    const founderReviewableSteps = [1, 22,13, 15, 17, 19]; // 可以審核的步驟
+    const founderReviewableSteps = [1, 13, 15, 17, 19]; // 可以審核的步驟
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
 }
@@ -843,6 +857,7 @@ async function handleApprove(data, approved) {
       await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
+
   if (data.planType === 1 && data.currentStep === 13) {
     const res = await salesCheckApi.checkResourceBySales(formData);
     if (res.code === 0) {
@@ -956,7 +971,20 @@ const openCertificationDialog = (type,url) => {
   console.log(type,url)
   showCertificationDialog.value = true
   docDialogUrl.value = url
+  currentDocType.value = type
+}
 
+// 判斷是否為 PDF 文件
+const isPdfFile = (url) => {
+  if (!url) return false
+  return url.toLowerCase().endsWith('.pdf') || url.toLowerCase().includes('.pdf?')
+}
+
+// 關閉認證文件對話框
+function handleCloseCertificationDialog() {
+  showCertificationDialog.value = false
+  docDialogUrl.value = ''
+  currentDocType.value = ''
 }
 
 
@@ -1092,6 +1120,13 @@ function shouldShowContractButtons() {
     return false;
   }
 
+  // 判斷是創業者還是共創者
+  const isParticipant = !!planInfo.value.participantPlanId; // 有 participantPlanId 表示是共創者
+
+  if (isParticipant) {
+    return false;
+  }
+
   // 檢查是否有共創者
   if (!planInfo.value.participantPlanInfo || planInfo.value.participantPlanInfo.length === 0) {
     return false;
@@ -1144,6 +1179,7 @@ async function handleNotifyAllUser() {
       planInfo.value.isNotify = true;
       await NewAlert.show("成功", "已通知雙方簽約");
       showModal.value = false;
+      await getAllPlanBySales();
     } else {
       await NewAlert.show("失敗", response.message || "通知失敗");
       showModal.value = false;
@@ -1474,6 +1510,40 @@ const getStatusClass = (type, status) =>
 
   &:active:not(:disabled) {
     transform: translateY(1px);
+  }
+}
+
+// PDF 容器和查看器樣式
+.pdf-container {
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f5f5f5;
+
+  @media (max-width: 768px) {
+    height: 60vh;
+    min-height: 400px;
+  }
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #f5f5f5;
+}
+
+.doc-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    max-height: 60vh;
   }
 }
 

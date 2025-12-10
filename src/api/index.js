@@ -5,7 +5,7 @@ const TestHost ='http://43.213.118.243:8080/api';
 const ReleaseHost = 'https://starbridge.com.tw/api';
 // 創建 axios 實例
 const api = axios.create({
-  baseURL: LocalHost,
+  baseURL: TestHost,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

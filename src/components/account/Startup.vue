@@ -1869,7 +1869,7 @@ const formData = reactive({
     sharePayOther: {},
     agree: "",
   },
-  step8: {agree: ""},
+  step8: {agree: "agree"},
 });
 
 const formErrors = reactive({
@@ -2404,6 +2404,10 @@ otherCostsTitle: (() => {
 
 async function createPlan() {
   const data = convertFormData(formData, currentUser.value);
+  if (formData.step8.agree !== "agree") {
+    await NewAlert.show("注意！","請同意創業風險提示與責任聲明後，再進行提交。");
+    return;
+  }
 
   let response;
 
@@ -2434,6 +2438,10 @@ async function createPlan() {
     } else {
       // 編輯模式下的提示
       await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
+      await router.push({
+        path: "/account/startup"
+      })
+      await getAllPlanByUser()
     }
 
     // 重置編輯狀態
@@ -2911,8 +2919,7 @@ function changeProgressStep(currentStep) {
     return 4
   }
 
-  // 準備上架
-  if (currentStep >= 10 && currentStep < 14) {
+  if ((currentStep >= 10 && currentStep < 14) || currentStep === 22) {
     return 5
   }
 
@@ -2920,11 +2927,11 @@ function changeProgressStep(currentStep) {
     return 6
   }
 
-  if (currentStep >= 17 && currentStep < 22) {
+  if (currentStep >= 17 && currentStep < 21) {
     return 7
   }
 
-  if (currentStep >= 22) {
+  if (currentStep >= 21) {
     return 8
   }
 }

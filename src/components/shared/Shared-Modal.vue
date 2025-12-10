@@ -99,7 +99,7 @@ function submit() {
   transform: translateY(-50%);
   padding: 25px;
   min-width: 500px;
-  z-index: 9999;
+  z-index: 9998;
   @media (max-width: 576px) {
     min-width: auto;
     position: absolute;

@@ -14,7 +14,7 @@
             <footer class="sa-footer">
               <!-- 根據 type 顯示不同按鈕 -->
               <template v-if="type === 'confirm'">
-                <button class="sa-cancel-btn" @click="handleCancel">取消</button>
+                <button class="sa-cancel-btn" @click="handleCancel">關閉</button>
                 <button class="sa-confirm-btn" @click="handleConfirm">確定</button>
               </template>
               <template v-else-if="type === 'favorite'">
@@ -75,7 +75,7 @@ const handlePush = () => {
   display: flex;
   justify-content: center;
   align-items: start;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 .sa-modal {

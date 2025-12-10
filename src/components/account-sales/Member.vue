@@ -323,13 +323,23 @@
   >
     <div class="modal-content-wrapper">
       <div class="modal-section text-center">
-        <img :src="docDialogUrl" alt="文件預覽" class="doc-image"/>
+        <!-- 根據文件類型顯示不同內容 -->
+        <iframe
+            v-if="isCurrentDocPdf"
+            :src="docDialogUrl"
+            class="doc-pdf"
+        ></iframe>
+        <img
+            v-else
+            :src="docDialogUrl"
+            alt="文件預覽"
+            class="doc-image"
+        />
       </div>
     </div>
   </SharedModal>
 
 </template>
-
 <script setup>
 import {reactive, computed, ref, onMounted, watch} from "vue";
 import SharedDropdown from "@/components/shared/Shared-Dropdown.vue";
@@ -366,7 +376,7 @@ function formatMemberType(types) {
   const labels = [];
   if (types.includes(1)) labels.push('創業者');
   if (types.includes(2)) labels.push('共創者');
-  return labels.join('、'); // 使用頓號分隔
+  return labels.join('、');
 }
 
 const members = reactive([]);
@@ -457,7 +467,7 @@ async function getAllUserBySales() {
     return {
       ...member,
       formattedType: formatMemberType(member.type),
-      planStatus: member.planStatus,  // 保留原始 ID
+      planStatus: member.planStatus,
       rank: level ? level.name : `未知等級 (${member.rank})`,
     };
   });
@@ -501,25 +511,20 @@ async function openPlanDialog(row) {
 const handleManage = () => {
   const query = {
     userId: planDetail.value.userId,
-    autoOpen: 'planDetail', // 標記要自動開啟的 dialog
+    autoOpen: 'planDetail',
   }
 
-  // 根據是創業者還是共創者傳遞不同的參數
   if (planDetail.value.participantPlanId && planDetail.value.participantPlanId > 0) {
-    // 共創者
     query.participantPlanId = planDetail.value.participantPlanId
   } else {
-    // 創業者
     query.planId = planDetail.value.planId
   }
 
-  // 跳轉到 management 頁面
   router.push({
     path: '/account-sales/management',
     query: query
   })
 
-  // 關閉當前 dialog
   showPlanDialog.value = false
 }
 
@@ -540,18 +545,16 @@ async function openMemberDetail(userId) {
 
   try {
     const response = await salesApi.getUserInfoBySales(formData);
-    console.log('用戶詳情:', response.data); // 調試用
+    console.log('用戶詳情:', response.data);
 
     if (response.code === 0) {
       selectedMemberDetail.value = response.data;
       showModal.value = true;
     } else {
-      // 處理錯誤
       console.error('獲取用戶詳情失敗:', response.message);
     }
   } catch (error) {
     console.error('獲取用戶詳情失敗:', error);
-    // 可以顯示錯誤提示
   }
 }
 
@@ -586,23 +589,32 @@ const docDialogTitle = computed(() => {
   }
 })
 const docDialogUrl = ref('')
-// 打開文件對話框
-const openDocDialog = (type, url) => {
-  console.log(type, url)
-  showDocDialog.value = true
-  docDialogUrl.value = url
 
+// 🆕 判斷當前文件是否為 PDF
+const isCurrentDocPdf = computed(() => {
+  return docDialogUrl.value.toLowerCase().endsWith('.pdf')
+})
+
+// 🆕 修改後的打開文件對話框函數
+const openDocDialog = (type, url) => {
+  if (!url) return
+
+  console.log(type, url)
+  currentDocType.value = type
+  docDialogUrl.value = url
+  showDocDialog.value = true
 }
 
 </script>
+
 <style scoped lang="scss">
 .plan-link {
-  color: #1e90ff; // 或你喜歡的藍色
+  color: #1e90ff;
   text-decoration: underline;
   cursor: pointer;
 
   &:hover {
-    color: #0066cc; // hover 時的顏色
+    color: #0066cc;
     text-decoration: underline;
   }
 }
@@ -692,7 +704,6 @@ const openDocDialog = (type, url) => {
   cursor: default;
   transition: all 0.2s ease;
 
-  // 可點擊狀態
   &.clickable {
     color: #409eff;
     cursor: pointer;
@@ -705,17 +716,13 @@ const openDocDialog = (type, url) => {
     }
   }
 
-  // 禁用狀態
   &.disabled {
     color: #9e9e9e;
     cursor: not-allowed;
     opacity: 0.6;
-    pointer-events: none; // 只在 disabled 時禁用點擊
+    pointer-events: none;
   }
 }
-
-/* Dialog 樣式 */
-
 
 .dialog-container {
   background: white;
@@ -841,6 +848,7 @@ const openDocDialog = (type, url) => {
   max-height: 95vh;
 }
 
+// 🆕 圖片樣式
 .doc-image {
   max-width: 100%;
   height: auto;
@@ -848,13 +856,20 @@ const openDocDialog = (type, url) => {
   margin: 0 auto;
 }
 
+// 🆕 PDF iframe 樣式
+.doc-pdf {
+  width: 100%;
+  height: 70vh;
+  border: none;
+  display: block;
+}
+
 .modal-content-wrapper {
-  max-height: 60vh; // 視窗高度的 60%
+  max-height: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 2px; // 避免內容被滾動條遮住
+  padding-right: 2px;
 
-  // 美化滾動條
   &::-webkit-scrollbar {
     width: 8px;
   }
@@ -874,12 +889,10 @@ const openDocDialog = (type, url) => {
     }
   }
 
-  // Firefox 滾動條樣式
   scrollbar-width: thin;
   scrollbar-color: #ccc #f5f5f5;
 }
 
-// 為 modal section 添加適當間距
 .modal-section {
   margin-bottom: 16px;
 
@@ -888,21 +901,6 @@ const openDocDialog = (type, url) => {
     font-size: 16px;
     margin-bottom: 12px;
     color: #333;
-  }
-}
-
-.doc-tag {
-  &.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    pointer-events: none; // 禁止點擊
-  }
-
-  &.clickable {
-    cursor: pointer;
-    &:hover {
-      // 你的 hover 效果
-    }
   }
 }
 </style>

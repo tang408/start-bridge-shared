@@ -80,11 +80,6 @@
     </div>
   </div>
 
-  <SharedModal v-model="showModal" >
-    「星橋創媒」平台不介入雙方協調與法律仲裁，但有義務維護其他用戶安全。
-    若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
-  </SharedModal>
-
 </template>
 
 <script setup>
@@ -131,11 +126,10 @@ function changePage(p) {
 }
 
 function openModal(row) {
-  if (founderData.value.status !== 2 && coreFounderData.value.status !== 2) {
+  if (founderData.value.status < 1 && coreFounderData.value.status < 1) {
      NewAlert.show("注意！", "請先完成創業者或共創者認證，才能預覽合約內容");
     return;
   }
-
 
   selectedContract.value = row;
   showModal.value = true;
@@ -169,7 +163,8 @@ const getUserInfo = async () => {
 
 // 強制下載檔案
 async function downloadFile(contract) {
-  if (founderData.value.status >= 1 || coreFounderData.value.status >= 1  ) {
+  console.log(founderData.value)
+  if (founderData.value.status < 1 || coreFounderData.value.status < 1  ) {
       await NewAlert.show("注意！", "請先完成創業者或共創者認證，才能下載合約內容");
     return;
   }

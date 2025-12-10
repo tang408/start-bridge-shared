@@ -388,7 +388,7 @@ async function handleUserFavoritePlan() {
   if (response.code === 0) {
     await NewAlert.show("操作成功", "已將此品牌加入您的收藏");
   } else {
-    await NewAlert.show("操作失敗", response.message + " ,無法將此品牌加入您的收藏，請洽客服人員");
+    await NewAlert.show("注意", "此品牌已在您的收藏清單中");
   }
 
 }

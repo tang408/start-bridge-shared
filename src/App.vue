@@ -44,7 +44,7 @@ const performLogout = async (reason = '長時間無活動') => {
 
     await router.push({
       path: '/login',
-      query: { redirect: route.fullPath } // 記錄原本要去的頁面
+      query: { redirect: route.fullPath }
     });
   }
 };
@@ -87,8 +87,33 @@ const handleUserActivity = (event) => {
 
 let intervalId = null;
 
-onMounted(() => {
+onMounted(async () => {
   console.log("App mounted!");
+
+  // 🆕 檢查 sessionStorage 中是否有活動標記
+  const isActiveSession = sessionStorage.getItem('activeSession');
+
+  if (!isActiveSession) {
+    // 沒有標記 = 新開的分頁或關閉後重開
+    console.log("新開的分頁或關閉後重開，清除 auth");
+
+    // 清除 localStorage 中的 auth
+    await logout(); // 使用 useAuth 提供的 logout
+    localStorage.removeItem('lastActivity'); // lastActivity 不是 auth 管的，所以維持手動清除
+
+    // 如果不在公開頁面，跳轉到登入頁
+    if (!isPublicRoute(route.path)) {
+      await router.push({
+        path: '/login',
+        query: {redirect: route.fullPath}
+      });
+    }
+  } else {
+    console.log("刷新頁面或切換回來，保持登入狀態");
+  }
+
+  // 🆕 設置活動標記（刷新時會保留，關閉分頁時會自動清除）
+  sessionStorage.setItem('activeSession', 'true');
 
   // 初始檢查
   checkSession();
