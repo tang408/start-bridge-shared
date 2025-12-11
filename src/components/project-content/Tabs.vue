@@ -121,21 +121,21 @@
               </div>
 
               <div class="stat-card">
-                <div class="stat-label">媒合人數</div>
+                <div class="stat-label">已媒合人數</div>
                 <div class="stat-value">
                   {{ props.planData?.planDetail.totalUniqueParticipants || 0 }} 人
                 </div>
               </div>
 
               <div class="stat-card highlight">
-                <div class="stat-label">還缺金額</div>
+                <div class="stat-label">尚缺金額</div>
                 <div class="stat-value">
                   $ {{ formatAmount(props.planData?.planDetail.remainingAmount || 0) }}
                 </div>
               </div>
 
               <div class="stat-card highlight">
-                <div class="stat-label">還缺人數</div>
+                <div class="stat-label">尚缺人數</div>
                 <div class="stat-value">
                   {{ props.planData?.planDetail.remainingParticipants || 0 }} 人
                 </div>
@@ -313,7 +313,23 @@ const pendingAmount = computed(() => {
 
 // 🆕 計算屬性：是否可參與
 const canParticipate = computed(() => {
-  return props.planData?.planDetail?.canParticipate ?? true;
+  const currentStep = props.planData?.currentStep;
+  const endTime = props.planData?.endTime; // "2025-12-10"
+  const canParticipateFlag = props.planData?.planDetail?.canParticipate ?? true;
+
+  // 獲取今天的日期字串 (YYYY-MM-DD)
+  const today = new Date().toISOString().split('T')[0];
+
+  console.log('endDate:', endTime);
+  console.log('today:', today);
+  console.log('比較結果:', endTime >= today);
+
+  return canParticipateFlag &&
+      currentStep > 0 &&
+      currentStep !== 2 &&
+      currentStep !== 11 &&
+      endTime &&
+      endTime >= today; // 包含當天
 });
 
 // 🆕 計算屬性：最大可投資金額
@@ -368,27 +384,6 @@ async function goToParticipation() {
 
   if (response.code === 0) {
     userData.value = response.data;
-
-    // // 檢查用戶基本資料
-    // if (userData.value.userInfoData) {
-    //   const userInfo = userData.value.userInfoData;
-    //
-    //   if (!userInfo.lineId || userInfo.lineId === "") {
-    //     const result = await NewAlert.favorite(
-    //         "資料不齊全",
-    //         "請先完善會員資料（其他聯繫方式）後，再申請創業計畫。您可以選擇先收藏此計畫或前往完善資料"
-    //     );
-    //
-    //     if (result === 'favorite') {
-    //       await handleUserFavoritePlan();
-    //       return;
-    //     } else if (result === 'push') {
-    //       await router.push({path: "/account/profile"});
-    //       return;
-    //     }
-    //     return;
-    //   }
-    // }
 
     // 檢查創業者資料
     if (userData.value.coreFounderData) {

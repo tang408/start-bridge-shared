@@ -1043,6 +1043,7 @@ import {usePdfGenerator} from "@/composables/usePDFGenerateor.js";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {NewAlert} from "@/composables/useAlert.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {userApi} from "@/api/modules/user.js";
 
 // 2. 更新解構賦值，使用新的函數
 const {generateStepByStepPDF} = usePdfGenerator();
@@ -2404,52 +2405,94 @@ otherCostsTitle: (() => {
 
 async function createPlan() {
   const data = convertFormData(formData, currentUser.value);
+
+  // 檢查是否同意聲明
   if (formData.step8.agree !== "agree") {
-    await NewAlert.show("注意！","請同意創業風險提示與責任聲明後，再進行提交。");
+    await NewAlert.show("注意！", "請同意創業風險提示與責任聲明後，再進行提交。");
     return;
   }
 
-  let response;
+  try {
+    let response;
 
-  // 判斷是編輯還是新建
-  if (isEditMode.value && editPlanId.value) {
-    // 更新現有計劃
-    response = await planApi.updatePlan({
-      ...data,
-      planId: editPlanId.value
-    });
-  } else {
-    // 新建計劃
-    response = await planApi.createPlan(data);
-
-  }
-
-  if (response.code === 0) {
-    if (!isEditMode.value) {
-
-      // 前往個人頁面上傳文件
-      const result = await NewAlert.confirm("創業計劃書提交成功", "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。")
-      if (result) {
-        await router.push({
-          path: "/account/profile",
-          query: { tab: "founder"}
-        });
-      }
+    // 判斷是編輯還是新建
+    if (isEditMode.value && editPlanId.value) {
+      // 更新現有計劃
+      response = await planApi.updatePlan({
+        ...data,
+        planId: editPlanId.value
+      });
     } else {
-      // 編輯模式下的提示
-      await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
-      await router.push({
-        path: "/account/startup"
-      })
-      await getAllPlanByUser()
+      // 新建計劃
+      response = await planApi.createPlan(data);
     }
 
-    // 重置編輯狀態
-    isEditMode.value = false;
-    editPlanId.value = null;
+    if (response.code === 0) {
+      if (!isEditMode.value) {
+        // 新建模式：檢查是否需要上傳身分驗證文件
+        const userInfoRes = await userApi.getUserInfo({userId: currentUser.value});
 
-  } else {
-    await NewAlert.show("操作失敗，請洽客服人員。");
+        if (userInfoRes.code !== 0) {
+          await NewAlert.show("提示", "無法獲取用戶資訊，請稍後再試。");
+          return;
+        }
+
+        const userInfo = userInfoRes.data;
+
+        // 檢查是否需要上傳身分驗證文件
+        const needIdentityUpload =
+            userInfo.founderInfoData.identityCertification === 0 ||
+            userInfo.founderInfoData.assetsCertification === 0 ||
+            userInfo.founderInfoData.pcrCertification === 0;
+
+        if (needIdentityUpload) {
+          // 需要上傳身分驗證文件
+          const result = await NewAlert.confirm(
+              "創業計劃書提交成功",
+              "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。"
+          );
+
+          if (result) {
+            await router.push({
+              path: "/account/profile",
+              query: {tab: "founder"}
+            });
+          }
+        } else {
+          // 已完成身分驗證
+          const result = await NewAlert.confirm(
+              "創業計劃書提交成功",
+              "您已完成身分驗證，將前往「創業管理」查看。"
+          );
+
+          if (result) {
+            await router.push('/account/startup');
+          }
+        }
+
+        // 刷新數據
+        await getAllPlanByUser();
+
+      } else {
+        // 編輯模式：直接提示成功並跳轉
+        await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
+        await router.push({
+          path: "/account/startup"
+        });
+        await getAllPlanByUser();
+      }
+
+      // 重置編輯狀態
+      isEditMode.value = false;
+      editPlanId.value = null;
+
+    } else {
+      // 操作失敗
+      await NewAlert.show("操作失敗", response.message || "請洽客服人員。");
+    }
+  } catch (error) {
+    console.error('創業計劃書提交錯誤:', error);
+    await NewAlert.show("操作失敗", "系統發生錯誤，請洽客服人員。");
   }
 }
 

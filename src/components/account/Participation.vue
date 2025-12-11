@@ -316,12 +316,9 @@
               <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
               <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
-                參與風險聲明
+                參與風險聲明 及 平台免責聲明
               </a>
-              及
-              <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
-                平台免責聲明
-              </a>
+
             </div>
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
@@ -468,6 +465,7 @@ import {planApi} from "@/api/modules/plan.js";
 import {userCheckApi} from "@/api/modules/userCheck.js";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
 import {NewAlert} from "@/composables/useAlert.js";
+import {userApi} from "@/api/modules/user.js";
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
 const router = useRouter();
@@ -827,38 +825,44 @@ async function getParticipantPlan() {
 async function participate(p) {
   errors.agree = "";
 
+  // 驗證參與金額
   if (!p.increaseAmount || p.increaseAmount <= 0) {
     await NewAlert.show("輸入錯誤", "請輸入有效的參與金額。");
     return;
   }
 
+  // 檢查參與名額
   if (p.totalParticipantPartner >= p.limitPartner) {
     await NewAlert.show("參與失敗", "此共創專案的參與名額已滿，無法再參與。");
     return;
   }
 
+  // 檢查最小金額
   if (p.increaseAmount < p.minimumAmount) {
-    await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.minimumAmount)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
+    await NewAlert.show("輸入錯誤", `您輸入的投入金額低於最低媒合額度： ${fmtMoney(p.minimumAmount)} 元，若欲調整媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
+  // 檢查剩餘可投資金額
   if (p.increaseAmount > p.goal - p.dollar) {
     await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.goal - p.dollar)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
+  // 檢查金額級距
   if (p.increaseAmount % p.amountRange !== 0) {
     await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;
   }
 
-
+  // 檢查是否同意聲明
   if (!form.agree) {
     errors.agree = "請同意風險聲明及平台免責聲明";
     return;
   }
 
   try {
+    // 提交參與共創
     const response = await planApi.participantPlan({
       userId: currentUser.value,
       planId: Number(route.query.planId),
@@ -866,22 +870,56 @@ async function participate(p) {
     });
 
     if (response.code === 0) {
-      const result = await NewAlert.confirm("共創專案提交成功", "將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。")
-      if (result) {
-        await router.push({
-          path: "/account/profile",
-          query: {tab: "cofounder"}
-        });
-      } else {
-        await router.push('/account/participation');
-        await refreshAllData();
+      // 獲取用戶資訊
+      const userInfoRes = await userApi.getUserInfo({userId: currentUser.value});
+
+      if (userInfoRes.code !== 0) {
+        await NewAlert.show("提示", "無法獲取用戶資訊，請稍後再試。");
+        return;
       }
+
+      const userInfo = userInfoRes.data;
+
+      // 檢查是否需要上傳身分驗證文件
+      const needIdentityUpload =
+          userInfo.coreFounderData.identityCertification === 0 ||
+          userInfo.coreFounderData.secondaryCertification === 0;
+
+      if (needIdentityUpload) {
+        // 需要上傳身分驗證文件
+        const result = await NewAlert.confirm(
+            "共創專案提交成功",
+            "將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。"
+        );
+
+        if (result) {
+          await router.push({
+            path: "/account/profile",
+            query: {tab: "cofounder"}
+          });
+        }
+      } else {
+        // 已完成身分驗證
+        const result = await NewAlert.confirm(
+            "共創專案提交成功",
+            "您已完成身分驗證，將前往「參與專案管理」查看。"
+        );
+
+        if (result) {
+          await router.push('/account/participation');
+        }
+      }
+
+      // 刷新數據
+      await refreshAllData();
+
     } else {
-      await NewAlert.show("參與失敗", response.message + " ,若欲增加媒合額度，請聯繫客服人員諮詢。");
+      // 參與失敗
+      await NewAlert.show("參與失敗", response.message + "，若欲增加媒合額度，請聯繫客服人員諮詢。");
     }
   } catch (error) {
     console.error('參與共創錯誤:', error);
-    await NewAlert.show("參與失敗", "請洽客服人員。");
+    await NewAlert.show("參與失敗", "系統發生錯誤，請洽客服人員。");
   }
 }
 
@@ -1103,11 +1141,6 @@ async function handleAdjustmentSubmit() {
   // 驗證
   if (!adjustmentRemark.value || adjustmentRemark.value.trim() === '') {
     adjustmentError.value = '請填寫調整意願說明';
-    return;
-  }
-
-  if (adjustmentRemark.value.trim().length < 10) {
-    adjustmentError.value = '請至少填寫 10 個字的說明';
     return;
   }
 
