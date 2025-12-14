@@ -2,8 +2,9 @@
   <div class="pdf-step5-part2">
     <!-- 成本結構表 -->
     <div class="cost-section">
+      <h3 class="subsection-title">2.「營運期間」損益成本結構(%數) :</h3>
       <div class="info-label">
-        以營業額目標：<strong>{{ formatCurrency(local.targetRevenue) }} 元</strong> 為基準，規劃各項成本結構比例及金額
+        以營業額目標：<strong>{{ formatCurrency(local.targetRevenue) }} 元</strong> 為標準預期所需比例之佔比
       </div>
       <table class="cost-table">
         <thead>

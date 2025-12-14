@@ -4,14 +4,14 @@
     <SharedTable :columns="columns" :rows="pagedRows" empty-text="目前沒有合約">
       <!-- 預覽 -->
       <template #preview="{ row }">
-        <button class="icon-btn" @click="openModal(row)">
+        <button class="icon-btn" @click="openModal(row, 'preview')">
           <img src="@/assets/icon/eye.png" alt="預覽" />
         </button>
       </template>
 
       <!-- 下載 -->
       <template #download="{ row }">
-        <button class="icon-btn" @click="downloadFile(row)">
+        <button class="icon-btn" @click="openModal(row, 'download')">
           <img src="@/assets/icon/dowload.png" alt="下載" />
         </button>
       </template>
@@ -46,6 +46,19 @@
     </div>
   </section>
 
+  <!-- 宣告 Modal -->
+  <SharedModal 
+    v-model="showDisclaimerModal" 
+    title="注意" 
+    mode="long" 
+    @confirm="handleDisclaimerConfirm"
+  >
+    <div style="text-align: left;">
+      「星橋創媒」平台不介入雙方協議與法律仲裁，但有義務維護其他用戶安全。
+      若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
+    </div>
+  </SharedModal>
+
   <!-- PDF 預覽彈出視窗 -->
   <div v-if="showModal" class="modal-overlay" @click="closeModal">
     <div class="modal-content" @click.stop>
@@ -54,10 +67,6 @@
         <button class="close-btn" @click="closeModal">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="modal-disclaimer">
-          「星橋創媒」平台不介入雙方協調與法律仲裁，但有義務維護其他用戶安全。
-          若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
-        </div>
         <div class="pdf-container">
           <iframe
               v-if="selectedContract"
@@ -79,11 +88,6 @@
       </div>
     </div>
   </div>
-
-  <SharedModal v-model="showModal" >
-    「星橋創媒」平台不介入雙方協調與法律仲裁，但有義務維護其他用戶安全。
-    若有違約、爭議或異常情況，平台保留資訊揭示、異常通報與媒合暫停之權利。
-  </SharedModal>
 
 </template>
 
@@ -130,17 +134,30 @@ function changePage(p) {
   });
 }
 
-function openModal(row) {
-  if (founderData.value.status !== 2 && coreFounderData.value.status !== 2) {
+const showDisclaimerModal = ref(false);
+const currentAction = ref('');
+
+function openModal(row, action) {
+  if (founderData.value.status < 1 && coreFounderData.value.status < 1) {
      NewAlert.show("注意！", "請先完成創業者或共創者認證，才能預覽合約內容");
     return;
   }
 
-
   selectedContract.value = row;
-  showModal.value = true;
-  // 防止背景滾動
-  document.body.style.overflow = 'hidden';
+  currentAction.value = action;
+  showDisclaimerModal.value = true;
+}
+
+function handleDisclaimerConfirm() {
+  showDisclaimerModal.value = false;
+  
+  if (currentAction.value === 'preview') {
+    showModal.value = true;
+    // 防止背景滾動
+    document.body.style.overflow = 'hidden';
+  } else if (currentAction.value === 'download') {
+    downloadFile(selectedContract.value);
+  }
 }
 
 function closeModal() {
@@ -169,7 +186,8 @@ const getUserInfo = async () => {
 
 // 強制下載檔案
 async function downloadFile(contract) {
-  if (founderData.value.status !== 2 || coreFounderData.value.status !== 2  ) {
+  console.log(founderData.value)
+  if (founderData.value.status < 1 || coreFounderData.value.status < 1  ) {
       await NewAlert.show("注意！", "請先完成創業者或共創者認證，才能下載合約內容");
     return;
   }

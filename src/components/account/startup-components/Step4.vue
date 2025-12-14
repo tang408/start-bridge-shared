@@ -60,6 +60,7 @@
               text: '包括以上本人及籌備團隊及員工,總共需要多少人數：',
               withInput: true,
               inputType: 'number',
+              min: 1,
             },
           ]"
             :error="props.errors.q5Total"
@@ -131,7 +132,7 @@
           id="p4-q9"
           v-model="local.q9Location"
           v-model:extra="local.q9LocationNote"
-          label="9. 期待的共同創業者附加價值？"
+          label="9. 請問您期待的「共同創業者」除了初期出資成為您的共同創業者之外，還希望有哪些附加價值？"
           name="q9Location"
           :options="[
           { text: '適度參與經營討論', value: 'operation' },
@@ -159,7 +160,7 @@
 </template>
 
 <script setup>
-import { reactive, watch } from "vue";
+import {reactive, watch} from "vue";
 import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
 import SharedRecruit from "@/components/shared/Shared-Recruit.vue";
@@ -167,26 +168,26 @@ import SharedTime from "@/components/shared/Shared-Time.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 
 const props = defineProps({
-  modelValue: { type: Object, required: true },
-  errors: { type: Object, required: true },
-  readonly: { type: Boolean, default: false },
-  step1Budget: { type: String, default: '' }, // ✅ 加入這個 prop（雖然這個組件沒用到）
+  modelValue: {type: Object, required: true},
+  errors: {type: Object, required: true},
+  readonly: {type: Boolean, default: false},
+  step1Budget: {type: String, default: ''}, // ✅ 加入這個 prop（雖然這個組件沒用到）
 });
 
 const emit = defineEmits(["update:modelValue", "next"]);
 
 // ✅ 改用解構賦值，避免直接修改 props
-const local = reactive({ ...props.modelValue });
+const local = reactive({...props.modelValue});
 
 // ✅ 監聽 props.modelValue 的變化
 watch(() => props.modelValue, (newVal) => {
   Object.assign(local, newVal);
-}, { deep: true });
+}, {deep: true});
 
 // ✅ 監聽 local 的變化
 watch(local, (val) => {
   emit("update:modelValue", val);
-}, { deep: true });
+}, {deep: true});
 
 function scrollToError(fieldId) {
   const element = document.getElementById(fieldId);
@@ -259,8 +260,8 @@ function submitStep() {
   if (!hasQ5Selection) {
     props.errors.q5Total = "必選";
     if (!firstErrorField) firstErrorField = 'p4-q5';
-  } else if (!local.q5.total?.value || isNaN(local.q5.total?.value) || Number(local.q5.total?.value) <= 0) {
-    props.errors.q5Total = "請填寫正確人數";
+  } else if (!local.q5.total?.value || isNaN(local.q5.total?.value) || Number(local.q5.total?.value) < 1) {
+    props.errors.q5Total = "請填寫正確人數（最小為 1）";
     if (!firstErrorField) firstErrorField = 'p4-q5';
   }
 

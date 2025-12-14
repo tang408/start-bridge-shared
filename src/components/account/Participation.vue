@@ -15,16 +15,9 @@
       <article
           v-for="p in projects"
           :key="p.id"
-          class="article-card"
-          :class="{ expanded: expandedId === p.id }"
+          class="article-card expanded"
       >
-        <button
-            type="button"
-            class="summary"
-            @click="toggle(p.id)"
-            :aria-expanded="expandedId === p.id ? 'true' : 'false'"
-            :aria-controls="`details-${p.id}`"
-        >
+        <div class="summary">
           <header class="card-head">
         <span class="status-pill" :class="statusClass(p.status)">
           {{ statusLabel(p.status) }}
@@ -75,10 +68,10 @@
               <span class="remain">還差 {{ fmtMoney(p.remainingAmount) }}</span>
             </div>
           </div>
-        </button>
+        </div>
 
         <!-- 展開的明細內容 -->
-        <div v-if="expandedId === p.id" class="detail-panel" :id="`details-${p.id}`">
+        <div class="detail-panel" :id="`details-${p.id}`">
           <hr/>
           <div class="tx-list">
             <div
@@ -115,12 +108,13 @@
                 </button>
 
                 <button
-                    v-if="t.status === 13"
-                    type="button"
-                    @click="handleUploadCorePlanFinalContract(t, p)"
+                  v-if="p.planCurrentStep === 23"
+                  type="button"
+                  @click="successMatchingPlanByUser(t, p)"
                 >
-                  上傳合約
+                  完成媒合
                 </button>
+
               </div>
               <div class="tx-label">{{ t.invest }}</div>
               <div class="tx-status">
@@ -139,7 +133,7 @@
           </div>
 
           <!-- 合約檢視區塊 -->
-          <div v-if="p.planFinalContractUrl" class="contract-section mt-4">
+          <div v-if="p.planFinalContractUrl && p.planCurrentStep === 22" class="contract-section mt-4">
             <div class="contract-link-wrapper">
               <a
                   :href="p.planFinalContractUrl"
@@ -153,18 +147,20 @@
 
             <div class="contract-actions mt-3">
               <button
+                  :disabled="p.agreeTerms"
                   type="button"
                   class="btn-contract-agree"
+                  :class="{ 'agreed': p.agreeTerms }"
                   @click.stop="agreeContractTermsByUser(p)"
               >
-                我同意雙方合約條例
+                {{ p.agreeTerms ? '已同意合約條例' : '我同意雙方合約條例' }}
               </button>
 
               <button
                   type="button"
                   class="btn-contract-adjust"
                   :class="{ 'notified': p.adjustmentRequested }"
-                  :disabled="p.adjustmentRequested"
+                  :disabled="p.agreeTerms || p.adjustmentRequested"
                   @click.stop="handleRequestAdjustment(p)"
               >
                 {{ p.adjustmentRequested ? '已通知' : '尚有調整意願' }}
@@ -321,12 +317,9 @@
               <input id="agree" type="checkbox" v-model="form.agree"/>
               <label for="agree">我已閱讀並同意</label>
               <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
-                參與風險聲明
+                參與風險聲明 及 平台免責聲明
               </a>
-              及
-              <a href="/terms/risk" class="agree-link" target="_blank" @click.stop>
-                平台免責聲明
-              </a>
+
             </div>
             <p class="error-msg" v-if="errors.agree">{{ errors.agree }}</p>
           </div>
@@ -473,6 +466,7 @@ import {planApi} from "@/api/modules/plan.js";
 import {userCheckApi} from "@/api/modules/userCheck.js";
 import {systemSettingApi} from "@/api/modules/systemSetting.js";
 import {NewAlert} from "@/composables/useAlert.js";
+import {userApi} from "@/api/modules/user.js";
 
 const {isLoggedIn, currentUser, currentUserName} = useAuth();
 const router = useRouter();
@@ -635,9 +629,9 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-  if (status > 0 && status <= 8) return 'pending';
+  if (status > 0 && status <= 8 && status !== 2) return 'pending';
   if (status > 8 && status !== 9) return 'success';
-  if (status === 9 || status < 0) return 'failed';
+  if (status === 9 || status < 0 || status === 2) return 'failed';
   return 'unknown';
 }
 
@@ -696,6 +690,7 @@ async function getAllParticipantPlanByUser() {
         return {
           id: plan.planId,
           status: status,
+          planCurrentStep: plan.currentStep,
           lastUpdate: calculateTimeRemaining(plan.endDate),
           title: plan.planName,
           content: statusLabel(status),
@@ -716,9 +711,11 @@ async function getAllParticipantPlanByUser() {
           increaseAmountStr: '',
           // 新增合約相關字段
           planFinalContractUrl: plan.planFinalContractUrl || '',
-          adjustmentRequested: false, // 初始狀態為未通知
+          adjustmentRequested: plan.adjustmentRequested || false,
+          agreeTerms: plan.agreeTerms || false,
         };
       });
+
     } else {
       console.error('獲取參與計畫失敗:', response.message);
     }
@@ -817,12 +814,14 @@ async function getParticipantPlan() {
         goal: plan.targetAmount,
         increaseAmount: 0,
       }];
+
     } else {
       await NewAlert.show("獲取品牌計畫失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('獲取品牌計畫錯誤:', error);
   }
+
 }
 
 // ==================== 用戶操作 ====================
@@ -831,38 +830,44 @@ async function getParticipantPlan() {
 async function participate(p) {
   errors.agree = "";
 
+  // 驗證參與金額
   if (!p.increaseAmount || p.increaseAmount <= 0) {
     await NewAlert.show("輸入錯誤", "請輸入有效的參與金額。");
     return;
   }
 
+  // 檢查參與名額
   if (p.totalParticipantPartner >= p.limitPartner) {
     await NewAlert.show("參與失敗", "此共創專案的參與名額已滿，無法再參與。");
     return;
   }
 
+  // 檢查最小金額
   if (p.increaseAmount < p.minimumAmount) {
-    await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.minimumAmount)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
+    await NewAlert.show("輸入錯誤", `您輸入的投入金額低於最低媒合額度： ${fmtMoney(p.minimumAmount)} 元，若欲調整媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
+  // 檢查剩餘可投資金額
   if (p.increaseAmount > p.goal - p.dollar) {
     await NewAlert.show("輸入錯誤", `您輸入的投入金額超過可媒合額度： ${fmtMoney(p.goal - p.dollar)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
     return;
   }
 
+  // 檢查金額級距
   if (p.increaseAmount % p.amountRange !== 0) {
     await NewAlert.show("輸入錯誤", `參與金額須為額度級距 ${fmtMoney(p.amountRange)} 元 的整數倍。`);
     return;
   }
 
-
+  // 檢查是否同意聲明
   if (!form.agree) {
     errors.agree = "請同意風險聲明及平台免責聲明";
     return;
   }
 
   try {
+    // 提交參與共創
     const response = await planApi.participantPlan({
       userId: currentUser.value,
       planId: Number(route.query.planId),
@@ -870,22 +875,56 @@ async function participate(p) {
     });
 
     if (response.code === 0) {
-      const result = await NewAlert.confirm("共創專案提交成功", "將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。")
-      if (result) {
-        await router.push({
-          path: "/account/profile",
-          query: {tab: "cofounder"}
-        });
-      } else {
-        await router.push('/account/participation');
-        await refreshAllData();
+      // 獲取用戶資訊
+      const userInfoRes = await userApi.getUserInfo({userId: currentUser.value});
+
+      if (userInfoRes.code !== 0) {
+        await NewAlert.show("提示", "無法獲取用戶資訊，請稍後再試。");
+        return;
       }
+
+      const userInfo = userInfoRes.data;
+
+      // 檢查是否需要上傳身分驗證文件
+      const needIdentityUpload =
+          userInfo.coreFounderData.identityCertification === 0 ||
+          userInfo.coreFounderData.secondaryCertification === 0;
+
+      if (needIdentityUpload) {
+        // 需要上傳身分驗證文件
+        const result = await NewAlert.confirm(
+            "共創專案提交成功",
+            "將跳轉至「會員管理」，請上傳共同創業者身分驗證文件(身分證明、第二證件)。"
+        );
+
+        if (result) {
+          await router.push({
+            path: "/account/profile",
+            query: {tab: "cofounder"}
+          });
+        }
+      } else {
+        // 已完成身分驗證
+        const result = await NewAlert.confirm(
+            "共創專案提交成功",
+            "您已完成身分驗證，將前往「參與專案管理」查看。"
+        );
+
+        if (result) {
+          await router.push('/account/participation');
+        }
+      }
+
+      // 刷新數據
+      await refreshAllData();
+
     } else {
-      await NewAlert.show("參與失敗", response.message + " ,若欲增加媒合額度，請聯繫客服人員諮詢。");
+      // 參與失敗
+      await NewAlert.show("參與失敗", response.message + "，若欲增加媒合額度，請聯繫客服人員諮詢。");
     }
   } catch (error) {
     console.error('參與共創錯誤:', error);
-    await NewAlert.show("參與失敗", "請洽客服人員。");
+    await NewAlert.show("參與失敗", "系統發生錯誤，請洽客服人員。");
   }
 }
 
@@ -1077,9 +1116,9 @@ async function agreeContractTermsByUser(plan) {
       "確認同意合約",
       "您確定要同意雙方合約條例嗎？"
   );
-   if (result === 'confirm') {
+   if (result === true) {
     const formData = {
-      planId: plan.planId,
+      planId: plan.id,
       userId: currentUser.value,
       agree: true,
     }
@@ -1087,7 +1126,7 @@ async function agreeContractTermsByUser(plan) {
     const res = await userCheckApi.agreeContractTermsByUser(formData)
     if (res.code === 0) {
       await NewAlert.show("成功", "您已同意合約條例");
-      console.log('同意合約:', plan.id);
+      await refreshAllData()
     } else {
       await NewAlert.show("失敗", res.message + " ,請洽客服人員。");
     }
@@ -1110,15 +1149,10 @@ async function handleAdjustmentSubmit() {
     return;
   }
 
-  if (adjustmentRemark.value.trim().length < 10) {
-    adjustmentError.value = '請至少填寫 10 個字的說明';
-    return;
-  }
-
   const plan = selectedPlanForAdjustment.value;
 
   const formData = {
-    planId: plan.planId,
+    planId: plan.id,
     userId: currentUser.value,
     agree: false,
     remark: adjustmentRemark.value.trim(),
@@ -1133,10 +1167,26 @@ async function handleAdjustmentSubmit() {
   }
 }
 
+async function successMatchingPlanByUser(t,p) {
+  const formData = {
+    userId: currentUser.value,
+    planId: p.id,
+  }
+  const response = await userCheckApi.successMatchingPlanByUser(formData)
+  if (response.code === 0) {
+    await NewAlert.show('成功', '確認成功');
+    await getAllParticipantPlanByUser();
+    await getAllParticipantPlanRecordByUser();
+  } else {
+    await NewAlert.show('失敗', response.message + ',操作失敗，請洽客服人員。');
+  }
+}
+
 // ==================== 輔助函數 ====================
 
 // 刷新所有數據
 async function refreshAllData() {
+  console.log("刷新所有數據")
   await Promise.all([
     getSystemSetting(),
     getAllParticipantPlanByUser(),

@@ -174,6 +174,42 @@
           上傳公司資料
         </button>
 
+        <button
+          v-if="p.status === 22 && p.hasRemark === true"
+          type="button"
+          class="btn-upload"
+          @click.stop="openReUploadPlanFinalContractDialog(p)"
+        >
+          重新上傳合約
+        </button>
+
+        <button
+          v-if="p.status === 23 && p.isSuccess === false"
+          type="button"
+          class="btn-upload"
+          @click.stop="successMatchingPlanByUser(p)"
+        >
+          完成媒合
+        </button>
+
+        <button
+          v-if="p.status === 13"
+          type="button"
+          class="btn-upload"
+          @click.stop="checkResourceByUser(p)"
+        >
+          確認資源已到位
+        </button>
+
+        <button
+          v-if="p.status === 17"
+          type="button"
+          class="btn-upload"
+          @click.stop="openAddressDialog(p)"
+        >
+          填寫地址
+        </button>
+
         <!-- 並排顯示 -->
         <div v-if="p.status === 10 && isWithinOneWeekBeforeEnd(p.endTime)" class="">
           <span>專案即將結束，您可以選擇以下操作：</span>
@@ -547,7 +583,32 @@
           :id="currentUser.value"
       />
     </div>
+  </SharedModal>
 
+  <SharedModal
+    v-model="showReUploadPlanFinalContractDialog"
+    title="重新上傳合約"
+    mode="submit"
+    confirmText="確認上傳"
+    cancelText="取消"
+    :showCancel="true"
+    @submit="handleReUploadPlanFinalContractSubmit"
+  >
+    <div class="upload-form">
+      <SharedUpload
+        label="上傳合約*"
+        accept=".pdf,.doc,.docx"
+        :max-size="10"
+        name="reUploadPlanFinalContract"
+        v-model="reUploadForm.planFinalContractName"
+        :error="reUploadErrors.planFinalContract"
+        @upload-success="(result) => handleUploadSuccess('reUploadPlanFinalContract', result)"
+        required
+        :type="'重新上傳合約'"
+        :account="uploadAccount"
+        :id="currentUser.value"
+      />
+    </div>
   </SharedModal>
 
   <SharedModal
@@ -772,6 +833,29 @@
     />
   </SharedModal>
 
+  <SharedModal
+      v-model="showAddressDialog"
+      title="輸入地址"
+      mode="submit"
+      confirmText="確認"
+      cancelText="取消"
+      :showCancel="true"
+      @submit="handleAddressSubmit"
+      @cancel="handleAddressCancel"
+  >
+    <div class="address-form">
+      <SharedInput
+          id="address"
+          v-model="addressForm.address"
+          label="地址*"
+          placeholder="請輸入完整地址"
+          type="text"
+          class="form-group"
+          :error="addressErrors.address"
+          :required="true"
+      />
+    </div>
+  </SharedModal>
 
   <!-- 合約確認 Dialog -->
   <SharedModal
@@ -1043,6 +1127,7 @@ import {usePdfGenerator} from "@/composables/usePDFGenerateor.js";
 import {officialPartnerApi} from "@/api/modules/officialPartner.js";
 import {NewAlert} from "@/composables/useAlert.js";
 import {industryTypeApi} from "@/api/modules/industryType.js";
+import {userApi} from "@/api/modules/user.js";
 
 // 2. 更新解構賦值，使用新的函數
 const {generateStepByStepPDF} = usePdfGenerator();
@@ -1296,6 +1381,8 @@ async function loadPlanData(planId) {
         minAmount: String(planData.minimumAmount || ''),
         amountRange: String(planData.amountRange || ''),
         partnerLimit: String(planData.limitPartner || ''),
+        expectedOpeningInfo: planData.expectedOpeningInfo || '',
+        expectedOpeningDate: planData.expectedOpeningDate || '',
       });
 
       // Step3 - 創業經驗
@@ -1867,7 +1954,7 @@ const formData = reactive({
     sharePayOther: {},
     agree: "",
   },
-  step8: {agree: ""},
+  step8: {agree: "agree"},
 });
 
 const formErrors = reactive({
@@ -2403,43 +2490,96 @@ otherCostsTitle: (() => {
 async function createPlan() {
   const data = convertFormData(formData, currentUser.value);
 
-  let response;
-
-  // 判斷是編輯還是新建
-  if (isEditMode.value && editPlanId.value) {
-    // 更新現有計劃
-    response = await planApi.updatePlan({
-      ...data,
-      planId: editPlanId.value
-    });
-  } else {
-    // 新建計劃
-    response = await planApi.createPlan(data);
-
+  // 檢查是否同意聲明
+  if (formData.step8.agree !== "agree") {
+    await NewAlert.show("注意！", "請同意創業風險提示與責任聲明後，再進行提交。");
+    return;
   }
 
-  if (response.code === 0) {
-    if (!isEditMode.value) {
+  try {
+    let response;
 
-      // 前往個人頁面上傳文件
-      const result = await NewAlert.confirm("創業計劃書提交成功", "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。")
-      if (result) {
-        await router.push({
-          path: "/account/profile",
-          query: { tab: "founder"}
-        });
-      }
+    // 判斷是編輯還是新建
+    if (isEditMode.value && editPlanId.value) {
+      // 更新現有計劃
+      response = await planApi.updatePlan({
+        ...data,
+        planId: editPlanId.value
+      });
     } else {
-      // 編輯模式下的提示
-      await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
+      // 新建計劃
+      response = await planApi.createPlan(data);
     }
 
-    // 重置編輯狀態
-    isEditMode.value = false;
-    editPlanId.value = null;
+    if (response.code === 0) {
+      if (!isEditMode.value) {
+        // 新建模式：檢查是否需要上傳身分驗證文件
+        const userInfoRes = await userApi.getUserInfo({userId: currentUser.value});
 
-  } else {
-    await NewAlert.show("操作失敗，請洽客服人員。");
+        if (userInfoRes.code !== 0) {
+          await NewAlert.show("提示", "無法獲取用戶資訊，請稍後再試。");
+          return;
+        }
+
+        const userInfo = userInfoRes.data;
+
+        // 檢查是否需要上傳身分驗證文件
+        const needIdentityUpload =
+            userInfo.founderInfoData.identityCertification === 0 ||
+            userInfo.founderInfoData.assetsCertification === 0 ||
+            userInfo.founderInfoData.pcrCertification === 0;
+
+        if (needIdentityUpload) {
+          // 🆕 需要上傳身分驗證文件
+          const result = await NewAlert.confirm(
+              "創業計劃書提交成功",
+              "將跳轉至「會員管理」，請上傳創業者身分驗證文件(身分證明、資產證明、良民證)。"
+          );
+
+          if (result) {
+            // 點擊「確定」→ 跳轉到 profile
+            await router.push({
+              path: "/account/profile",
+              query: {tab: "founder"}
+            });
+          } else {
+            // 點擊「關閉」→ 跳轉到 startup
+            await router.push('/account/startup');
+          }
+        } else {
+          // 🆕 已完成身分驗證
+          // 無論點「確定」還是「關閉」都跳轉到 startup
+          await NewAlert.confirm(
+              "創業計劃書提交成功",
+              "您已完成身分驗證，將前往「創業管理」查看。"
+          );
+
+          await router.push('/account/startup');
+        }
+
+        // 刷新數據
+        await getAllPlanByUser();
+
+      } else {
+        // 編輯模式：直接提示成功並跳轉
+        await NewAlert.show("創業計劃書更新成功！", "您的創業計劃書已成功更新。");
+        await router.push({
+          path: "/account/startup"
+        });
+        await getAllPlanByUser();
+      }
+
+      // 重置編輯狀態
+      isEditMode.value = false;
+      editPlanId.value = null;
+
+    } else {
+      // 操作失敗
+      await NewAlert.show("操作失敗", response.message || "請洽客服人員。");
+    }
+  } catch (error) {
+    console.error('創業計劃書提交錯誤:', error);
+    await NewAlert.show("操作失敗", "系統發生錯誤，請洽客服人員。");
   }
 }
 
@@ -2512,6 +2652,8 @@ async function getAllPlanByUser() {
       contractStatus: plan.contractStatus || 0,
       companyStatus: plan.companyStatus || 0,
       documentUrl: plan.documentUrl || '',
+      hasRemark: plan.hasRemark,
+      isSuccess: plan.isSuccess,
 
       completedProgress: plan.completedProgress || 0,
       pendingProgress: plan.pendingProgress || 0,
@@ -2653,7 +2795,7 @@ async function handleButtonClick(plan) {
     docStep.value = 'step1';
 
     // 5. 更新路由
-    router.push({
+    await router.push({
       path: '/account/startup',
       query: {
         source: 'business',
@@ -2909,20 +3051,19 @@ function changeProgressStep(currentStep) {
     return 4
   }
 
-  // 準備上架
-  if (currentStep >= 10 && currentStep < 14) {
+  if ((currentStep >= 10 && currentStep < 14) || currentStep === 22) {
     return 5
   }
 
-  if (currentStep >= 14 && currentStep < 17) {
+  if (currentStep >= 14 && currentStep < 17 || currentStep === 23) {
     return 6
   }
 
-  if (currentStep >= 17 && currentStep < 22) {
+  if (currentStep >= 17 && currentStep < 21) {
     return 7
   }
 
-  if (currentStep >= 22) {
+  if (currentStep >= 21) {
     return 8
   }
 }
@@ -2969,6 +3110,9 @@ function handleUploadSuccess(fileType, result) {
     } else if (fileType === 'companyLogo') {
       paymentForm.companyLogoId = fileId;
       paymentForm.companyLogo = fileName;
+    } else if (fileType === 'reUploadPlanFinalContract') {
+      reUploadForm.planFinalContractId = fileId;
+      reUploadForm.planFinalContractName = fileName;
     }
   }
 }
@@ -3036,6 +3180,157 @@ async function getIndustryTypes() {
     industryTypesData.value = res.data;
   }
 }
+
+const showReUploadPlanFinalContractDialog = ref(false);
+function openReUploadPlanFinalContractDialog(plan) {
+  currentPlan.value = plan
+  showReUploadPlanFinalContractDialog.value = true;
+}
+
+const reUploadForm = reactive({
+  planFinalContractId: 0,
+  planFinalContractName: ''
+});
+
+const reUploadErrors = reactive({
+  planFinalContract: ''
+});
+
+async function handleReUploadPlanFinalContractSubmit() {
+  // 驗證
+  if (!reUploadForm.planFinalContractId) {
+    reUploadErrors.planFinalContract = '請上傳最終合約文件';
+    return;
+  } else {
+    reUploadErrors.planFinalContract = '';
+  }
+
+  const formData = {
+    planId: currentPlan.value.id,
+    userId: currentUser.value,
+    contractFile: reUploadForm.planFinalContractId
+  };
+
+  const response = await userCheckApi.reUploadPlanFinalContractByUser(formData);
+  if (response.code === 0) {
+    await NewAlert.show('成功', '最終合約文件重新上傳成功');
+    showReUploadPlanFinalContractDialog.value = false;
+    await getAllPlanByUser();
+  } else {
+    await NewAlert.show('失敗', response.message + ',重新上傳失敗，請洽客服人員。');
+  }
+}
+
+async function successMatchingPlanByUser(p) {
+  const formData = {
+    userId: currentUser.value,
+    planId: p.id,
+  }
+  const response = await userCheckApi.successMatchingPlanByUser(formData)
+  if (response.code === 0) {
+    await NewAlert.show('成功', '確認成功');
+    await getAllPlanByUser()
+  } else {
+    await NewAlert.show('失敗', response.message + ',操作失敗，請洽客服人員。');
+  }
+}
+
+async function checkResourceByUser(p) {
+  const formData = {
+    userId: currentUser.value,
+    planId: p.id,
+  }
+  const response = await userCheckApi.checkResourceByUser(formData)
+  if (response.code === 0) {
+    await NewAlert.show('成功', '確認成功');
+    await getAllPlanByUser()
+  } else {
+    await NewAlert.show('失敗', response.message + ',操作失敗，請洽客服人員。');
+
+  }
+}
+
+// Dialog 狀態
+const showAddressDialog = ref(false)
+
+// 表單資料
+const addressForm = reactive({
+  address: '',
+})
+
+// 錯誤訊息
+const addressErrors = reactive({
+  address: '',
+})
+
+// 打開 Dialog
+function openAddressDialog(plan) {
+  currentPlan.value = plan
+
+  // 清空錯誤訊息
+  addressErrors.address = ''
+
+  showAddressDialog.value = true
+}
+
+// 驗證表單
+function validateAddressForm() {
+  let isValid = true
+
+  // 清空之前的錯誤
+  addressErrors.address = ''
+
+  // 驗證地址
+  if (!addressForm.address || addressForm.address.trim() === '') {
+    addressErrors.address = '請輸入地址'
+    isValid = false
+  } else if (addressForm.address.length < 5) {
+    addressErrors.address = '請輸入完整地址'
+    isValid = false
+  }
+
+  return isValid
+}
+
+// 提交地址
+async function handleAddressSubmit() {
+  // 驗證表單
+  if (!validateAddressForm()) {
+    return
+  }
+
+  try {
+    const response = await userCheckApi.checkAddressByUser({
+      planId: currentPlan.value.id,
+      userId: currentUser.value,
+      address: addressForm.address
+    })
+
+    if (response.code === 0) {
+      showAddressDialog.value = false
+      // 清空表單
+      addressForm.address = ''
+      await NewAlert.show('成功', '地址提交成功')
+      await getAllPlanByUser()
+    } else {
+      await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
+    }
+    showAddressDialog.value = false
+    addressForm.address = ''
+
+  } catch (error) {
+    await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
+  }
+}
+
+// 取消
+function handleAddressCancel() {
+  showAddressDialog.value = false
+  // 清空表單
+  addressForm.address = ''
+  addressErrors.address = ''
+}
+
 
 </script>
 

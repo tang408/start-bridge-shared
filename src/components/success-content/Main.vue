@@ -54,7 +54,7 @@
           </li>
           <li class="col-12 col-md-6">
             <div class="title">加盟金</div>
-            <div v-if="successPlanData.startupBudget" class="title-content">{{ successPlanData.startupBudget }}</div>
+            <div v-if="successPlanData.startupBudget" class="title-content">{{ formatAmount(successPlanData.startupBudget) }} 元</div>
             <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
@@ -112,6 +112,10 @@ function formatTime(days) {
     const months = Math.floor(days / 30);
     return `${months}個月`;
   }
+}
+
+function formatAmount(amount) {
+  return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 

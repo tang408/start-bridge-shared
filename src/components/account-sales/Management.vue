@@ -72,8 +72,12 @@
       <div>需求人數：{{ planInfo.planPartnerCount }} 人</div>
       <div v-if="planInfo.paymentStatus || planInfo.contractStatus">
         證明上傳狀態：
-        <span :class="getStatusClass('payment', planInfo.paymentStatus)">{{ getStatusText('payment', planInfo.paymentStatus) }}</span>
-        <span :class="getStatusClass('contract', planInfo.contractStatus)">{{ getStatusText('contract', planInfo.contractStatus) }}</span>
+        <span :class="getStatusClass('payment', planInfo.paymentStatus)">{{
+            getStatusText('payment', planInfo.paymentStatus)
+          }}</span>
+        <span :class="getStatusClass('contract', planInfo.contractStatus)">{{
+            getStatusText('contract', planInfo.contractStatus)
+          }}</span>
       </div>
       <div>
         <span class="doc-label">上傳資訊：</span>
@@ -170,7 +174,23 @@
     </div>
 
     <!-- ⭐ 只在特定狀態時顯示審核按鈕 -->
-    <div v-if="shouldShowReviewButtons()" class="review-btn-group">
+    <div v-if="shouldShowContactedButton()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">
+        已聯繫
+      </button>
+    </div>
+
+    <div v-if="shouldShowCheckResourceButtons()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">確認到位</button>
+    </div>
+
+    <div v-else-if="shouldShowEndButtons()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">結案</button>
+      <button class="btn-fail" @click="handleApproveClick(selectedProject, false)">退案</button>
+    </div>
+
+    <!-- 其他狀態：顯示「通過/不通過」按鈕 -->
+    <div v-else-if="shouldShowReviewButtons()" class="review-btn-group">
       <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">通過</button>
       <button class="btn-fail" @click="handleApproveClick(selectedProject, false)">不通過</button>
     </div>
@@ -229,7 +249,7 @@
                   <div class="info-item" v-if="planDetail?.expectedOpeningInfo">
                     <label>預計開業區域/坪數/店面狀況：</label>
                     <span>{{ planDetail?.expectedOpeningInfo }}</span>
-                    </div>
+                  </div>
                   <div class="info-item" v-if="planDetail?.expectedOpeningDate">
                     <label>預計開業時間：</label>
                     <span>{{ planDetail?.expectedOpeningDate }}</span>
@@ -354,7 +374,7 @@
                     <span>NT$ {{ planDetail.planPrepareCosts.cashFlow?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item">
-                    <label>{{planDetail.planPrepareCosts?.otherCostsTitle }}：</label>
+                    <label>{{ planDetail.planPrepareCosts?.otherCostsTitle }}：</label>
                     <span>NT$ {{ planDetail.planPrepareCosts.otherCosts?.toLocaleString() }}</span>
                   </div>
                   <div class="info-item total">
@@ -466,41 +486,30 @@
   </SharedModal>
 
   <SharedModal
-      v-model="showAddressDialog"
-      title="查看地址"
-      mode="submit"
-      confirmText="確認"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleAddressSubmit"
-      @cancel="handleAddressCancel"
-  >
-    <div class="address-form">
-      <SharedInput
-          id="address"
-          v-model="addressForm.address"
-          label="地址*"
-          placeholder="請輸入完整地址"
-          type="text"
-          class="form-group"
-          :error="addressErrors.address"
-          :required="true"
-      />
-    </div>
-  </SharedModal>
-
-  <SharedModal
       v-model="showCertificationDialog"
       :title="certificationDialogTitle"
       mode="close"
-      @update:modelValue="handleCloseDocDialog"
+      @update:modelValue="handleCloseCertificationDialog"
       class="doc-modal"
       titleAlign="center"
       :large="true"
   >
     <div class="modal-content-wrapper">
       <div class="modal-section text-center">
-        <img :src="docDialogUrl" alt="文件預覽" class="doc-image"/>
+        <!-- 根據文件類型顯示不同內容 -->
+        <img
+            v-if="!isPdfFile(docDialogUrl)"
+            :src="docDialogUrl"
+            alt="文件預覽"
+            class="doc-image"
+        />
+        <div v-else class="pdf-container">
+          <iframe
+              :src="docDialogUrl"
+              class="pdf-viewer"
+              title="PDF 預覽"
+          ></iframe>
+        </div>
       </div>
     </div>
   </SharedModal>
@@ -606,25 +615,13 @@ const cityOptions = computed(() => {
 
 // 狀態篩選選項（合併創業者和共創者的步驟）
 const statusOptions = computed(() => {
-  const options = [{label: '全部', value: ''}];
-
-  // 添加創業者步驟
-  planSteps.value.forEach(step => {
-    options.push({
-      label: `${step.step} (創業)`,
-      value: `founder-${step.id}`
-    });
-  });
-
-  // 添加共創者步驟
-  corePlanStep.value.forEach(step => {
-    options.push({
-      label: `${step.step} (共創)`,
-      value: `core-${step.id}`
-    });
-  });
-
-  return options;
+  return [
+    {label: '全部', value: ''},
+    {label: '創業者 (由近到遠)', value: 'founder-asc'},
+    {label: '創業者 (由遠到近)', value: 'founder-desc'},
+    {label: '共創者 (由近到遠)', value: 'core-asc'},
+    {label: '共創者 (由遠到近)', value: 'core-desc'}
+  ];
 });
 
 // 篩選和排序後的專案列表
@@ -636,26 +633,39 @@ const displayedProjects = computed(() => {
     list = list.filter(p => p.city === projectFilter.city);
   }
 
-  // 狀態篩選
+  // 狀態篩選和排序
   if (projectFilter.status) {
-    const [type, stepId] = projectFilter.status.split('-');
-    const id = parseInt(stepId);
+    const [type, order] = projectFilter.status.split('-');
 
-    list = list.filter(p => {
-      if (type === 'founder' && p.planType === 1) {
-        return p.currentStep === id;
-      } else if (type === 'core' && p.planType === 2) {
-        return p.currentCoreStep === id;
+    // 先篩選類型
+    if (type === 'founder') {
+      list = list.filter(p => p.planType === 1);
+
+      // 再排序
+      if (order === 'asc') {
+        list.sort((a, b) => a.currentStep - b.currentStep);
+      } else if (order === 'desc') {
+        list.sort((a, b) => b.currentStep - a.currentStep);
       }
-      return false;
-    });
+    } else if (type === 'core') {
+      list = list.filter(p => p.planType === 2);
+
+      // 再排序
+      if (order === 'asc') {
+        list.sort((a, b) => a.currentCoreStep - b.currentCoreStep);
+      } else if (order === 'desc') {
+        list.sort((a, b) => b.currentCoreStep - a.currentCoreStep);
+      }
+    }
   }
 
-  // 日期排序
-  if (projectFilter.dateOrder === 'desc') {
-    list.sort((a, b) => new Date(b.date) - new Date(a.date));
-  } else if (projectFilter.dateOrder === 'asc') {
-    list.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // 日期排序 (只在沒有選擇狀態排序時才用日期排序)
+  if (projectFilter.dateOrder && !projectFilter.status) {
+    if (projectFilter.dateOrder === 'desc') {
+      list.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (projectFilter.dateOrder === 'asc') {
+      list.sort((a, b) => new Date(a.date) - new Date(b.date));
+    }
   }
 
   return list;
@@ -740,34 +750,105 @@ const formatPlanInfoStatus = () => {
   if (!planInfo.value.planStatus) return '未知狀態';
 
   // 根據是否有 participantPlanId 決定查詢哪個步驟列表
-    // 創業者
-    const step = planSteps.value.find(s => s.id === planInfo.value.planStatus);
-    return step ? step.step : '未知狀態';
+  // 創業者
+  const step = planSteps.value.find(s => s.id === planInfo.value.planStatus);
+  return step ? step.step : '未知狀態';
 
 }
+const shouldShowCheckResourceButtons = () => {
+  if (!planInfo.value) return false;
 
+  if (!planInfo.value.planStatus) return false;
+
+  // 創業者可審核資源到位的步驟
+  const founderCheckResourceSteps = [13];
+  return founderCheckResourceSteps.includes(planInfo.value.planStatus);
+
+}
 // 判斷是否應該顯示審核按鈕
+const shouldShowContactedButton = () => {
+  if (!planInfo.value) return false;
+
+  const isParticipant = !!planInfo.value.participantPlanId;
+
+  // 只在共創者進度 10 時顯示
+  if (!isParticipant) return false;
+  if (!planInfo.value.participantPlanStep) return false;
+
+  // 檢查證明是否已上傳
+  const hasValidIdc = planInfo.value.coreFounderIdc &&
+      planInfo.value.coreFounderIdc !== 0;
+  const hasValidSecondIdc = planInfo.value.coreFounderSecondIdc &&
+      planInfo.value.coreFounderSecondIdc !== 0;
+
+  if (!hasValidIdc || !hasValidSecondIdc) {
+    return false;
+  }
+
+  // 只在步驟 10 顯示
+  return planInfo.value.participantPlanStep === 10;
+}
+
+// 判斷是否顯示「通過/不通過」按鈕（其他可審核狀態）
 const shouldShowReviewButtons = () => {
   if (!planInfo.value) return false;
 
-  // 判斷是創業者還是共創者
-  const isParticipant = !!planInfo.value.participantPlanId; // 有 participantPlanId 表示是共創者
+  const isParticipant = !!planInfo.value.participantPlanId;
 
   if (isParticipant) {
-    // 共創者：根據 participantPlanStep 判斷
     if (!planInfo.value.participantPlanStep) return false;
 
-    // 共創者可審核的步驟
-    const participantReviewableSteps = [1, 10, 15]; // 根據實際業務調整
+    // 檢查證明是否已上傳
+    const hasValidIdc = planInfo.value.coreFounderIdc &&
+        planInfo.value.coreFounderIdc !== 0;
+    const hasValidSecondIdc = planInfo.value.coreFounderSecondIdc &&
+        planInfo.value.coreFounderSecondIdc !== 0;
+
+    if (!hasValidIdc || !hasValidSecondIdc) {
+      return false;
+    }
+
+    // 共創者可審核的步驟（排除步驟 10）
+    const participantReviewableSteps = [1, 15];
     return participantReviewableSteps.includes(planInfo.value.participantPlanStep);
   } else {
-    // 創業者：根據 planStatus 判斷
+    // 創業者邏輯
     if (!planInfo.value.planStatus) return false;
 
-    // 創業者可審核的步驟
-    const founderReviewableSteps = [1, 22,13, 15, 17, 19]; // 可以審核的步驟
+    const hasValidIdc = planInfo.value.founderIdc &&
+        planInfo.value.founderIdc !== 0;
+    const hasValidPcrc = planInfo.value.founderPcrc &&
+        planInfo.value.founderPcrc !== 0;
+    const hasValidAssetsc = planInfo.value.founderAssetsc &&
+        planInfo.value.founderAssetsc !== 0;
+
+    if (!hasValidIdc || !hasValidPcrc || !hasValidAssetsc) {
+      return false;
+    }
+
+    // 🆕 Step 15 需要額外檢查 companyStatus
+    if (planInfo.value.planStatus === 15) {
+      // companyStatus 必須等於 1 (已填寫公司資料)
+      if (planInfo.value.companyStatus !== 1) {
+        return false;
+      }
+    }
+
+    const founderReviewableSteps = [1, 15];
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
+}
+
+const shouldShowEndButtons = () => {
+  if (!planInfo.value) return false;
+
+
+  if (!planInfo.value.planStatus) return false;
+
+  // 創業者可結案的步驟
+  const founderEndSteps = [19];
+  return founderEndSteps.includes(planInfo.value.planStatus);
+
 }
 
 // 修改 handleApproveClick，使用 planInfo 而不是 selectedProject
@@ -843,19 +924,7 @@ async function handleApprove(data, approved) {
       await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
-  if (data.planType === 1 && data.currentStep === 13) {
-    const res = await salesCheckApi.checkResourceBySales(formData);
-    if (res.code === 0) {
-      await NewAlert.show("成功！", "審核成功");
-      showModal.value = false;
-      if (!approved) {
-        showRemarkDialog.value = false;
-      }
-      await getAllPlanBySales();
-    } else {
-      await NewAlert.show("失敗！", "審核失敗：" + res.message);
-    }
-  }
+
   if (data.planType === 1 && data.currentStep === 15) {
     const res = await salesCheckApi.checkFranchiseBySales(formData);
     if (res.code === 0) {
@@ -869,10 +938,7 @@ async function handleApprove(data, approved) {
       await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
-  if (data.planType === 1 && data.currentStep === 17) {
-    showAddressDialog.value = true;
-    openAddressDialog();
-  }
+
   if (data.planType === 1 && data.currentStep === 19) {
     const res = await salesCheckApi.finishPlanBySales(formData);
     if (res.code === 0) {
@@ -952,13 +1018,25 @@ const certificationDialogTitle = computed(() => {
   }
 })
 
-const openCertificationDialog = (type,url) => {
-  console.log(type,url)
+const openCertificationDialog = (type, url) => {
+  console.log(type, url)
   showCertificationDialog.value = true
   docDialogUrl.value = url
-
+  currentDocType.value = type
 }
 
+// 判斷是否為 PDF 文件
+const isPdfFile = (url) => {
+  if (!url) return false
+  return url.toLowerCase().endsWith('.pdf') || url.toLowerCase().includes('.pdf?')
+}
+
+// 關閉認證文件對話框
+function handleCloseCertificationDialog() {
+  showCertificationDialog.value = false
+  docDialogUrl.value = ''
+  currentDocType.value = ''
+}
 
 
 // 關閉 Modal 時清空高亮
@@ -1092,6 +1170,13 @@ function shouldShowContractButtons() {
     return false;
   }
 
+  // 判斷是創業者還是共創者
+  const isParticipant = !!planInfo.value.participantPlanId; // 有 participantPlanId 表示是共創者
+
+  if (isParticipant) {
+    return false;
+  }
+
   // 檢查是否有共創者
   if (!planInfo.value.participantPlanInfo || planInfo.value.participantPlanInfo.length === 0) {
     return false;
@@ -1144,6 +1229,7 @@ async function handleNotifyAllUser() {
       planInfo.value.isNotify = true;
       await NewAlert.show("成功", "已通知雙方簽約");
       showModal.value = false;
+      await getAllPlanBySales();
     } else {
       await NewAlert.show("失敗", response.message || "通知失敗");
       showModal.value = false;
@@ -1154,88 +1240,6 @@ async function handleNotifyAllUser() {
   }
 }
 
-
-// Dialog 狀態
-const showAddressDialog = ref(false)
-
-// 表單資料
-const addressForm = reactive({
-  address: '',
-})
-
-// 錯誤訊息
-const addressErrors = reactive({
-  address: '',
-})
-
-// 打開 Dialog
-function openAddressDialog(currentAddress = '') {
-  // 如果有現有地址，預填
-  addressForm.address = currentAddress
-
-  // 清空錯誤訊息
-  addressErrors.address = ''
-
-  showAddressDialog.value = true
-}
-
-// 驗證表單
-function validateAddressForm() {
-  let isValid = true
-
-  // 清空之前的錯誤
-  addressErrors.address = ''
-
-  // 驗證地址
-  if (!addressForm.address || addressForm.address.trim() === '') {
-    addressErrors.address = '請輸入地址'
-    isValid = false
-  } else if (addressForm.address.length < 5) {
-    addressErrors.address = '請輸入完整地址'
-    isValid = false
-  }
-
-  return isValid
-}
-
-// 提交地址
-async function handleAddressSubmit() {
-  // 驗證表單
-  if (!validateAddressForm()) {
-    return
-  }
-
-  try {
-    const response = await salesCheckApi.checkAddressBySales({
-      planId: planInfo.value.planId,
-      salesId: currentSales.value,
-      approved: true,
-      remark: '',
-      address: addressForm.address
-    })
-
-    if (response.code === 0) {
-      showAddressDialog.value = false
-      // 清空表單
-      addressForm.address = ''
-    }
-
-    showAddressDialog.value = false
-    addressForm.address = ''
-
-  } catch (error) {
-    await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
-  }
-}
-
-// 取消
-function handleAddressCancel() {
-  showAddressDialog.value = false
-  // 清空表單
-  addressForm.address = ''
-  addressErrors.address = ''
-}
-
 const getStatusText = (type, status) => {
   if (type === 'payment') {
     return status >= 1 ? '已支付上架費' : '未支付上架費';
@@ -1243,8 +1247,7 @@ const getStatusText = (type, status) => {
     return status >= 1 ? '已簽約' : '未簽約';
   }
 }
-const getStatusClass = (type, status) =>
-{
+const getStatusClass = (type, status) => {
   const baseClass = 'tag';
   if (type === 'payment') {
     return status >= 1 ? `${baseClass} tag-success` : `${baseClass} tag-warning`;
@@ -1383,10 +1386,12 @@ const getStatusClass = (type, status) =>
   border-radius: 4px;
   font-size: 14px;
 }
+
 .tag-success {
   background-color: #52c41a;
   color: white;
 }
+
 .tag-warning {
   background-color: #faad14;
   color: white;
@@ -1408,6 +1413,7 @@ const getStatusClass = (type, status) =>
 // 高亮的共創者
 .highlight-participant {
   background-color: #fff5f5;
+
   div {
     color: #ff6634;
     font-weight: 600;
@@ -1474,6 +1480,40 @@ const getStatusClass = (type, status) =>
 
   &:active:not(:disabled) {
     transform: translateY(1px);
+  }
+}
+
+// PDF 容器和查看器樣式
+.pdf-container {
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f5f5f5;
+
+  @media (max-width: 768px) {
+    height: 60vh;
+    min-height: 400px;
+  }
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #f5f5f5;
+}
+
+.doc-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    max-height: 60vh;
   }
 }
 

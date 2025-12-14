@@ -105,10 +105,10 @@
             :enable-if="emailEnableIf"
           />
 
-          <!-- 投資預算*(自備款2成) -->
+          <!-- 投資預算*(自備款3成) -->
           <SharedSelect
             id="industry"
-            label="投資預算*(自備款2成)*"
+            label="投資預算*(自備款3成)*"
             placeholder="請選擇"
             v-model="form.industry"
             :options="[

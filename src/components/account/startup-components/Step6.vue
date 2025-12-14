@@ -12,10 +12,10 @@
       </button>
 
       <div class="content">
-        <h6 class="section-title">四、創業責任與分潤條款</h6>
+        <h5 class="section-title">四、創業責任與分潤條款</h5>
         <p class="desc">※ 審核通過後，本計劃書將成為合約附件</p>
-        <p class="desc">
-          回報機制 (單選，請依實際營運現況評估填寫)
+        <p class="desc fw-bold">
+          1. 回報機制 (單選，請依實際營運現況評估填寫)
           <br />
           媒合成功後，請選擇您預計給予【共同創業者】的分潤方式
         </p>
@@ -198,8 +198,9 @@ watch(
 }
 
 .desc {
-  font-size: 14px;
-  color: #666;
+  font-size: 16px;
+  color: black;
+  font-weight: 400;
   line-height: 1.6;
   margin-bottom: 12px;
 }

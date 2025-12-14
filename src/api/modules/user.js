@@ -161,5 +161,10 @@ export const userApi = {
     async resetPassword(params = {}) {
         const finalParams = {...params};
         return api.post('/f/public/user/reset-password', finalParams);
+    },
+
+    async updateUserAvatar(params = {}) {
+        const finalParams = {...params};
+        return api.post('/f/private/user/update-user-avatar', finalParams);
     }
 }

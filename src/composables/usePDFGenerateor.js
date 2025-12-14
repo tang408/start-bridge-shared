@@ -42,35 +42,12 @@ export function usePdfGenerator() {
                 throw new Error('找不到任何 section 元素');
             }
 
-            let currentPage = 0;
-
-            // ============ 添加標題頁 ============
-            if (titleElement) {
-                const titleCanvas = await html2canvas(titleElement, {
-                    scale: scale,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                });
-
-                const titleImgData = titleCanvas.toDataURL('image/jpeg', quality);
-                const titleImgWidth = contentWidth;
-                const titleImgHeight = (titleCanvas.height * titleImgWidth) / titleCanvas.width;
-
-                if (currentPage > 0) pdf.addPage();
-                pdf.addImage(titleImgData, 'JPEG', margin, margin, titleImgWidth, titleImgHeight);
-                currentPage++;
-            }
+            let currentY = margin;
+            let isFirstSection = true;
 
             // ============ 處理每個 section ============
             for (let i = 0; i < sections.length; i++) {
                 const section = sections[i];
-
-                // 每個 section 開始新頁（除了第一個且沒有標題的情況）
-                if (currentPage > 0 || titleElement) {
-                    pdf.addPage();
-                }
-                currentPage++;
 
                 // 轉換 section 為 canvas
                 const canvas = await html2canvas(section, {
@@ -85,25 +62,41 @@ export function usePdfGenerator() {
                 const imgWidth = contentWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
+                // ✅ 智能分頁邏輯：只有在必要時才開始新頁
+                const remainingSpace = pageHeight - currentY - margin;
+                const needsNewPage = !isFirstSection && (
+                    // 如果 section 內容很大（超過一頁），且當前頁剩餘空間不足 20%
+                    (imgHeight > contentHeight && remainingSpace < contentHeight * 0.2) ||
+                    // 或者當前頁剩餘空間不足以容納 section 的 30%
+                    (imgHeight <= contentHeight && remainingSpace < imgHeight * 0.3 && remainingSpace < contentHeight * 0.5)
+                );
+
+                if (needsNewPage) {
+                    pdf.addPage();
+                    currentY = margin;
+                }
+
                 // ============ 關鍵改進：精確計算分頁 ============
-                if (imgHeight > contentHeight) {
-                    // 內容超過一頁，需要精確分割
+                if (imgHeight > remainingSpace && remainingSpace < contentHeight * 0.8) {
+                    // 內容超過當前頁剩餘空間，需要分割
 
-                    const totalPages = Math.ceil(imgHeight / contentHeight);
+                    // 計算需要多少頁
+                    let heightLeft = imgHeight;
+                    let sourceYOffset = 0;
+                    let pageIndex = 0;
 
-                    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+                    while (heightLeft > 0) {
                         if (pageIndex > 0) {
                             pdf.addPage();
-                            currentPage++;
+                            currentY = margin;
                         }
 
-                        // 計算當前頁要顯示的區域
-                        const startY = pageIndex * contentHeight;
-                        const remainingHeight = imgHeight - startY;
-                        const currentPageHeight = Math.min(contentHeight, remainingHeight);
+                        // 計算當前頁可用高度
+                        const availableHeight = pageHeight - currentY - margin;
+                        const currentPageHeight = Math.min(availableHeight, heightLeft);
 
                         // ✅ 關鍵改進：精確計算源圖像的裁切位置
-                        const sourceY = (startY / imgWidth) * canvas.width;
+                        const sourceY = (sourceYOffset / imgWidth) * canvas.width;
                         const sourceHeight = (currentPageHeight / imgWidth) * canvas.width;
 
                         // 確保不會超出 canvas 範圍
@@ -135,20 +128,29 @@ export function usePdfGenerator() {
                         const croppedImgData = croppedCanvas.toDataURL('image/jpeg', quality);
                         const croppedImgHeight = (actualSourceHeight * imgWidth) / canvas.width;
 
-                        // ✅ 添加到 PDF，確保從頁面頂部開始
-                        pdf.addImage(croppedImgData, 'JPEG', margin, margin, imgWidth, croppedImgHeight);
+                        // ✅ 添加到 PDF
+                        pdf.addImage(croppedImgData, 'JPEG', margin, currentY, imgWidth, croppedImgHeight);
+
+                        // 更新位置
+                        currentY = margin + croppedImgHeight;
+                        sourceYOffset += currentPageHeight;
+                        heightLeft -= currentPageHeight;
+                        pageIndex++;
                     }
                 } else {
-                    // 內容在一頁內，直接添加
+                    // 內容在當前頁剩餘空間內，直接添加
                     pdf.addImage(
                         canvas.toDataURL('image/jpeg', quality),
                         'JPEG',
                         margin,
-                        margin,
+                        currentY,
                         imgWidth,
                         imgHeight
                     );
+                    currentY += imgHeight + 5; // 加上小間距
                 }
+
+                isFirstSection = false;
             }
 
             // 下載 PDF

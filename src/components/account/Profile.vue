@@ -170,10 +170,10 @@
             <label class="mb-2">審核狀態</label>
             <span class="ps-2">{{ formFounder.status }}</span>
           </div>
-          <!-- 創業預算*(自備款2成)* -->
+          <!-- 創業預算*(自備款3成)* -->
           <SharedInput
               id="budget"
-              label="創業預算*(自備款2成)"
+              label="創業預算*(自備款3成)"
               v-model="formFounder.budget"
               :error="errFounder.budget"
               required
@@ -920,6 +920,10 @@ async function submitForUser() {
   }
 
 }
+
+// 🆕 儲存返回路徑
+const returnTo = ref(route.query.returnTo || null);
+const brandId = ref(route.query.brandId || null);
 async function submitForFounderAndCompany() {
   if (!hasChanges.value) {
     await NewAlert.show(
@@ -955,6 +959,7 @@ async function submitForFounderAndCompany() {
     );
     return;
   }
+
   const result = await NewAlert.confirm('確認', '確定修改資料嗎？');
   if (result)  {
     const formData = {
@@ -987,10 +992,21 @@ async function submitForFounderAndCompany() {
     if (response.code === 0) {
       await NewAlert.show(
           "修改資料",
-          "送出基本資料成功" // 傳入內容
+          "送出基本資料成功"
       );
       hasChanges.value = false;
       saveOriginalData();
+
+      // 🆕 提交成功後檢查是否需要跳轉回來源頁面
+      if (returnTo.value) {
+        await NewAlert.show(
+            "資料已完善",
+            "現在將為您返回品牌頁面，您可以繼續申請創業"
+        );
+
+        // 跳轉回來源頁面
+        await router.push(returnTo.value);
+      }
     }
   }
 }

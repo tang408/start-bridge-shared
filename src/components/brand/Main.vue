@@ -288,7 +288,7 @@ async function onSubmit() {
     option: selectedPlanId.value,
     industryType: form.value.type,
     name: form.value.brand,
-    franchiseFee: form.value.budget,
+    franchiseFee: Number(form.value.budget),
     contactPerson: form.value.name,
     contactNumber: form.value.phone,
     email: form.value.email,

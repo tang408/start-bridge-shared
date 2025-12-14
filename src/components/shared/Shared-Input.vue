@@ -125,6 +125,9 @@
       <span v-if="countdown > 0">{{ countdown }}s</span>
     </p>
 
+    <!-- 提示文字 -->
+    <p v-if="hint && !error" class="hint-msg">{{ hint }}</p>
+
     <!-- 統一的 error 顯示位置 -->
     <p v-if="error" class="error-msg">{{ error }}</p>
   </div>
@@ -145,6 +148,7 @@ const props = defineProps({
   autocomplete: {type: String, default: "off"},
   required: {type: Boolean, default: false},
   error: {type: String, default: ""},
+  hint: {type: String, default: ""}, // 新增：提示文字
   buttonText: {type: String, default: ""},
   sent: {type: Boolean, default: false},
   countdown: {type: Number, default: 0},
@@ -334,5 +338,13 @@ function onButtonClick() {
     opacity: 0.5;
     cursor: not-allowed;
   }
+}
+
+.hint-msg {
+  color: #909399;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 0;
+  line-height: 1.4;
 }
 </style>
