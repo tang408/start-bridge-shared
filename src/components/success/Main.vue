@@ -31,13 +31,7 @@ import {successPlanApi} from "@/api/modules/successPlan.js";
 
 const router = useRouter();
 const sampleImages = [img1, img2, img3, img4];
-const items = ref(
-  Array.from({ length: 80 }).map((_, i) => ({
-    id: i + 1,
-    title: `最新消息最新消息標題最新消息標題標題最新消息標題`,
-    cover: sampleImages[i % 4],
-  }))
-);
+const items = ref([]);
 
 async function getSuccessPlanPhotos() {
   const response = await successPlanApi.getSuccessPlanPhotos()

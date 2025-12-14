@@ -39,6 +39,22 @@ export const userCheckApi = {
 
     async agreeContractTermsByUser(params = {}) {
         return api.post("/f/private/user-check/agree-contract-terms-by-user", params);
+    },
+
+    async reUploadPlanFinalContractByUser(params = {}) {
+        return api.post("/f/private/user-check/re-upload-plan-final-contract-by-user", params);
+    },
+
+    async successMatchingPlanByUser(params = {}) {
+        return api.post("/f/private/user-check/success-matching-plan-by-user", params);
+    },
+
+    async checkResourceByUser(params = {}) {
+        return api.post("/f/private/user-check/check-resource-by-user", params);
+    },
+
+    async checkAddressByUser(params = {}) {
+        return api.post("/f/private/user-check/check-address-by-user", params);
     }
 
 }

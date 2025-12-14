@@ -180,6 +180,15 @@
       </button>
     </div>
 
+    <div v-if="shouldShowCheckResourceButtons()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">確認到位</button>
+    </div>
+
+    <div v-else-if="shouldShowEndButtons()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">結案</button>
+      <button class="btn-fail" @click="handleApproveClick(selectedProject, false)">退案</button>
+    </div>
+
     <!-- 其他狀態：顯示「通過/不通過」按鈕 -->
     <div v-else-if="shouldShowReviewButtons()" class="review-btn-group">
       <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">通過</button>
@@ -477,30 +486,6 @@
   </SharedModal>
 
   <SharedModal
-      v-model="showAddressDialog"
-      title="查看地址"
-      mode="submit"
-      confirmText="確認"
-      cancelText="取消"
-      :showCancel="true"
-      @submit="handleAddressSubmit"
-      @cancel="handleAddressCancel"
-  >
-    <div class="address-form">
-      <SharedInput
-          id="address"
-          v-model="addressForm.address"
-          label="地址*"
-          placeholder="請輸入完整地址"
-          type="text"
-          class="form-group"
-          :error="addressErrors.address"
-          :required="true"
-      />
-    </div>
-  </SharedModal>
-
-  <SharedModal
       v-model="showCertificationDialog"
       :title="certificationDialogTitle"
       mode="close"
@@ -770,7 +755,16 @@ const formatPlanInfoStatus = () => {
   return step ? step.step : '未知狀態';
 
 }
+const shouldShowCheckResourceButtons = () => {
+  if (!planInfo.value) return false;
 
+  if (!planInfo.value.planStatus) return false;
+
+  // 創業者可審核資源到位的步驟
+  const founderCheckResourceSteps = [13];
+  return founderCheckResourceSteps.includes(planInfo.value.planStatus);
+
+}
 // 判斷是否應該顯示審核按鈕
 const shouldShowContactedButton = () => {
   if (!planInfo.value) return false;
@@ -815,10 +809,10 @@ const shouldShowReviewButtons = () => {
     }
 
     // 共創者可審核的步驟（排除步驟 10）
-    const participantReviewableSteps = [1, 15]; // 移除了 10
+    const participantReviewableSteps = [1, 15];
     return participantReviewableSteps.includes(planInfo.value.participantPlanStep);
   } else {
-    // 創業者邏輯保持不變
+    // 創業者邏輯
     if (!planInfo.value.planStatus) return false;
 
     const hasValidIdc = planInfo.value.founderIdc &&
@@ -832,10 +826,31 @@ const shouldShowReviewButtons = () => {
       return false;
     }
 
-    const founderReviewableSteps = [1, 13, 15, 17, 19];
+    // 🆕 Step 15 需要額外檢查 companyStatus
+    if (planInfo.value.planStatus === 15) {
+      // companyStatus 必須等於 1 (已填寫公司資料)
+      if (planInfo.value.companyStatus !== 1) {
+        return false;
+      }
+    }
+
+    const founderReviewableSteps = [1, 15];
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
 }
+
+const shouldShowEndButtons = () => {
+  if (!planInfo.value) return false;
+
+
+  if (!planInfo.value.planStatus) return false;
+
+  // 創業者可結案的步驟
+  const founderEndSteps = [19];
+  return founderEndSteps.includes(planInfo.value.planStatus);
+
+}
+
 // 修改 handleApproveClick，使用 planInfo 而不是 selectedProject
 async function handleApproveClick(row, approved) {
   // 使用 planInfo 構建審核資料
@@ -910,19 +925,6 @@ async function handleApprove(data, approved) {
     }
   }
 
-  if (data.planType === 1 && data.currentStep === 13) {
-    const res = await salesCheckApi.checkResourceBySales(formData);
-    if (res.code === 0) {
-      await NewAlert.show("成功！", "審核成功");
-      showModal.value = false;
-      if (!approved) {
-        showRemarkDialog.value = false;
-      }
-      await getAllPlanBySales();
-    } else {
-      await NewAlert.show("失敗！", "審核失敗：" + res.message);
-    }
-  }
   if (data.planType === 1 && data.currentStep === 15) {
     const res = await salesCheckApi.checkFranchiseBySales(formData);
     if (res.code === 0) {
@@ -936,10 +938,7 @@ async function handleApprove(data, approved) {
       await NewAlert.show("失敗！", "審核失敗：" + res.message);
     }
   }
-  if (data.planType === 1 && data.currentStep === 17) {
-    showAddressDialog.value = true;
-    openAddressDialog();
-  }
+
   if (data.planType === 1 && data.currentStep === 19) {
     const res = await salesCheckApi.finishPlanBySales(formData);
     if (res.code === 0) {
@@ -1239,88 +1238,6 @@ async function handleNotifyAllUser() {
     console.error('通知失敗:', error);
     await NewAlert.show("錯誤", "通知時發生錯誤");
   }
-}
-
-
-// Dialog 狀態
-const showAddressDialog = ref(false)
-
-// 表單資料
-const addressForm = reactive({
-  address: '',
-})
-
-// 錯誤訊息
-const addressErrors = reactive({
-  address: '',
-})
-
-// 打開 Dialog
-function openAddressDialog(currentAddress = '') {
-  // 如果有現有地址，預填
-  addressForm.address = currentAddress
-
-  // 清空錯誤訊息
-  addressErrors.address = ''
-
-  showAddressDialog.value = true
-}
-
-// 驗證表單
-function validateAddressForm() {
-  let isValid = true
-
-  // 清空之前的錯誤
-  addressErrors.address = ''
-
-  // 驗證地址
-  if (!addressForm.address || addressForm.address.trim() === '') {
-    addressErrors.address = '請輸入地址'
-    isValid = false
-  } else if (addressForm.address.length < 5) {
-    addressErrors.address = '請輸入完整地址'
-    isValid = false
-  }
-
-  return isValid
-}
-
-// 提交地址
-async function handleAddressSubmit() {
-  // 驗證表單
-  if (!validateAddressForm()) {
-    return
-  }
-
-  try {
-    const response = await salesCheckApi.checkAddressBySales({
-      planId: planInfo.value.planId,
-      salesId: currentSales.value,
-      approved: true,
-      remark: '',
-      address: addressForm.address
-    })
-
-    if (response.code === 0) {
-      showAddressDialog.value = false
-      // 清空表單
-      addressForm.address = ''
-    }
-
-    showAddressDialog.value = false
-    addressForm.address = ''
-
-  } catch (error) {
-    await NewAlert.show('錯誤', '提交地址失敗，請洽客服人員。')
-  }
-}
-
-// 取消
-function handleAddressCancel() {
-  showAddressDialog.value = false
-  // 清空表單
-  addressForm.address = ''
-  addressErrors.address = ''
 }
 
 const getStatusText = (type, status) => {

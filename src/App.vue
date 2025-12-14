@@ -13,7 +13,10 @@ const route = useRoute();
 const { logout, isLoggedIn } = useAuth();
 
 // ✅ 控制自動登出功能的開關
-const AUTO_LOGOUT_ENABLED = false; // 改成 false 就停用自動登出
+const AUTO_LOGOUT_ENABLED = true; // true 啟用，false 停用
+
+// ✅ 15 分鐘無活動就登出
+const TIMEOUT = 15 * 60 * 1000; // 15分鐘
 
 // ✅ 定義不需要登入的頁面
 const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/'];
@@ -23,22 +26,12 @@ const isPublicRoute = (path) => {
   return PUBLIC_ROUTES.some(publicPath => path.startsWith(publicPath));
 };
 
-// 每次操作都更新最後活動時間
-const updateLastActivity = () => {
-  if (!AUTO_LOGOUT_ENABLED) return; // ✅ 功能關閉時直接返回
-
-  if (isLoggedIn.value) {
-    localStorage.setItem('lastActivity', Date.now().toString());
-  }
-};
-
 // ✅ 執行登出並跳轉
-const performLogout = async (reason = '長時間無活動') => {
+const performLogout = async (reason = '長時間未使用') => {
   console.log(`${reason}，執行登出`);
 
   await logout();
-  localStorage.removeItem('auth');
-  localStorage.removeItem('lastActivity');
+  localStorage.removeItem('lastCloseTime');
 
   // 如果不在公開頁面，顯示提示並跳轉
   if (!isPublicRoute(route.path)) {
@@ -49,87 +42,80 @@ const performLogout = async (reason = '長時間無活動') => {
 
     await router.push({
       path: '/login',
-      query: {redirect: route.fullPath} // 記錄原本要去的頁面
+      query: {redirect: route.fullPath}
     });
   }
 };
 
-// 檢查是否需要登出
-const checkSession = () => {
-  if (!AUTO_LOGOUT_ENABLED) return; // ✅ 功能關閉時直接返回
+// ✅ 檢查是否需要登出（僅在頁面載入時執行一次）
+const checkIfShouldLogout = () => {
+  if (!AUTO_LOGOUT_ENABLED) return;
+  if (isPublicRoute(route.path)) return;
+  if (!isLoggedIn.value) return;
 
-  // ✅ 如果已經在公開頁面，不需要檢查
-  if (isPublicRoute(route.path)) {
-    return;
-  }
+  const lastCloseTime = localStorage.getItem('lastCloseTime');
 
-  const lastActivity = localStorage.getItem('lastActivity');
+  if (lastCloseTime) {
+    const timeDiff = Date.now() - parseInt(lastCloseTime);
 
-  if (lastActivity && isLoggedIn.value) {
-    const timeDiff = Date.now() - parseInt(lastActivity);
-    const TIMEOUT = 20 * 60 * 1000; // 20分鐘無活動就登出
+    console.log(`上次關閉頁面時間: ${new Date(parseInt(lastCloseTime)).toLocaleString()}`);
+    console.log(`距離現在: ${Math.floor(timeDiff / 1000 / 60)} 分鐘`);
 
     if (timeDiff > TIMEOUT) {
-      performLogout('長時間無活動');
+      performLogout('長時間未使用');
+    } else {
+      // 清除記錄，因為用戶已經回來了
+      localStorage.removeItem('lastCloseTime');
     }
-  } else if (!isLoggedIn.value) {
-    // ✅ 如果已經登出，跳轉到登入頁
-    performLogout('登入狀態已失效');
   }
 };
 
-// ✅ 監聽用戶活動並檢查登入狀態
-const handleUserActivity = (event) => {
-  if (!AUTO_LOGOUT_ENABLED) return; // ✅ 功能關閉時直接返回
+// ✅ 監聽頁面即將關閉/離開
+const handleBeforeUnload = () => {
+  if (!AUTO_LOGOUT_ENABLED) return;
+  if (!isLoggedIn.value) return;
 
-  // 先檢查是否已登出
-  if (!isLoggedIn.value && !isPublicRoute(route.path)) {
-    event.preventDefault();
-    event.stopPropagation();
-    performLogout('登入狀態已失效');
-    return;
-  }
-
-  // 更新活動時間
-  updateLastActivity();
+  // 記錄關閉時間
+  localStorage.setItem('lastCloseTime', Date.now().toString());
+  console.log('頁面關閉，記錄時間:', new Date().toLocaleString());
 };
 
-let intervalId = null;
+// ✅ 監聽頁面可見性變化（可選，用於偵測分頁切換）
+const handleVisibilityChange = () => {
+  if (!AUTO_LOGOUT_ENABLED) return;
+
+  if (document.hidden) {
+    // 頁面隱藏（切換分頁或最小化）
+    console.log('頁面隱藏');
+  } else {
+    // 頁面重新可見
+    console.log('頁面重新可見');
+    // 清除關閉時間記錄（因為用戶還在使用）
+    localStorage.removeItem('lastCloseTime');
+  }
+};
 
 onMounted(() => {
   console.log("App mounted!");
 
   if (!AUTO_LOGOUT_ENABLED) {
-    console.log("自動登出功能已停用"); // ✅ 提示功能已關閉
+    console.log("自動登出功能已停用");
     return;
   }
 
-  // 初始檢查
-  checkSession();
+  // ✅ 頁面載入時檢查是否需要登出
+  checkIfShouldLogout();
 
-  // 如果已登入，更新最後活動時間
-  if (isLoggedIn.value) {
-    updateLastActivity();
-  }
+  // ✅ 監聽頁面即將關閉
+  window.addEventListener('beforeunload', handleBeforeUnload);
 
-  // ✅ 監聽用戶活動（使用 capture 模式優先捕獲）
-  window.addEventListener('click', handleUserActivity, true);
-  window.addEventListener('keydown', handleUserActivity, true);
-  window.addEventListener('scroll', handleUserActivity, true);
-  window.addEventListener('mousemove', handleUserActivity, true);
-
-  // 定期檢查 session (每分鐘檢查一次)
-  intervalId = setInterval(checkSession, 60000);
+  // ✅ 監聽頁面可見性變化（可選）
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onBeforeUnmount(() => {
-  if (intervalId) {
-    clearInterval(intervalId);
-  }
-  window.removeEventListener('click', handleUserActivity, true);
-  window.removeEventListener('keydown', handleUserActivity, true);
-  window.removeEventListener('scroll', handleUserActivity, true);
-  window.removeEventListener('mousemove', handleUserActivity, true);
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 

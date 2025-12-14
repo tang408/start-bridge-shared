@@ -137,7 +137,7 @@
               <div class="stat-card highlight">
                 <div class="stat-label">尚缺人數</div>
                 <div class="stat-value">
-                  {{ props.planData?.planDetail.remainingParticipants || 0 }} 人
+                  {{ props.planData?.currentStep >= 12 ? 0 : props.planData?.planDetail.remainingParticipants }} 人
                 </div>
               </div>
             </div>

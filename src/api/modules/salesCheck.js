@@ -13,10 +13,6 @@ export const salesCheckApi = {
         return api.post("/f/private/sales-check/check-contract-by-sales", params);
     },
 
-    async checkResourceBySales(params = {}) {
-        return api.post("/f/private/sales-check/check-resource-by-sales", params);
-    },
-
     async checkFranchiseBySales(params = {}) {
         return api.post("/f/private/sales-check/check-franchise-by-sales", params);
     },

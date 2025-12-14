@@ -17,7 +17,14 @@
           </template>
 
           <template v-else-if="mode === 'apply'">
-            <button class="btn-orange w-45" @click="apply">報名</button>
+            <button
+                class="btn-orange w-45"
+                @click="apply"
+                :disabled="disableApply"
+                :class="{ 'btn-disabled': disableApply }"
+            >
+              {{ applyText }}
+            </button>
             <button class="btn-gray w-45" @click="close">關閉</button>
           </template>
 
@@ -60,6 +67,8 @@ const props = defineProps({
   mode: { type: String, default: "confirm" },
   titleAlign: { type: String, default: "left" },
   large: { type: Boolean, default: false },
+  applyText: { type: String, default: "報名" }, // 🆕 報名按鈕文字
+  disableApply: { type: Boolean, default: false }, // 🆕 是否禁用報名按鈕
 });
 
 const emit = defineEmits([
@@ -90,6 +99,10 @@ function confirm() {
 }
 
 function apply() {
+  // 🆕 如果按鈕被禁用，不觸發事件
+  if (props.disableApply) {
+    return;
+  }
   emit("apply");
 }
 
@@ -271,6 +284,17 @@ function submit() {
 
     &:active {
       opacity: 0.8;
+    }
+
+    // 🆕 禁用狀態
+    &:disabled,
+    &.btn-disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+
+      &:hover {
+        opacity: 0.5;
+      }
     }
 
     @media (max-width: 576px) {

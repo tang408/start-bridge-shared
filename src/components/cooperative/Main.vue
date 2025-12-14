@@ -197,8 +197,11 @@ async function getOfficialPartners(industryType = 0) {
     }
     const response = await officialPartnerApi.getOfficialPartners(formData);
     if (response.code === 0) {
-      officialPartnersData.value = response.data || [];
-      console.log('獲取的合作夥伴:', response.data);
+      officialPartnersData.value = (response.data || []).sort((a, b) => {
+        const sortA = a.sort ?? Infinity;
+        const sortB = b.sort ?? Infinity;
+        return sortA - sortB;
+      });
     } else {
       throw new Error('API 響應格式錯誤');
     }
@@ -235,8 +238,8 @@ const transformedItems = computed(() => {
     id: partner.id,
     title: partner.name,
     cover: partner.photo || '@/assets/images/default-cover.png',
-    industryType: partner.industryType, // ⭐ 保留 ID 用於過濾
-    industrySubType: partner.industrySubType, // ⭐ 保留 ID 用於過濾
+    industryType: partner.industryType,
+    industrySubType: partner.industrySubType,
     description: partner.description,
     mode: partner.mode,
     redirectUrl: partner.redirectUrl,

@@ -116,11 +116,15 @@
                     登入
                   </router-link>
                 </div>
-                <div class="nav-item bc-1 br-1 logIn" v-else>
-                  <button class="nav-link" type="button" @click="handleLogout">
+                <div class="bc-1 br-1 logIn" v-else>
+                  <router-link
+                    class="nav-link"
+                    to="/"
+                    @click.prevent="handleLogout"
+                    >
                     <img src="@/assets/icon/menu-icon.svg" />
                     登出
-                  </button>
+                  </router-link>
                 </div>
               </li>
             </div>

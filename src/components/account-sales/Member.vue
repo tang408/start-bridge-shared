@@ -288,7 +288,7 @@
         <div>總募資金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
         <div>共創者人數：{{ planDetail.planPartnerCount || 0 }} 人</div>
         <div class="color-1">尚缺募資金額：{{ formatAmount(planDetail.shortAmount) }} 元</div>
-        <div class="color-1">尚缺募資人數：{{ planDetail.shortPartnerCount }} 人</div>
+        <div class="color-1">尚缺募資人數：{{ planDetail.planStatus >= 12 ? 0 : planDetail.shortPartnerCount }} 人</div>
 
         <hr/>
 
@@ -335,6 +335,30 @@
             alt="文件預覽"
             class="doc-image"
         />
+      </div>
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showCompanyDialog"
+      title="公司資料"
+      mode="close"
+      @update:modelValue="val => showCompanyDialog = val"
+      class="company-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section">
+        <div>公司名稱：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyName || '未設定' }}</div>
+        <div>公司名稱(英文)：{{selectedMemberDetail.founderInfo?.companyInfo?.companyEngName || '未設定'}}</div>
+        <div>統一編號：{{ selectedMemberDetail.founderInfo?.companyInfo?.businessId || '未設定' }}</div>
+        <div>銀行帳戶名稱：{{ selectedMemberDetail.founderInfo?.companyInfo?.BankInfo?.bankAccountName || '未設定' }}</div>
+        <div>銀行帳戶號碼：{{ selectedMemberDetail.founderInfo?.companyInfo?.BankInfo?.bankAccountNumber || '未設定' }}</div>
+        <div>公司簡介：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyInfo || '未設定' }}</div>
+        <div>公司詳細介紹：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyProfile || '未設定' }}</div>
+        <div>Facebook：{{ selectedMemberDetail.founderInfo?.companyInfo?.facebookUrl || '未設定' }}</div>
+        <div>Instagram：{{ selectedMemberDetail.founderInfo?.companyInfo?.instagramUrl || '未設定' }}</div>
+        <div>官方網站：{{ selectedMemberDetail.founderInfo?.companyInfo?.websiteUrl || '未設定' }}</div>
       </div>
     </div>
   </SharedModal>
@@ -605,6 +629,10 @@ const openDocDialog = (type, url) => {
   showDocDialog.value = true
 }
 
+const showCompanyDialog = ref(false)
+async function openCompanyDialog() {
+  showCompanyDialog.value = true
+}
 </script>
 
 <style scoped lang="scss">

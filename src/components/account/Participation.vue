@@ -108,12 +108,13 @@
                 </button>
 
                 <button
-                    v-if="t.status === 13"
-                    type="button"
-                    @click="handleUploadCorePlanFinalContract(t, p)"
+                  v-if="p.planCurrentStep === 23"
+                  type="button"
+                  @click="successMatchingPlanByUser(t, p)"
                 >
-                  上傳合約
+                  完成媒合
                 </button>
+
               </div>
               <div class="tx-label">{{ t.invest }}</div>
               <div class="tx-status">
@@ -132,7 +133,7 @@
           </div>
 
           <!-- 合約檢視區塊 -->
-          <div v-if="p.planFinalContractUrl" class="contract-section mt-4">
+          <div v-if="p.planFinalContractUrl && p.planCurrentStep === 22" class="contract-section mt-4">
             <div class="contract-link-wrapper">
               <a
                   :href="p.planFinalContractUrl"
@@ -689,6 +690,7 @@ async function getAllParticipantPlanByUser() {
         return {
           id: plan.planId,
           status: status,
+          planCurrentStep: plan.currentStep,
           lastUpdate: calculateTimeRemaining(plan.endDate),
           title: plan.planName,
           content: statusLabel(status),
@@ -713,6 +715,7 @@ async function getAllParticipantPlanByUser() {
           agreeTerms: plan.agreeTerms || false,
         };
       });
+
     } else {
       console.error('獲取參與計畫失敗:', response.message);
     }
@@ -811,12 +814,14 @@ async function getParticipantPlan() {
         goal: plan.targetAmount,
         increaseAmount: 0,
       }];
+
     } else {
       await NewAlert.show("獲取品牌計畫失敗", response.message + " ,請洽客服人員。");
     }
   } catch (error) {
     console.error('獲取品牌計畫錯誤:', error);
   }
+
 }
 
 // ==================== 用戶操作 ====================
@@ -1159,6 +1164,21 @@ async function handleAdjustmentSubmit() {
     await NewAlert.show("已通知", "您的調整意願已通知");
   } else {
     adjustmentError.value = response.message;
+  }
+}
+
+async function successMatchingPlanByUser(t,p) {
+  const formData = {
+    userId: currentUser.value,
+    planId: p.id,
+  }
+  const response = await userCheckApi.successMatchingPlanByUser(formData)
+  if (response.code === 0) {
+    await NewAlert.show('成功', '確認成功');
+    await getAllParticipantPlanByUser();
+    await getAllParticipantPlanRecordByUser();
+  } else {
+    await NewAlert.show('失敗', response.message + ',操作失敗，請洽客服人員。');
   }
 }
 

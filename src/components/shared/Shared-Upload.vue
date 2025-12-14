@@ -150,6 +150,8 @@ async function onChange(e) {
         result = await fileApi.uploadCorePlanFinalContractFile(file, props.account, props.type);
       } else if (props.name === 'plan-document') {
         result = await fileApi.uploadPlanDocument(file, props.account, props.type);
+      } else if (props.name === 'reUploadPlanFinalContract') {
+        result = await fileApi.reUploadPlanFinalContractFile(file, props.account, props.type);
       }
       else {
         result = await fileApi.uploadFile(file, props.account, props.name);

@@ -131,7 +131,7 @@
           id="p4-q9"
           v-model="local.q9Location"
           v-model:extra="local.q9LocationNote"
-          label="9. 期待的共同創業者附加價值？"
+          label="9. 請問您期待的「共同創業者」除了初期出資成為您的共同創業者之外，還希望有哪些附加價值？"
           name="q9Location"
           :options="[
           { text: '適度參與經營討論', value: 'operation' },
