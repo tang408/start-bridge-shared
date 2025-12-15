@@ -59,7 +59,7 @@
           <!-- 手機版：表格外顯示 -->
           <div class="revenue-target-mobile">
             <div class="th-number">
-              以營業額目標：
+              以月營業額目標：
               <SharedInput
                   id="targetRevenue-mobile"
                   v-model="local.targetRevenue"
@@ -80,7 +80,7 @@
               <tr>
                 <th colspan="4" class="text-start">
                   <div class="th-number">
-                    以營業額目標：
+                    以月營業額目標：
                     <SharedInput
                       id="targetRevenue"
                       v-model="local.targetRevenue"

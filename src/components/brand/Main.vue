@@ -441,6 +441,7 @@ onMounted(() => {
 .advantages {
   height: 145vh;
   position: relative;
+  padding-bottom: 50px;
   @media (max-width: 576px) {
     height: 125vh;
     margin-bottom: 70px;
@@ -524,10 +525,10 @@ onMounted(() => {
       display: grid;
     }
     p {
-      margin: 6rem 0 3rem 0;
+      margin: 4rem 1rem 3rem 0;
       width: 44%;
       @media (max-width: 576px) {
-        width: 100%;
+        width: 80%;
         margin: 0;
       }
     }
@@ -536,6 +537,7 @@ onMounted(() => {
 
 .solution {
   position: relative;
+  padding-top: 50px;
   @media (max-width: 576px) {
     padding: 0 25px;
   }
