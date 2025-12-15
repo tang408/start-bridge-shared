@@ -49,7 +49,7 @@
               <tr>
                 <th colspan="4" class="text-start">
                   <div class="th-number">
-                    以營業額目標：
+                    以月營業額目標：
                     <SharedInput
                       id="targetRevenue"
                       v-model="local.targetRevenue"

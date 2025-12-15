@@ -153,7 +153,7 @@
                   :class="{ 'agreed': p.agreeTerms }"
                   @click.stop="agreeContractTermsByUser(p)"
               >
-                {{ p.agreeTerms ? '已同意合約條例' : '我同意雙方合約條例' }}
+                {{ p.agreeTerms ? '已確認內容無誤，待安排簽約' : '確認合約內容無誤，安排簽約' }}
               </button>
 
               <button
@@ -163,7 +163,7 @@
                   :disabled="p.agreeTerms || p.adjustmentRequested"
                   @click.stop="handleRequestAdjustment(p)"
               >
-                {{ p.adjustmentRequested ? '已通知' : '尚有調整意願' }}
+                {{ p.adjustmentRequested ? '已通知' : '合約內容有誤，協助聯繫修正' }}
               </button>
             </div>
           </div>
@@ -629,8 +629,8 @@ function calculateTimeRemaining(endDate) {
 
 // 格式化狀態 key
 function formatStatusKey(status) {
-  if (status > 0 && status <= 8 && status !== 2) return 'pending';
-  if (status > 8 && status !== 9) return 'success';
+  if (status > 0 && status < 8 && status !== 2) return 'pending';
+  if (status >= 8 && status !== 9) return 'success';
   if (status === 9 || status < 0 || status === 2) return 'failed';
   return 'unknown';
 }
@@ -748,7 +748,7 @@ async function getAllParticipantPlanRecordByUser() {
         };
 
         const getStatusInfo = (status) => {
-          if (status > 8 && status !== 9) return 1; // 成功
+          if (status >= 8 && status !== 9) return 1; // 成功
           if (status === 2 || status === 9 || status < 0) return 2; // 失敗
           return 0; // 審核中
         };

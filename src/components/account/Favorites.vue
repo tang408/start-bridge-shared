@@ -388,11 +388,16 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .favorites-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // ⭐ 固定每行 3 個
   gap: 25px;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr); // 平板顯示 2 個
+  }
+
   @media (max-width: 576px) {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr; // 手機顯示 1 個
   }
 }
 

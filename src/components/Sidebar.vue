@@ -3,7 +3,7 @@
     <div class="sidebar-card">
       <div class="profile">
         <div class="avatar-img" @click="triggerFileUpload">
-          <img class="avatar" :src="avatar" alt="avatar" />
+          <img class="avatar" :src="displayAvatar" alt="用戶頭像" />
           <div class="avatar-overlay">
             <img
                 class="avatar-edit"
@@ -66,7 +66,7 @@
 <script setup>
 import { useRoute } from 'vue-router'
 import { useNotifications } from '@/composables/useNotifications.js'
-import { ref } from 'vue'
+import {computed, ref} from 'vue'
 import side1 from '@/assets/icon/side-1.svg'
 import side2 from '@/assets/icon/side-2.svg'
 import side3 from '@/assets/icon/side-3.svg'
@@ -84,8 +84,13 @@ import side6Active from '@/assets/icon/side-6-active.svg'
 import side8Active from '@/assets/icon/side-8-active.svg'
 import side9Active from '@/assets/icon/side-9-active.svg'
 import avatarImg from '@/assets/images/avatar.png'
-
+import logoImg from '/favicon.svg'
 const { totalUnreadCount } = useNotifications('user')
+
+// ⭐ 計算屬性：如果沒有頭像，使用預設頭像
+const displayAvatar = computed(() => {
+  return props.avatar || logoImg
+});
 
 const props = defineProps({
   displayName: { type: String, default: '帳號名稱帳號名稱' },

@@ -45,6 +45,11 @@ export function useAuth() {
     userNameRef.value = payload.userName ?? null;
     salesRef.value = payload.sales ?? null;
     persist();
+
+    // ⭐ 登入時設定初始活動時間
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("lastActiveTime", Date.now().toString());
+    }
   }
 
   async function logout() {
@@ -52,8 +57,14 @@ export function useAuth() {
     userRef.value = null;
     userNameRef.value = null;
     salesRef.value = null;
+
     if (typeof localStorage !== "undefined") {
+      // ⭐ 清除 auth 資料
       localStorage.removeItem("auth");
+
+      // ⭐ 清除自動登出相關的時間記錄
+      localStorage.removeItem("lastActiveTime");
+      localStorage.removeItem("lastCloseTime");
     }
   }
 

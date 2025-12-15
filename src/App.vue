@@ -3,7 +3,7 @@
 </template>
 
 <script setup>
-import { onMounted, onBeforeUnmount } from "vue";
+import { onMounted, onBeforeUnmount, ref } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 import { NewAlert } from "@/composables/useAlert.js";
@@ -15,9 +15,9 @@ const { logout, isLoggedIn } = useAuth();
 // ✅ 控制自動登出功能的開關
 const AUTO_LOGOUT_ENABLED = true; // true 啟用，false 停用
 
-// ✅ 15 分鐘無活動就登出
-const TIMEOUT = 15 * 60 * 1000; // 15分鐘
-
+// ✅ 1 小時無活動就登出
+const TIMEOUT = 60 * 60 * 1000; // 1小時
+// const TIMEOUT= 10 * 1000; // 改成 10 秒
 // ✅ 定義不需要登入的頁面
 const PUBLIC_ROUTES = ['/login', '/register', '/forgot-password', '/'];
 
@@ -26,12 +26,22 @@ const isPublicRoute = (path) => {
   return PUBLIC_ROUTES.some(publicPath => path.startsWith(publicPath));
 };
 
+// ✅ 閒置計時器
+let idleTimer = null;
+
 // ✅ 執行登出並跳轉
 const performLogout = async (reason = '長時間未使用') => {
   console.log(`${reason}，執行登出`);
 
   await logout();
+  localStorage.removeItem('lastActiveTime');
   localStorage.removeItem('lastCloseTime');
+
+  // 清除閒置計時器
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
 
   // 如果不在公開頁面，顯示提示並跳轉
   if (!isPublicRoute(route.path)) {
@@ -42,19 +52,43 @@ const performLogout = async (reason = '長時間未使用') => {
 
     await router.push({
       path: '/login',
-      query: {redirect: route.fullPath}
+      query: { redirect: route.fullPath }
     });
   }
 };
 
-// ✅ 檢查是否需要登出（僅在頁面載入時執行一次）
+// ✅ 重置閒置計時器
+const resetIdleTimer = () => {
+  if (!AUTO_LOGOUT_ENABLED) return;
+  if (!isLoggedIn.value) return;
+  if (isPublicRoute(route.path)) return;
+
+  // 清除舊的計時器
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+  }
+
+  // 更新最後活動時間
+  localStorage.setItem('lastActiveTime', Date.now().toString());
+
+  // 設置新的計時器
+  idleTimer = setTimeout(() => {
+    performLogout('閒置超過 1 小時');
+  }, TIMEOUT);
+
+  console.log('閒置計時器已重置');
+};
+
+// ✅ 檢查關閉頁面時間（僅在頁面載入時執行一次）
 const checkIfShouldLogout = () => {
   if (!AUTO_LOGOUT_ENABLED) return;
   if (isPublicRoute(route.path)) return;
   if (!isLoggedIn.value) return;
 
   const lastCloseTime = localStorage.getItem('lastCloseTime');
+  const lastActiveTime = localStorage.getItem('lastActiveTime');
 
+  // 優先檢查關閉時間
   if (lastCloseTime) {
     const timeDiff = Date.now() - parseInt(lastCloseTime);
 
@@ -62,12 +96,26 @@ const checkIfShouldLogout = () => {
     console.log(`距離現在: ${Math.floor(timeDiff / 1000 / 60)} 分鐘`);
 
     if (timeDiff > TIMEOUT) {
-      performLogout('長時間未使用');
+      performLogout('關閉頁面超過 1 小時');
+      return;
     } else {
       // 清除記錄，因為用戶已經回來了
       localStorage.removeItem('lastCloseTime');
     }
   }
+
+  // 檢查最後活動時間
+  if (lastActiveTime) {
+    const timeDiff = Date.now() - parseInt(lastActiveTime);
+
+    if (timeDiff > TIMEOUT) {
+      performLogout('閒置超過 1 小時');
+      return;
+    }
+  }
+
+  // 啟動閒置計時器
+  resetIdleTimer();
 };
 
 // ✅ 監聽頁面即將關閉/離開
@@ -80,19 +128,43 @@ const handleBeforeUnload = () => {
   console.log('頁面關閉，記錄時間:', new Date().toLocaleString());
 };
 
-// ✅ 監聽頁面可見性變化（可選，用於偵測分頁切換）
+// ✅ 監聽頁面可見性變化
 const handleVisibilityChange = () => {
   if (!AUTO_LOGOUT_ENABLED) return;
+  if (!isLoggedIn.value) return;
 
   if (document.hidden) {
     // 頁面隱藏（切換分頁或最小化）
     console.log('頁面隱藏');
+    // 記錄最後活動時間
+    localStorage.setItem('lastActiveTime', Date.now().toString());
   } else {
     // 頁面重新可見
     console.log('頁面重新可見');
-    // 清除關閉時間記錄（因為用戶還在使用）
+
+    // 檢查是否需要登出
+    const lastActiveTime = localStorage.getItem('lastActiveTime');
+    if (lastActiveTime) {
+      const timeDiff = Date.now() - parseInt(lastActiveTime);
+      if (timeDiff > TIMEOUT) {
+        performLogout('閒置超過 1 小時');
+        return;
+      }
+    }
+
+    // 清除關閉時間記錄
     localStorage.removeItem('lastCloseTime');
+
+    // 重置閒置計時器
+    resetIdleTimer();
   }
+};
+
+// ✅ 監聽用戶活動（滑鼠移動、鍵盤輸入、點擊等）
+const userActivityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+
+const handleUserActivity = () => {
+  resetIdleTimer();
 };
 
 onMounted(() => {
@@ -109,13 +181,28 @@ onMounted(() => {
   // ✅ 監聽頁面即將關閉
   window.addEventListener('beforeunload', handleBeforeUnload);
 
-  // ✅ 監聽頁面可見性變化（可選）
+  // ✅ 監聽頁面可見性變化
   document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // ✅ 監聽用戶活動
+  userActivityEvents.forEach(event => {
+    window.addEventListener(event, handleUserActivity, { passive: true });
+  });
 });
 
 onBeforeUnmount(() => {
+  // 清除所有監聽器
   window.removeEventListener('beforeunload', handleBeforeUnload);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+  userActivityEvents.forEach(event => {
+    window.removeEventListener(event, handleUserActivity);
+  });
+
+  // 清除閒置計時器
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+  }
 });
 </script>
 

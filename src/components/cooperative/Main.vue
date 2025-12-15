@@ -250,11 +250,14 @@ const transformedItems = computed(() => {
 
 // 組件掛載時獲取數據
 onMounted(async () => {
+  // 先獲取基礎資料
   await Promise.all([
     getIndustryTypes(),
-    getOfficialPartners(0), // 初始載入所有資料
-    getUserFavoritePlan(),
+    getOfficialPartners(0), // 獲取所有合作夥伴
   ]);
+
+  // 再獲取用戶相關資料（依賴於 officialPartnersData）
+  await getUserFavoritePlan();
 });
 
 const goToQA = () => {
