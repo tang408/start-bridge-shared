@@ -13,6 +13,16 @@
           >
             <span class="navbar-toggler-icon"></span>
           </button>
+
+          <button
+              v-if="isAccountPage"
+              class="user-toggler d-lg-none"
+              type="button"
+              aria-label="open account user page"
+              @click.stop="toggleMobileAccountSidebar()"
+          >
+            <img src="@/assets/icon/user.png" alt="user" />
+          </button>
         </div>
 
         <div :class="['navbar-collapse', { open: isMenuOpen }]" id="navbarNav">

@@ -207,7 +207,7 @@
           class="btn-upload"
           @click.stop="openAddressDialog(p)"
         >
-          填寫地址
+          選址完成
         </button>
 
         <!-- 並排顯示 -->
@@ -1454,73 +1454,73 @@ async function loadPlanData(planId) {
         costStruct: [
           {
             item: "物料成本",
-            percent: String(planData.firstMaterialCostsPercent || ''),
-            amount: String(planData.firstMaterialCostsAmount || ''),
+            percent: String(planData.firstMaterialCostsPercent ?? ''),
+            amount: String(planData.firstMaterialCostsAmount ?? ''),
             note: planData.firstMaterialCostsRemark || '',
             desc: "(含物料及包材)",
           },
           {
             item: "人事成本",
-            percent: String(planData.personnelCostsPercent || ''),
-            amount: String(planData.personnelCostsAmount || ''),
+            percent: String(planData.personnelCostsPercent ?? ''),
+            amount: String(planData.personnelCostsAmount ?? ''),
             note: planData.personnelCostsRemark || '',
             desc: "(含薪資及勞健保)",
           },
           {
             item: "租金成本",
-            percent: String(planData.rentalCostsPercent || ''),
-            amount: String(planData.rentalCostsAmount || ''),
+            percent: String(planData.rentalCostsPercent ?? ''),
+            amount: String(planData.rentalCostsAmount ?? ''),
             note: planData.rentalCostsRemark || '',
             desc: "(不含押金)",
           },
           {
             item: "經營管理成本",
-            percent: String(planData.peratingCostsPercent || ''),
-            amount: String(planData.peratingCostsAmount || ''),
+            percent: String(planData.peratingCostsPercent ?? ''),
+            amount: String(planData.peratingCostsAmount ?? ''),
             note: planData.peratingCostsRemark || '',
           },
           {
             item: "淨利",
-            percent: String(planData.otherCostsPercent || ''),
-            amount: String(planData.otherCostsAmount || ''),
+            percent: String(planData.otherCostsPercent ?? ''),
+            amount: String(planData.otherCostsAmount ?? ''),
             note: planData.otherCostsRemark || '',
           },
           {
             item: "總計",
-            percent: planData.firstMaterialCostsPercent &&
-            planData.personnelCostsPercent &&
-            planData.rentalCostsPercent &&
-            planData.peratingCostsPercent &&
-            planData.otherCostsPercent
+            percent: planData.firstMaterialCostsPercent != null &&
+            planData.personnelCostsPercent != null &&
+            planData.rentalCostsPercent != null &&
+            planData.peratingCostsPercent != null &&
+            planData.otherCostsPercent != null
                 ? String(
-                    Number(planData.firstMaterialCostsPercent || 0) +
-                    Number(planData.personnelCostsPercent || 0) +
-                    Number(planData.rentalCostsPercent || 0) +
-                    Number(planData.peratingCostsPercent || 0) +
-                    Number(planData.otherCostsPercent || 0)
+                    Number(planData.firstMaterialCostsPercent ?? 0) +
+                    Number(planData.personnelCostsPercent ?? 0) +
+                    Number(planData.rentalCostsPercent ?? 0) +
+                    Number(planData.peratingCostsPercent ?? 0) +
+                    Number(planData.otherCostsPercent ?? 0)
                 )
                 : '',
-            amount: planData.firstMaterialCostsAmount &&
-            planData.personnelCostsAmount &&
-            planData.rentalCostsAmount &&
-            planData.peratingCostsAmount &&
-            planData.otherCostsAmount
+            amount: planData.firstMaterialCostsAmount != null &&
+            planData.personnelCostsAmount != null &&
+            planData.rentalCostsAmount != null &&
+            planData.peratingCostsAmount != null &&
+            planData.otherCostsAmount != null
                 ? String(
-                    Number(planData.firstMaterialCostsAmount || 0) +
-                    Number(planData.personnelCostsAmount || 0) +
-                    Number(planData.rentalCostsAmount || 0) +
-                    Number(planData.peratingCostsAmount || 0) +
-                    Number(planData.otherCostsAmount || 0)
+                    Number(planData.firstMaterialCostsAmount ?? 0) +
+                    Number(planData.personnelCostsAmount ?? 0) +
+                    Number(planData.rentalCostsAmount ?? 0) +
+                    Number(planData.peratingCostsAmount ?? 0) +
+                    Number(planData.otherCostsAmount ?? 0)
                 )
                 : '',
             note: '',
             desc: "(不含稅)",
           },
-        ],
-        targetRevenue: String(planData.turnoverTarget || ''),
+            ],
+        targetRevenue: String(planData.turnoverTarget ?? ''),
         rewardEnabled: Boolean(planData.rewardThreshold),
-        rewardAmount: String(planData.rewardThreshold || ''),
-        rewardPercent: String(planData.rewardPercent || ''),
+        rewardAmount: String(planData.rewardThreshold ?? ''),
+        rewardPercent: String(planData.rewardPercent ?? ''),
         fundNote: 1,
         reportSelected: parseReportSelectedMulti(planData.otherStatement),
         otherReport: {},
@@ -3222,11 +3222,25 @@ async function handleReUploadPlanFinalContractSubmit() {
 }
 
 async function successMatchingPlanByUser(p) {
+  // 🆕 加入確認對話框
+  const result = await NewAlert.confirm(
+      "完成媒合確認",
+      "按下【完成媒合】後，等同媒合案件完成，同意將意向金撥款為星橋平台媒合服務費收取。"
+  );
+
+  // 如果用戶點擊取消，直接返回
+  if (!result) {
+    return;
+  }
+
+  // 用戶確認後才執行
   const formData = {
     userId: currentUser.value,
     planId: p.id,
   }
+
   const response = await userCheckApi.successMatchingPlanByUser(formData)
+
   if (response.code === 0) {
     await NewAlert.show('成功', '確認成功');
     await getAllPlanByUser()
