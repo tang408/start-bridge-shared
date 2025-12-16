@@ -108,9 +108,9 @@
                 </button>
 
                 <button
-                  v-if="p.planCurrentStep === 23"
-                  type="button"
-                  @click="successMatchingPlanByUser(t, p)"
+                    v-if="p.isSuccess === false && p.planCurrentStep === 23 && (t.status !== 2 && t.status !== 9 && t.status > 0)"
+                    type="button"
+                    @click="successMatchingPlanByUser(t, p)"
                 >
                   完成媒合
                 </button>
@@ -713,6 +713,7 @@ async function getAllParticipantPlanByUser() {
           planFinalContractUrl: plan.planFinalContractUrl || '',
           adjustmentRequested: plan.adjustmentRequested || false,
           agreeTerms: plan.agreeTerms || false,
+          isSuccess: plan.isSuccess || false,
         };
       });
 
@@ -1167,12 +1168,27 @@ async function handleAdjustmentSubmit() {
   }
 }
 
-async function successMatchingPlanByUser(t,p) {
+async function successMatchingPlanByUser(t, p) {
+  console.log(p)
+  // 🆕 加入確認對話框
+  const result = await NewAlert.confirm(
+      "完成媒合確認",
+      "按下【完成媒合】後，等同媒合案件完成，同意將意向金撥款為星橋平台媒合服務費收取。"
+  );
+
+  // 如果用戶點擊取消，直接返回
+  if (!result) {
+    return;
+  }
+
+  // 用戶確認後才執行
   const formData = {
     userId: currentUser.value,
     planId: p.id,
   }
+
   const response = await userCheckApi.successMatchingPlanByUser(formData)
+
   if (response.code === 0) {
     await NewAlert.show('成功', '確認成功');
     await getAllParticipantPlanByUser();

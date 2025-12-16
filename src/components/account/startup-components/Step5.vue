@@ -1,223 +1,5 @@
-<template>
-  <form class="form mt-4" @submit.prevent="submitStep">
-    <div class="gap-3 d-grid">
-      <button
-          v-if="readonly"
-          type="button"
-          class="btn-back mb-3"
-          @click="backToList"
-      >
-        ← 返回列表
-      </button>
-      <h5 class="form-title">三、財務規劃與資金用途</h5>
-
-      <div class="mb-3">
-        <label class="fg-label">1.「籌備期間」開辦費預算規劃 :</label>
-        <table class="records-table w-100 mt-2">
-          <thead>
-            <tr>
-              <th>用途項目</th>
-              <th>金額（元）</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(row, idx) in local.prepBudget" :key="idx">
-              <td data-label="用途項目">
-                <!-- 如果是可編輯項目,顯示 input -->
-                <SharedInput
-                  v-if="row.editable"
-                  :id="`item-title-${idx}`"
-                  type="text"
-                  v-model="row.customTitle"
-                  placeholder="其他用途(請輸入)"
-                  :readonly="readonly"
-                />
-                <!-- 否則顯示固定文字 -->
-                <span v-else>{{ row.item }}</span>
-              </td>
-              <td data-label="金額(元)">
-                <SharedInput
-                  :id="`amount-${idx}`"
-                  type="text"
-                  :format-number="true"
-                  v-model="row.amount"
-                  placeholder="輸入金額"
-                  :readonly="readonly"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p v-if="errors.prepBudget" class="error-msg" :readonly="readonly">
-          {{ errors.prepBudget }}
-        </p>
-      </div>
-
-      <div>
-        <div class="mb-3">
-          <label class="fg-label">2. 「營運期間」損益成本結構 (%數)</label>
-          <!-- 手機版：表格外顯示 -->
-          <div class="revenue-target-mobile">
-            <div class="th-number">
-              以月營業額目標：
-              <SharedInput
-                  id="targetRevenue-mobile"
-                  v-model="local.targetRevenue"
-                  type="text"
-                  :format-number="true"
-                  placeholder="輸入金額"
-                  class="inline-input w-110 p-510 border-1"
-                  :readonly="readonly"
-              />
-              為標準預期所需比例之佔比：
-            </div>
-            <p v-if="errors.targetRevenue" class="error-msg">
-              {{ errors.targetRevenue }}
-            </p>
-          </div>
-          <table class="records-table w-100 mt-2">
-            <thead>
-              <tr>
-                <th colspan="4" class="text-start">
-                  <div class="th-number">
-                    以月營業額目標：
-                    <SharedInput
-                      id="targetRevenue"
-                      v-model="local.targetRevenue"
-                      type="text"
-                      :format-number="true"
-                      placeholder="輸入金額"
-                      class="inline-input w-110 p-510 border-1"
-                      :readonly="readonly"
-                    />
-                    為標準預期所需比例之佔比：
-                  </div>
-                  <p v-if="errors.targetRevenue" class="error-msg">
-                    {{ errors.targetRevenue }}
-                  </p>
-                </th>
-              </tr>
-              <tr>
-                <th>成本分類</th>
-                <th>佔比(%)</th>
-                <th>金額</th>
-                <th>備註</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, idx) in local.costStruct" :key="idx">
-                <td data-label="成本分類">
-                  <div>
-                    {{ row.item }}
-                    <p v-if="row.desc" class="sub-desc">{{ row.desc }}</p>
-                  </div>
-                </td>
-                <td data-label="佔比(%)">
-                  <SharedInput
-                    :id="`percent-${idx}`"
-                    type="number"
-                    v-model="row.percent"
-                    placeholder="%"
-                    class="p-510"
-                    :readonly="readonly"
-                  />
-                </td>
-                <td data-label="金額">
-                  <SharedInput
-                    :id="`amount-dollar-${idx}`"
-                    type="text"
-                    :format-number="true"
-                    v-model="row.amount"
-                    placeholder="金額"
-                    class="p-510"
-                    :readonly="readonly"
-                  />
-                </td>
-                <td data-label="備註">
-                  <SharedInput
-                    :id="`note-${idx}`"
-                    v-model="row.note"
-                    placeholder="備註"
-                    class="p-510"
-                    :readonly="readonly"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <p v-if="errors.costStruct" class="error-msg">
-            {{ errors.costStruct }}
-          </p>
-        </div>
-
-        <div class="mb-3 reward-filter">
-          <label class="fs-14 d-flex gap-2 reward-option">
-            <input
-              type="checkbox"
-              v-model="local.rewardEnabled"
-              class="reward-checkbox"
-              :readonly="readonly"
-            />
-            <span class="option-label">
-              若當月營業額達
-              <SharedInput
-                id="rewardAmount"
-                type="text"
-                :format-number="true"
-                v-model="local.rewardAmount"
-                placeholder="金額"
-                class="inline-input w-110 p-510"
-                :disabled="!local.rewardEnabled"
-                :readonly="readonly"
-              />
-              元，公司即撥發營業額之
-              <SharedInput
-                id="rewardPercent"
-                type="number"
-                v-model="local.rewardPercent"
-                placeholder="%"
-                class="inline-input w-110 p-510"
-                :disabled="!local.rewardEnabled"
-                :readonly="readonly"
-              />
-              % 給予創業者獎勵運營團隊。
-            </span>
-          </label>
-        </div>
-      </div>
-
-      <SharedRadio
-        class="fundNote"
-        v-model="local.fundNote"
-        label="3. 資金使用原則聲明："
-        name="fundNote"
-        :options="[
-          {
-            text: '我承諾所有資金僅用於專案經營與平台規範用途，絕不挪作私用或違法行為。',
-            value: '1',
-          },
-        ]"
-        :error="errors.fundNote"
-        :disabled="readonly"
-      />
-
-      <div class="mb-3">
-        <SharedCheckline
-          v-model="local.reportSelected"
-          label="4. 定期財報公開聲明："
-          :options="local.reportOptions"
-          :error="errors.reportSelected"
-          :disabled="readonly"
-        />
-      </div>
-    </div>
-    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step4')">上一步</button>
-    <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一步</button>
-  </form>
-</template>
-
 <script setup>
-import { reactive, watch, nextTick } from "vue";
+import { reactive, watch, nextTick, computed } from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
 import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
@@ -226,7 +8,7 @@ const props = defineProps({
   modelValue: { type: Object, required: true },
   errors: { type: Object, required: true },
   readonly: { type: Boolean, default: false },
-  step1Budget: { type: [String, Number], default: '' } // 新增這個
+  step1Budget: { type: [String, Number], default: '' }
 });
 
 const emit = defineEmits(["update:modelValue", "next"]);
@@ -235,6 +17,31 @@ const local = reactive({ ...props.modelValue });
 
 let isRecalculating = false;
 
+// 🆕 計算月營業額目標
+const targetRevenue = computed(() => {
+  return Number(local.targetRevenue) || 0;
+});
+
+// 🆕 檢查是否超過月營業額
+const isOverBudget = computed(() => {
+  const totalAmount = local.costStruct
+      .filter(item => item.item !== '總計')
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+  return totalAmount > targetRevenue.value && targetRevenue.value > 0;
+});
+
+// 🆕 獲取超額金額
+const overBudgetAmount = computed(() => {
+  if (!isOverBudget.value) return 0;
+
+  const totalAmount = local.costStruct
+      .filter(item => item.item !== '總計')
+      .reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
+
+  return totalAmount - targetRevenue.value;
+});
+
 // 只在非計算時同步到父組件
 watch(local, (val) => {
   if (!isRecalculating) {
@@ -242,12 +49,46 @@ watch(local, (val) => {
   }
 }, { deep: true });
 
-// 監聽營業額變化
+// 🆕 監聽成本結構的 percent 變化 → 計算 amount
+watch(
+    () => local.costStruct.map(r => r.percent),
+    () => {
+      if (!isRecalculating && targetRevenue.value > 0) {
+        isRecalculating = true;
+        nextTick(() => {
+          updateAmountsFromPercents();
+          isRecalculating = false;
+        });
+      }
+    },
+    { deep: true }
+);
+
+// 🆕 監聽成本結構的 amount 變化 → 計算 percent
+watch(
+    () => local.costStruct.map(r => r.amount),
+    () => {
+      if (!isRecalculating && targetRevenue.value > 0) {
+        isRecalculating = true;
+        nextTick(() => {
+          updatePercentsFromAmounts();
+          isRecalculating = false;
+        });
+      }
+    },
+    { deep: true }
+);
+
+// 監聽營業額變化 → 按比例重算金額
 watch(
     () => local.targetRevenue,
-    () => {
-      if (!isRecalculating) {
-        recalc();
+    (newValue, oldValue) => {
+      if (!isRecalculating && newValue !== oldValue && Number(newValue) > 0) {
+        isRecalculating = true;
+        nextTick(() => {
+          updateAmountsFromPercents();
+          isRecalculating = false;
+        });
       }
     }
 );
@@ -265,77 +106,95 @@ watch(
 async function recalcPrepBudget() {
   isRecalculating = true;
 
-  // 使用 nextTick 確保在下一個 tick 執行,避免同步更新問題
   await nextTick();
 
   const prepBudgetTotal = local.prepBudget
-    .slice(0, local.prepBudget.length - 1)
-    .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+      .slice(0, local.prepBudget.length - 1)
+      .reduce((sum, row) => sum + Number(row.amount || 0), 0);
 
   const lastRow = local.prepBudget[local.prepBudget.length - 1];
   if (lastRow) {
     lastRow.amount = prepBudgetTotal;
   }
 
-  // 等待下一個 tick 再重置旗標和發送更新
   await nextTick();
 
   isRecalculating = false;
 }
 
-// 只監聽可編輯的成本項目的 percent
-watch(
-    () => {
-      const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
-      return local.costStruct
-        .filter(r => costItems.includes(r.item))
-        .map(r => r.percent);
-    },
-    () => {
-      if (!isRecalculating) {
-        recalc();
-      }
-    },
-    { deep: false }
-);
-
-async function recalc() {
-  isRecalculating = true;
-
-  // 使用 nextTick 確保在下一個 tick 執行,避免同步更新問題
-  await nextTick();
-
+// 🆕 根據百分比計算金額
+function updateAmountsFromPercents() {
   const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
 
-  // STEP 1: 淨利
+  // 計算淨利百分比
   const totalCostPercent = local.costStruct
       .filter(r => costItems.includes(r.item))
       .reduce((sum, r) => sum + Number(r.percent || 0), 0);
 
   const netProfitRow = local.costStruct.find(r => r.item === "淨利");
   if (netProfitRow) {
-    netProfitRow.percent = 100 - totalCostPercent;
+    netProfitRow.percent = String(100 - totalCostPercent);
   }
 
-  // STEP 2: 總計
-  const totalRow = local.costStruct.find(r => r.item === "總計");
-  if (totalRow) {
-    // 總計永遠是 100%,因為它代表整個營業額的分配
-    totalRow.percent = 100;
-  }
-
-  // STEP 3: 金額
+  // 計算所有行的金額
   local.costStruct.forEach(row => {
-    row.amount = local.targetRevenue
-        ? ((Number(row.percent || 0) / 100) * Number(local.targetRevenue)).toFixed(0)
-        : "";
+    if (row.item !== '總計') {
+      const percent = Number(row.percent) || 0;
+      row.amount = String(Math.round((targetRevenue.value * percent) / 100));
+    }
   });
 
-  // 等待下一個 tick 再重置旗標和發送更新
-  await nextTick();
-  isRecalculating = false;
-  emit("update:modelValue", local);
+  // 計算總計
+  calculateTotal();
 }
+
+// 🆕 根據金額計算百分比
+function updatePercentsFromAmounts() {
+  const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
+
+  // 計算可編輯項目的百分比
+  local.costStruct.forEach(row => {
+    if (costItems.includes(row.item)) {
+      const amount = Number(row.amount) || 0;
+      const percent = (amount / targetRevenue.value) * 100;
+      row.percent = String(Math.round(percent * 100) / 100);
+    }
+  });
+
+  // 計算淨利
+  const totalCostPercent = local.costStruct
+      .filter(r => costItems.includes(r.item))
+      .reduce((sum, r) => sum + Number(r.percent || 0), 0);
+
+  const netProfitRow = local.costStruct.find(r => r.item === "淨利");
+  if (netProfitRow) {
+    netProfitRow.percent = String(100 - totalCostPercent);
+    netProfitRow.amount = String(Math.round((targetRevenue.value * (100 - totalCostPercent)) / 100));
+  }
+
+  // 計算總計
+  calculateTotal();
+}
+
+// 🆕 計算總計
+function calculateTotal() {
+  let totalPercent = 0;
+  let totalAmount = 0;
+
+  local.costStruct.forEach((item) => {
+    if (item.item !== '總計') {
+      totalPercent += Number(item.percent) || 0;
+      totalAmount += Number(item.amount) || 0;
+    }
+  });
+
+  const totalRow = local.costStruct.find(item => item.item === '總計');
+  if (totalRow) {
+    totalRow.percent = String(Math.round(totalPercent * 100) / 100);
+    totalRow.amount = String(totalAmount);
+  }
+}
+
 function submitStep() {
   Object.keys(props.errors).forEach((k) => (props.errors[k] = ""));
 
@@ -343,21 +202,28 @@ function submitStep() {
     props.errors.targetRevenue = "請輸入營業額目標";
   }
 
-  // 比對
+  // 🆕 檢查是否超額
+  if (isOverBudget.value) {
+    props.errors.costStruct = `成本結構總金額超過月營業額目標 ${overBudgetAmount.value.toLocaleString()} 元`;
+  }
+
   const step1BudgetNum = Number(props.step1Budget) || 0;
   const prepBudgetTotal = local.prepBudget
-    .slice(0, local.prepBudget.length - 1)
-    .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+      .slice(0, local.prepBudget.length - 1)
+      .reduce((sum, row) => sum + Number(row.amount || 0), 0);
   if (prepBudgetTotal !== step1BudgetNum) {
     props.errors.prepBudget = `開辦費預算總額須與加盟總預算一致（${step1BudgetNum.toLocaleString()} 元）`;
   }
 
   const costStructTotalAmount = local.costStruct.find(
-    (row) => row.item === "總計"
+      (row) => row.item === "總計"
   )?.amount;
-  if (Number(costStructTotalAmount) !== Number(local.targetRevenue)) {
-    console.log('costStructTotalAmount:', costStructTotalAmount, typeof costStructTotalAmount);
-    console.log('targetRevenue:', local.targetRevenue, typeof local.targetRevenue);
+
+  // 🔧 修正總計驗證邏輯
+  const totalAmountNum = Number(costStructTotalAmount) || 0;
+  const targetRevenueNum = Number(local.targetRevenue) || 0;
+
+  if (Math.abs(totalAmountNum - targetRevenueNum) > 1) { // 允許 1 元的誤差
     props.errors.costStruct = "成本結構總計金額須等於營業額目標金額";
   }
 
@@ -377,7 +243,259 @@ function submitStep() {
 }
 </script>
 
+<template>
+  <form class="form mt-4" @submit.prevent="submitStep">
+    <div class="gap-3 d-grid">
+      <button
+          v-if="readonly"
+          type="button"
+          class="btn-back mb-3"
+          @click="backToList"
+      >
+        ← 返回列表
+      </button>
+      <h5 class="form-title">三、財務規劃與資金用途</h5>
+
+      <div class="mb-3">
+        <label class="fg-label">1.「籌備期間」開辦費預算規劃 :</label>
+        <table class="records-table w-100 mt-2">
+          <thead>
+          <tr>
+            <th>用途項目</th>
+            <th>金額（元）</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="(row, idx) in local.prepBudget" :key="idx">
+            <td data-label="用途項目">
+              <SharedInput
+                  v-if="row.editable"
+                  :id="`item-title-${idx}`"
+                  type="text"
+                  v-model="row.customTitle"
+                  placeholder="其他用途(請輸入)"
+                  :readonly="readonly"
+              />
+              <span v-else>{{ row.item }}</span>
+            </td>
+            <td data-label="金額(元)">
+              <SharedInput
+                  :id="`amount-${idx}`"
+                  type="text"
+                  :format-number="true"
+                  v-model="row.amount"
+                  placeholder="輸入金額"
+                  :readonly="readonly"
+              />
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <p v-if="errors.prepBudget" class="error-msg" :readonly="readonly">
+          {{ errors.prepBudget }}
+        </p>
+      </div>
+
+      <div>
+        <div class="mb-3">
+          <label class="fg-label">2. 「營運期間」損益成本結構 (%數)</label>
+
+          <!-- 🆕 超額警告 -->
+          <div v-if="isOverBudget && !readonly" class="alert alert-danger mb-3">
+            ⚠️ 警告：總金額已超過月營業額目標 {{ overBudgetAmount.toLocaleString() }} 元！
+          </div>
+
+          <!-- 手機版：表格外顯示 -->
+          <div class="revenue-target-mobile">
+            <div class="th-number">
+              以月營業額目標：
+              <SharedInput
+                  id="targetRevenue-mobile"
+                  v-model="local.targetRevenue"
+                  type="text"
+                  :format-number="true"
+                  placeholder="輸入金額"
+                  class="inline-input w-110 p-510 border-1"
+                  :readonly="readonly"
+              />
+              為標準預期所需比例之佔比：
+            </div>
+            <p v-if="errors.targetRevenue" class="error-msg">
+              {{ errors.targetRevenue }}
+            </p>
+          </div>
+
+          <table class="records-table w-100 mt-2">
+            <thead>
+            <tr>
+              <th colspan="4" class="text-start">
+                <div class="th-number">
+                  以月營業額目標：
+                  <SharedInput
+                      id="targetRevenue"
+                      v-model="local.targetRevenue"
+                      type="text"
+                      :format-number="true"
+                      placeholder="輸入金額"
+                      class="inline-input w-110 p-510 border-1"
+                      :readonly="readonly"
+                  />
+                  為標準預期所需比例之佔比：
+                </div>
+                <p v-if="errors.targetRevenue" class="error-msg">
+                  {{ errors.targetRevenue }}
+                </p>
+              </th>
+            </tr>
+            <tr>
+              <th>成本分類</th>
+              <th>佔比(%)</th>
+              <th>金額</th>
+              <th>備註</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(row, idx) in local.costStruct"
+                :key="idx"
+                :class="{
+                  'total-row': row.item === '總計',
+                  'over-budget-row': isOverBudget && row.item === '總計'
+                }"
+            >
+              <td data-label="成本分類">
+                <div>
+                  {{ row.item }}
+                  <p v-if="row.desc" class="sub-desc">{{ row.desc }}</p>
+                </div>
+              </td>
+              <td data-label="佔比(%)">
+                <SharedInput
+                    :id="`percent-${idx}`"
+                    type="number"
+                    v-model="row.percent"
+                    placeholder="%"
+                    class="p-510"
+                    :readonly="readonly || row.item === '總計' || row.item === '淨利'"
+                />
+              </td>
+              <td data-label="金額">
+                <SharedInput
+                    :id="`amount-dollar-${idx}`"
+                    type="text"
+                    :format-number="true"
+                    v-model="row.amount"
+                    placeholder="金額"
+                    class="p-510"
+                    :readonly="readonly || row.item === '總計' || row.item === '淨利'"
+                />
+              </td>
+              <td data-label="備註">
+                <SharedInput
+                    :id="`note-${idx}`"
+                    v-model="row.note"
+                    placeholder="備註"
+                    class="p-510"
+                    :readonly="readonly || row.item === '總計'"
+                />
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <p v-if="errors.costStruct" class="error-msg">
+            {{ errors.costStruct }}
+          </p>
+        </div>
+
+        <div class="mb-3 reward-filter">
+          <label class="fs-14 d-flex gap-2 reward-option">
+            <input
+                type="checkbox"
+                v-model="local.rewardEnabled"
+                class="reward-checkbox"
+                :readonly="readonly"
+            />
+            <span class="option-label">
+              若當月營業額達
+              <SharedInput
+                  id="rewardAmount"
+                  type="text"
+                  :format-number="true"
+                  v-model="local.rewardAmount"
+                  placeholder="金額"
+                  class="inline-input w-110 p-510"
+                  :disabled="!local.rewardEnabled"
+                  :readonly="readonly"
+              />
+              元，公司即撥發營業額之
+              <SharedInput
+                  id="rewardPercent"
+                  type="number"
+                  v-model="local.rewardPercent"
+                  placeholder="%"
+                  class="inline-input w-110 p-510"
+                  :disabled="!local.rewardEnabled"
+                  :readonly="readonly"
+              />
+              % 給予創業者獎勵運營團隊。
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <SharedRadio
+          class="fundNote"
+          v-model="local.fundNote"
+          label="3. 資金使用原則聲明："
+          name="fundNote"
+          :options="[
+          {
+            text: '我承諾所有資金僅用於專案經營與平台規範用途，絕不挪作私用或違法行為。',
+            value: '1',
+          },
+        ]"
+          :error="errors.fundNote"
+          :disabled="readonly"
+      />
+
+      <div class="mb-3">
+        <SharedCheckline
+            v-model="local.reportSelected"
+            label="4. 定期財報公開聲明："
+            :options="local.reportOptions"
+            :error="errors.reportSelected"
+            :disabled="readonly"
+        />
+      </div>
+    </div>
+    <button type="button" class="apply-btn previous w-100 " @click="$emit('next', 'step4')">上一步</button>
+    <button type="button" class="apply-btn write w-100 mt-4"  @click="submitStep">下一步</button>
+  </form>
+</template>
+
 <style lang="scss" scoped>
+// 🆕 新增樣式
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  border-left: 4px solid;
+}
+
+.alert-danger {
+  background-color: #fee;
+  color: #c33;
+  border-color: #c33;
+}
+
+.over-budget-row {
+  background-color: #fee !important;
+
+  input {
+    color: #c33 !important;
+    font-weight: 700;
+  }
+}
 .btn-back {
   background: transparent;
   border: 1px solid #ddd;
