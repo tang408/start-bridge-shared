@@ -1,44 +1,33 @@
 <template>
   <Swiper />
-  <div class="advantages">
+  <div class="advantages advantages-bc">
     <div class="advantages-content container">
       <div class="row">
         <div class="col-md-6 col-12">
-          <img
-            class="advantages-pic"
-            src="@/assets/images/advantages-img.jpg"
-          />
+          <img class="advantages-pic" src="@/assets/images/advantages-img.jpg" />
         </div>
         <div class="col-md-6 col-12 col-content">
           <div>
             <h2>星橋優勢</h2>
             <p>
-              Lorem ipsum is placeholder text commonly used in the graphic,
-              print, and publishing industries for previewingLorem ipsum is
-              placeholder text commonly used in the graphic, print, and
-              publishing industries for previewing
+              Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing
+              industries for previewingLorem ipsum is placeholder text commonly used in the graphic,
+              print, and publishing industries for previewing
             </p>
           </div>
         </div>
         <div class="col-12 text">
           <p>
-            Lorem ipsum is placeholder text commonly used in the graphic, print,
-            and publishing industries for previewingLorem ipsum is placeholder
-            text commonly used in the graphic, print, and publishing industries
-            for previewing
+            Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing
+            industries for previewingLorem ipsum is placeholder text commonly used in the graphic,
+            print, and publishing industries for previewing
           </p>
-          <img
-            src="@/assets/images/service-card.png"
-            class="w-100 mobile-none"
-          />
-          <img
-            src="@/assets/images/service-card-mobile.png"
-            class="w-100 desktop-none"
-          />
+          <img src="@/assets/images/service-card.png" class="w-100 mobile-none" />
+          <img src="@/assets/images/service-card-mobile.png" class="w-100 desktop-none" />
         </div>
       </div>
     </div>
-    <img class="advantages-bc" src="@/assets/images/brand-bc.png" />
+    <!-- <img class="advantages-bc" src="@/assets/images/brand-bc.png" /> -->
     <img class="advantages-star" src="@/assets/images/star1.png" />
   </div>
 
@@ -172,21 +161,13 @@
         <div class="agree-row">
           <label>
             <input type="checkbox" v-model="agree" /> 我已閱讀並同意
-            <RouterLink to="/terms/platform" class="highlight" @click.stop>
-              平台合約
-            </RouterLink>
+            <RouterLink to="/terms/platform" class="highlight" @click.stop> 平台合約 </RouterLink>
             、
-            <RouterLink to="" class="highlight" @click.stop>
-              免責聲明
-            </RouterLink>
+            <RouterLink to="" class="highlight" @click.stop> 免責聲明 </RouterLink>
             、
-            <RouterLink to="/terms/service" class="highlight" @click.stop>
-              服務條款
-            </RouterLink>
+            <RouterLink to="/terms/service" class="highlight" @click.stop> 服務條款 </RouterLink>
             及
-            <RouterLink to="/privacy" class="highlight" @click.stop>
-              隱私權政策
-            </RouterLink>
+            <RouterLink to="/privacy" class="highlight" @click.stop> 隱私權政策 </RouterLink>
             等所載內容及其意義，茲同意該等條款規定，並願遵守網站現今、嗣後規範的各種規則。
           </label>
         </div>
@@ -198,129 +179,117 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import Swiper from "./Swiper.vue";
-import Tabs from "./Tabs.vue";
-import SharedAccordion from "@/components/shared/Shared-Accordion.vue";
-import SharedFlow from "@/components/shared/Shared-Flow.vue";
-import SharedInput from "@/components/shared/Shared-Input.vue";
-import SharedSelect from "@/components/shared/Shared-Select.vue";
-import SharedCheckline from "@/components/shared/Shared-Checkline.vue";
+import { ref } from 'vue'
+import Swiper from './Swiper.vue'
+import Tabs from './Tabs.vue'
+import SharedAccordion from '@/components/shared/Shared-Accordion.vue'
+import SharedFlow from '@/components/shared/Shared-Flow.vue'
+import SharedInput from '@/components/shared/Shared-Input.vue'
+import SharedSelect from '@/components/shared/Shared-Select.vue'
+import SharedCheckline from '@/components/shared/Shared-Checkline.vue'
 
-const plan = ref({});
-const contactTime = ref({});
-const agree = ref(false);
+const plan = ref({})
+const contactTime = ref({})
+const agree = ref(false)
 const form = ref({
-  type: "",
-  brand: "",
-  budget: "",
-  name: "",
-  phone: "",
-  email: "",
-  region: "",
-});
+  type: '',
+  brand: '',
+  budget: '',
+  name: '',
+  phone: '',
+  email: '',
+  region: '',
+})
 
 const errors = ref({
-  name: "",
-});
+  name: '',
+})
 
 function onSubmit() {
-  errors.value.name = "";
+  errors.value.name = ''
 
   if (!form.value.name) {
-    errors.value.name = "請輸入聯絡姓名";
+    errors.value.name = '請輸入聯絡姓名'
   }
 
   if (errors.value.name) {
-    return;
+    return
   }
 
   if (!agree.value) {
-    alert("請勾選同意條款");
-    return;
+    alert('請勾選同意條款')
+    return
   }
 
-  alert("表單已送出！");
+  alert('表單已送出！')
 }
 const accordionItems = [
   {
-    title: "Blishing industries for previewing layouts and visual mockups?",
+    title: 'Blishing industries for previewing layouts and visual mockups?',
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+      'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
   },
   {
-    title: "Blishing industries for previewing layouts and visual mockups?",
+    title: 'Blishing industries for previewing layouts and visual mockups?',
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+      'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
   },
   {
-    title: "Blishing industries for previewing layouts and visual mockups?",
+    title: 'Blishing industries for previewing layouts and visual mockups?',
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+      'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
   },
   {
-    title: "Blishing industries for previewing layouts and visual mockups?",
+    title: 'Blishing industries for previewing layouts and visual mockups?',
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+      'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
   },
   {
-    title: "Blishing industries for previewing layouts and visual mockups?",
+    title: 'Blishing industries for previewing layouts and visual mockups?',
     content:
-      "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.",
+      'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
   },
-];
+]
 
-const active = ref({ lane: "brand", idx: 0 });
+const active = ref({ lane: 'brand', idx: 0 })
 const sections = [
   {
-    key: "brand",
+    key: 'brand',
     cols: 4,
     startAt: 0,
     steps: [
-      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
-      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
-      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
-      { title: "流程", desc: "填寫資料<br/>提交審核文件" },
+      { title: '流程', desc: '填寫資料<br/>提交審核文件' },
+      { title: '流程', desc: '填寫資料<br/>提交審核文件' },
+      { title: '流程', desc: '填寫資料<br/>提交審核文件' },
+      { title: '流程', desc: '填寫資料<br/>提交審核文件' },
     ],
   },
-];
+]
 </script>
 
 <style lang="scss" scoped>
 .advantages {
-  height: 145vh;
   position: relative;
   @media (max-width: 576px) {
-    height: 125vh;
     margin-bottom: 70px;
   }
-  @media (min-width: 1024px) and (max-width: 1366px) {
-    height: 170vh;
-  }
   &-content {
-    position: absolute;
-    top: 7%;
-    left: 50%;
-    transform: translateX(-50%);
+    padding: 100px 0 200px 0;
     width: 100%;
 
     @media (max-width: 576px) {
-      top: 50%;
-      transform: translate(-50%, -50%);
-      padding: 30px;
+      padding: 200px 30px;
     }
   }
   &-bc {
+    background: url('@/assets/images/brand-bc.png');
+    background-size: 100% 100%;
     width: 98%;
-    height: 152vh;
     @media (max-width: 576px) {
-      height: 140vh;
       object-fit: cover;
       object-position: center;
       width: 100%;
-    }
-    @media (min-width: 1024px) and (max-width: 1366px) {
-      height: 170vh;
+      background-size: auto 100%;
     }
   }
   &-star {
