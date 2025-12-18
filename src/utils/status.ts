@@ -8,7 +8,7 @@ export type ProjectStatus =
   | "match-success" // 媒合成功
   | "joining" // 進入加盟流程
   | "joined-success" // 媒合成功 (深灰)
-  | "match-failed"; // 媒合不成立
+  | "match-failed" // 媒合不成立
 
 export const STATUS_MAP: Record<
   ProjectStatus,

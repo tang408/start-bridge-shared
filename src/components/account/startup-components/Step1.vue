@@ -223,6 +223,20 @@ watch(
     }
 );
 
+// selfFund 不能大於 budget
+watch(
+    () => [local.selfFund, local.budget],
+    ([newSelfFund, newBudget]) => {
+      const selfFundNum = Number(newSelfFund) || 0;
+      const budgetNum = Number(newBudget) || 0;
+
+      if (selfFundNum > budgetNum && budgetNum > 0) {
+        props.errors.selfFund = `創業者自備款不得大於預計總費用（${budgetNum.toLocaleString()} 元）`;
+      } else {
+        props.errors.selfFund = "";
+      }
+    }
+);
 // 返回列表
 function backToList() {
   router.push({

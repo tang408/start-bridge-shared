@@ -183,25 +183,50 @@ const projectDataWithExtraFields = computed(() => {
 const brandImage = computed(() => {
   if (!projectData.value?.brandImage) return [];
 
+  // 🆕 檢查是否為字串 "null"
+  if (projectData.value.brandImage === "null" || projectData.value.brandImage === null) {
+    return [];
+  }
+
   try {
-    // 如果是 JSON 字串，解析它
-    return JSON.parse(projectData.value.brandImage);
+    const parsed = JSON.parse(projectData.value.brandImage);
+    // 🆕 檢查解析後的結果
+    if (!parsed || parsed === null) return [];
+    return Array.isArray(parsed) ? parsed : [parsed];
   } catch (error) {
-    // 如果不是有效的 JSON，當作單一圖片處理
-    return [projectData.value.brandImage];
+    // 如果不是有效的 JSON，檢查是否為有效字串
+    if (typeof projectData.value.brandImage === 'string' && projectData.value.brandImage.trim()) {
+      return [projectData.value.brandImage];
+    }
+    return [];
   }
 });
 
-// 處理 YouTube 連結
+// 🔧 處理 YouTube 連結 - 添加 null 檢查
 const youtubeUrls = computed(() => {
   if (!projectData.value?.youtubeUrls) return [];
 
+  // 🆕 檢查是否為字串 "null" 或空陣列字串
+  if (
+      projectData.value.youtubeUrls === "null" ||
+      projectData.value.youtubeUrls === null ||
+      projectData.value.youtubeUrls === "[]"
+  ) {
+    return [];
+  }
+
   try {
-    // 如果是 JSON 字串，解析它
-    return JSON.parse(projectData.value.youtubeUrls);
+    const parsed = JSON.parse(projectData.value.youtubeUrls);
+    // 🆕 檢查解析後的結果
+    if (!parsed || parsed === null) return [];
+    if (Array.isArray(parsed) && parsed.length === 0) return [];
+    return Array.isArray(parsed) ? parsed : [parsed];
   } catch (error) {
-    // 如果不是有效的 JSON，當作單一連結處理
-    return [projectData.value.youtubeUrls];
+    // 如果不是有效的 JSON，檢查是否為有效字串
+    if (typeof projectData.value.youtubeUrls === 'string' && projectData.value.youtubeUrls.trim()) {
+      return [projectData.value.youtubeUrls];
+    }
+    return [];
   }
 });
 

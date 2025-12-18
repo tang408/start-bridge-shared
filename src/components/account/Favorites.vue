@@ -68,7 +68,6 @@
                   <span class="time" v-if="isRunning(p.status)">
                   剩餘 {{ p.remainingDays }}天
                 </span>
-                  <div class="content">{{ p.planDescription }}</div>
                 </div>
 
                 <div>

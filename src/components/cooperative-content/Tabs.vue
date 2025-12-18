@@ -24,17 +24,17 @@
       </li>
 
       <li class="nav-item">
-<a
-        class="nav-link btn-yellow"
-        role="button"
-        :class="{ 'disabled': !hasActivePlan }"
-        :style="{
+        <a
+            class="nav-link btn-yellow"
+            role="button"
+            :class="{ 'disabled': !hasActivePlan }"
+            :style="{
         cursor: hasActivePlan ? 'pointer' : 'not-allowed',
         opacity: hasActivePlan ? 1 : 0.5
         }"
-        @click="handleMatchingProjectClick"
+            @click="handleMatchingProjectClick"
         >
-        媒合中專案
+          媒合中專案
         </a>
       </li>
       <li class="nav-item">
@@ -60,28 +60,24 @@
         <!-- 品牌資訊 Tab -->
         <template v-if="t.key === 'brand'">
           <div>
-            <p class="title mb-2 mt-5">品牌資訊</p>
-            <p class="subtitle mb-2 mt-3">詳細介紹</p>
-            <!-- 使用資料庫的 brand_intro 欄位 -->
+            <h2 class="title mb-2 mt-5">品牌資訊</h2>
+            <h3 class="subtitle mb-2 mt-4">詳細介紹</h3>
             <div v-if="projectData?.brandIntro" v-html="projectData.brandIntro"></div>
             <span v-else>暫無品牌介紹資料</span>
 
-            <p class="subtitle">經營理念</p>
-            <!-- 使用資料庫的 business_philosophy 欄位 -->
+            <h3 class="subtitle mb-2 mt-4">經營理念</h3>
             <div v-if="projectData?.businessPhilosophy" v-html="projectData.businessPhilosophy"></div>
             <span v-else>暫無經營理念資料</span>
           </div>
 
           <div>
-            <p class="title mb-2 mt-5">特色優勢</p>
-            <!-- 使用資料庫的 advantages 欄位 -->
+            <h3 class="subtitle mb-2 mt-4">特色優勢</h3>
             <div v-if="projectData?.advantages" v-html="projectData.advantages"></div>
             <span v-else>暫無特色優勢資料</span>
           </div>
 
           <div>
-            <p class="title mb-2 mt-5">產品圖片</p>
-            <!-- 使用資料庫的 product_images 欄位 -->
+            <h3 class="subtitle mb-2 mt-4">產品圖片</h3>
             <div class="row g-3" v-if="productImages.length">
               <div class="col-md-4 col-12" v-for="(img, index) in productImages" :key="index">
                 <img :src="img" class="w-100" style="border-radius: 30px;"/>
@@ -91,8 +87,7 @@
           </div>
 
           <div>
-            <p class="title mb-2 mt-5">當前規模(門店數)</p>
-            <!-- 使用資料庫的 current_scale 欄位 -->
+            <h3 class="subtitle mb-2 mt-4">當前規模(門店數)</h3>
             <div v-if="projectData?.currentScale" v-html="projectData.currentScale"></div>
             <div v-else>
               <span>暫無當前規模資料</span>
@@ -106,11 +101,8 @@
             <div v-for="(row, i) in joinInfoData" :key="i" class="ji-row">
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
-                <!-- 純文本值 -->
                 <template v-if="row.value">{{ row.value }}</template>
-                <!-- HTML 內容 -->
                 <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
-                <!-- 空值提示 -->
                 <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
@@ -123,11 +115,8 @@
             <div v-for="(row, i) in supportData" :key="i" class="ji-row">
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
-                <!-- 純文本值 -->
                 <template v-if="row.value">{{ row.value }}</template>
-                <!-- HTML 內容 -->
                 <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
-                <!-- 空值提示 -->
                 <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
@@ -135,6 +124,64 @@
         </div>
       </div>
     </div>
+
+    <!-- 🆕 媒合中專案彈窗 -->
+    <SharedModal
+        v-model="showPlanInfoDialog"
+        title="媒合中的創業計畫"
+        mode="close"
+        :width="600"
+    >
+      <div class="dialog-body">
+        <section v-if="matchingPlansInfo && matchingPlansInfo.length > 0" class="details">
+          <article
+              v-for="p in matchingPlansInfo"
+              :key="p.planId"
+              class="article-card"
+          >
+            <button
+                type="button"
+                class="summary"
+                @click="goToPlanDetail(p)"
+            >
+              <div class="gap-1 d-grid">
+                <div class="title">{{ p.planName }}</div>
+                <span class="time" v-if="isRunning(p.status)">
+                  剩餘 {{ p.remainingDays }}天
+                </span>
+              </div>
+
+              <div>
+                <div class="progress-wrap" v-if="p.status !== 'applying' && p.currentAmount !== undefined">
+                  <div
+                      class="progress-bar"
+                      role="progressbar"
+                      :aria-valuemin="0"
+                      :aria-valuemax="100"
+                      :aria-valuenow="p.progress"
+                  >
+                    <div
+                        class="progress-inner"
+                        :style="{ width: p.progress + '%' }"
+                    ></div>
+                    <div class="progress-text">媒合進度 {{ p.progress }}%</div>
+                  </div>
+
+                  <div class="progress-footer mt-2">
+                    <span class="dollar">已達成金額 {{ fmtMoney(p.currentAmount) }}</span>
+                    <span class="remain">還差 {{ fmtMoney(p.targetAmount - p.currentAmount) }}</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </article>
+        </section>
+
+        <div v-else class="no-data">
+          <p>目前沒有配對的創業計畫</p>
+        </div>
+      </div>
+    </SharedModal>
   </section>
 </template>
 
@@ -147,6 +194,7 @@ import {userApi} from "@/api/modules/user.js";
 import {userFavoritePlanApi} from "@/api/modules/userFavoritePlan.js";
 import {planApi} from "@/api/modules/plan.js";
 import {NewAlert} from "@/composables/useAlert.js";
+import SharedModal from "@/components/shared/Shared-Modal.vue";
 
 const {isLoggedIn, currentUser} = useAuth();
 const router = useRouter();
@@ -162,6 +210,10 @@ const props = defineProps({
   }
 });
 
+// 🆕 媒合中專案相關狀態
+const showPlanInfoDialog = ref(false);
+const matchingPlansInfo = ref([]);
+
 // 判斷是否有活躍專案
 const hasActivePlan = computed(() => {
   return props.projectData?.activePlanData?.hasActivePlan || false
@@ -176,31 +228,136 @@ const firstPlanId = computed(() => {
   return null
 })
 
-// 點擊處理
-function handleMatchingProjectClick() {
+// 🆕 點擊媒合中專案按鈕
+async function handleMatchingProjectClick() {
   if (!hasActivePlan.value) {
-    return // 如果沒有活躍專案，不執行任何操作
+    return;
   }
 
-  if (firstPlanId.value) {
-    // 跳轉到專案詳情頁（根據你的路由調整）
-    router.push({
-      name: 'ProjectDetail', // 或者你的路由名稱
-      params: { id: firstPlanId.value }
-    })
+  if (!isLoggedIn.value) {
+    await NewAlert.show("請先登入", "請先登入會員以繼續操作");
+    await router.push({path: "/login"});
+    return;
   }
+
+  // 獲取媒合中的計畫資訊
+  await handleMatchingPlansInfo();
+}
+
+// 🆕 獲取媒合中計畫資訊
+async function handleMatchingPlansInfo() {
+  const formData = {
+    userId: currentUser.value,
+    officialPartnerId: props.projectData?.id,
+  };
+
+  const response = await planApi.getMatchingPlansInfo(formData);
+
+  if (response.code === 0 && response.data !== null) {
+    matchingPlansInfo.value = response.data.map((plan) => {
+      const progress = plan.targetAmount > 0
+          ? Math.min(Math.round((plan.totalParticipantAmount / plan.targetAmount) * 100), 100)
+          : 0;
+
+      const status = mapPlanStatus(plan.currentStep);
+
+      return {
+        planId: plan.planId,
+        planName: plan.planName,
+        planDescription: statusLabel(status),
+        status: status,
+        remainingDays: calculateTimeRemaining(plan.endDate),
+        currentAmount: plan.totalParticipantAmount,
+        targetAmount: plan.targetAmount,
+        progress: progress,
+        endDate: plan.endDate,
+        currentStep: plan.currentStep,
+        totalParticipantUsers: plan.totalParticipantUsers,
+      };
+    });
+  } else {
+    matchingPlansInfo.value = [];
+  }
+
+  showPlanInfoDialog.value = true;
+}
+
+// 🆕 跳轉到計畫詳情
+function goToPlanDetail(plan) {
+  router.push({
+    name: 'ProjectDetail',
+    params: {id: plan.planId}
+  });
+}
+
+// 🆕 輔助函數：映射計畫狀態
+function mapPlanStatus(currentStep) {
+  const statusMap = {
+    0: 'pending',
+    1: 'applying',
+    2: 'running',
+    3: 'running',
+    4: 'running',
+    5: 'success',
+    6: 'failed',
+  };
+  return statusMap[currentStep] || 'pending';
+}
+
+// 🆕 輔助函數：狀態標籤
+function statusLabel(status) {
+  const labels = {
+    'pending': '審核中',
+    'applying': '申請中',
+    'running': '媒合中',
+    'success': '媒合成功',
+    'failed': '媒合失敗',
+  };
+  return labels[status] || '未知狀態';
+}
+
+// 🆕 輔助函數：計算剩餘天數
+function calculateTimeRemaining(endDate) {
+  if (!endDate) return 0;
+
+  const end = new Date(endDate);
+  const now = new Date();
+  const diffTime = end - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays > 0 ? diffDays : 0;
+}
+
+// 🆕 輔助函數：判斷是否進行中
+function isRunning(status) {
+  return status === 'running';
+}
+
+// 🆕 輔助函數：格式化金額
+function fmtMoney(amount) {
+  return amount?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") || "0";
 }
 
 // 處理產品圖片
 const productImages = computed(() => {
   if (!props.projectData?.productImages) return [];
 
+  // 🆕 檢查是否為字串 "null"
+  if (props.projectData.productImages === "null" || props.projectData.productImages === null) {
+    return [];
+  }
+
   try {
-    // 如果是 JSON 字串，解析它
-    return JSON.parse(props.projectData.productImages);
+    const parsed = JSON.parse(props.projectData.productImages);
+    // 🆕 檢查解析後的結果
+    if (!parsed || parsed === null) return [];
+    return Array.isArray(parsed) ? parsed : [parsed];
   } catch (error) {
-    // 如果不是有效的 JSON，當作單一圖片處理
-    return [props.projectData.productImages];
+    // 如果不是有效的 JSON，檢查是否為有效字串
+    if (typeof props.projectData.productImages === 'string' && props.projectData.productImages.trim()) {
+      return [props.projectData.productImages];
+    }
+    return [];
   }
 });
 
@@ -208,13 +365,12 @@ const formatAmount = (amount) => {
   return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-// 🆕 獲取自定義內容的輔助函數
 const getCustomContent = (key) => {
   const customContents = props.projectData?.customContents || {};
   return customContents[key]?.content || '';
 };
 
-// 動態生成加盟資訊數據 - 使用新的 customContents
+// 動態生成加盟資訊數據
 const joinInfoData = computed(() => {
   if (!props.projectData) return [];
 
@@ -253,10 +409,10 @@ const joinInfoData = computed(() => {
       label: "其他成本",
       html: getCustomContent('others')
     },
-  ].filter(item => item.value || item.html); // 過濾掉空值
+  ].filter(item => item.value || item.html);
 });
 
-// 動態生成支援數據 - 使用新的 customContents
+// 動態生成支援數據
 const supportData = computed(() => {
   if (!props.projectData) return [];
 
@@ -273,7 +429,7 @@ const supportData = computed(() => {
       label: "總部支援體系",
       html: getCustomContent('support_services')
     },
-  ].filter(item => item.html); // 只顯示有內容的項目
+  ].filter(item => item.html);
 });
 
 const tabs = [
@@ -307,7 +463,7 @@ const userData = ref({})
 async function goToStartup() {
   if (!isLoggedIn.value) {
     await NewAlert.show("請先登入", "請先登入會員以繼續操作");
-    await router.push({ path: "/login" });
+    await router.push({path: "/login"});
     return;
   }
 
@@ -320,7 +476,6 @@ async function goToStartup() {
   if (response.code === 0) {
     userData.value = response.data;
 
-    // 檢查創業者資料
     if (userData.value.founderInfoData) {
       const founderInfo = userData.value.founderInfoData;
 
@@ -329,42 +484,36 @@ async function goToStartup() {
           founderInfo.workStatus === "" ||
           founderInfo.expectIndustryType === 0
       ) {
-        // ✅ 使用 favorite 模式彈窗
         const result = await NewAlert.favorite(
             "資料不齊全",
             "請完善會員資料(所在的區域、工作狀態、預計加盟產業)後，再申請創業計畫，您可以選擇先收藏此計畫或前往完善資料"
         );
 
         if (result === 'favorite') {
-          // 用戶選擇收藏
           await handleUserFavoritePlan();
           return;
         } else if (result === 'push') {
-          // 🆕 用戶選擇前往完善資料 - 帶上返回參數
           await router.push({
             path: "/account/profile",
             query: {
               tab: "founder",
-              returnTo: router.currentRoute.value.fullPath, // 記錄當前完整路徑
-              brandId: props.projectData?.id // 可選：帶上品牌 ID
+              returnTo: router.currentRoute.value.fullPath,
+              brandId: props.projectData?.id
             }
           });
           return;
         }
-        // result === false 表示用戶關閉彈窗，不做任何操作
         return;
       }
     }
   }
 
-  // 檢查是否已有申請中的計畫
   const res = await planApi.checkCreatePlanStatus(formData);
   if (res.code === 0 && res.data.canCreatePlan === false) {
     await NewAlert.show("無法重複申請", "您已有一筆創業申請正在審核中，請勿重複申請");
     return;
   }
 
-  // 所有檢查通過，跳轉到創業申請頁面
   await router.push({
     path: "/account/startup",
     query: {
@@ -392,7 +541,6 @@ async function handleUserFavoritePlan() {
   } else {
     await NewAlert.show("注意", "此品牌已在您的收藏清單中");
   }
-
 }
 </script>
 
@@ -452,12 +600,12 @@ async function handleUserFavoritePlan() {
   font-weight: 600;
   font-size: 18px;
   line-height: 26px;
-  color: #262626;
+  color: #ff6634;
 }
 
 .subtitle {
   font-weight: 700;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 28px;
   color: #555555;
   margin-top: 3rem;
@@ -532,5 +680,162 @@ span {
   font-size: 16px;
   line-height: 28px;
   color: #555555;
+}
+
+// 🆕 媒合中專案彈窗樣式
+.dialog-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  max-height: 600px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.article-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s;
+
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #d1d5db;
+  }
+}
+
+.summary {
+  width: 100%;
+  padding: 20px 16px;
+  background: white;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.4;
+  }
+
+  .content {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+  }
+}
+
+.time {
+  font-size: 12px;
+  color: #ff6634;
+  font-weight: 600;
+}
+
+.gap-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-wrap {
+  margin-top: 8px;
+}
+
+.progress-bar {
+  position: relative;
+  height: 28px;
+  background-color: #f3f4f6;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-inner {
+  height: 100%;
+  background: linear-gradient(90deg, #fb956d, #ff6634);
+  transition: width 0.3s ease;
+  border-radius: 20px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+.progress-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 0 4px;
+}
+
+.dollar {
+  font-weight: 600;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.remain {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .dialog-body {
+    max-height: 500px;
+  }
+
+  .summary {
+    padding: 16px 20px;
+  }
+
+  .progress-bar {
+    height: 36px;
+  }
+
+  .progress-text {
+    font-size: 14px;
+  }
+
+  .progress-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 </style>

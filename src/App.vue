@@ -134,29 +134,52 @@ const handleVisibilityChange = () => {
   if (!isLoggedIn.value) return;
 
   if (document.hidden) {
-    // 頁面隱藏（切換分頁或最小化）
-    console.log('頁面隱藏');
-    // 記錄最後活動時間
-    localStorage.setItem('lastActiveTime', Date.now().toString());
+    // 頁面隱藏時，暫停計時器並記錄當前時間
+    if (idleTimer) {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
+    // 只記錄隱藏時間，不改變 lastActiveTime
+    localStorage.setItem('lastHiddenTime', Date.now().toString());
+    console.log('頁面隱藏，記錄時間');
   } else {
     // 頁面重新可見
     console.log('頁面重新可見');
 
-    // 檢查是否需要登出
     const lastActiveTime = localStorage.getItem('lastActiveTime');
-    if (lastActiveTime) {
-      const timeDiff = Date.now() - parseInt(lastActiveTime);
-      if (timeDiff > TIMEOUT) {
+    const lastHiddenTime = localStorage.getItem('lastHiddenTime');
+
+    if (lastActiveTime && lastHiddenTime) {
+      // 計算總閒置時間 = (隱藏前的閒置) + (隱藏期間的時間)
+      const hiddenStart = parseInt(lastHiddenTime);
+      const activeTime = parseInt(lastActiveTime);
+      const totalIdleTime = Date.now() - activeTime;
+
+      console.log(`總閒置時間: ${Math.floor(totalIdleTime / 1000 / 60)} 分鐘`);
+
+      if (totalIdleTime > TIMEOUT) {
+        localStorage.removeItem('lastHiddenTime');
         performLogout('閒置超過 1 小時');
         return;
       }
     }
 
-    // 清除關閉時間記錄
-    localStorage.removeItem('lastCloseTime');
+    // 清除隱藏時間記錄
+    localStorage.removeItem('lastHiddenTime');
 
-    // 重置閒置計時器
-    resetIdleTimer();
+    // 重新啟動閒置計時器（使用剩餘時間）
+    const lastActive = parseInt(lastActiveTime || Date.now().toString());
+    const elapsed = Date.now() - lastActive;
+    const remainingTime = Math.max(0, TIMEOUT - elapsed);
+
+    if (remainingTime > 0) {
+      idleTimer = setTimeout(() => {
+        performLogout('閒置超過 1 小時');
+      }, remainingTime);
+      console.log(`重新啟動計時器，剩餘 ${Math.floor(remainingTime / 1000 / 60)} 分鐘`);
+    } else {
+      performLogout('閒置超過 1 小時');
+    }
   }
 };
 

@@ -171,7 +171,7 @@
             :disabled="p.companyStatus === 1"
             @click.stop="handleCompanyButtonClick(p)"
         >
-          上傳公司資料
+          進入加盟流程
         </button>
 
         <button
@@ -737,14 +737,7 @@
         v-model="companyForm.companyName"
         :error="paymentErrors.companyName"
     />
-    <SharedInput
-        id="companyNameEn"
-        label="公司名稱(英文)"
-        type="textarea"
-        placeholder="請填寫公司名稱(英文)"
-        v-model="companyForm.companyNameEn"
-        :error="paymentErrors.companyNameEn"
-    />
+
     <SharedInput
         id="businessId"
         label="統一編號*"
@@ -752,6 +745,15 @@
         placeholder="請填寫統一編號"
         v-model="companyForm.businessId"
         :error="paymentErrors.businessId"
+    />
+
+    <SharedInput
+        id="companyNameEn"
+        label="公司名稱(英文)"
+        type="textarea"
+        placeholder="請填寫公司名稱(英文)"
+        v-model="companyForm.companyNameEn"
+        :error="paymentErrors.companyNameEn"
     />
 
     <SharedUpload
@@ -935,7 +937,7 @@
 
         <!-- HTML 內容區塊（需要 v-html） -->
         <section class="info-section">
-          <h3>品牌介紹</h3>
+          <h2>詳細介紹</h2>
           <div v-html="partnerData?.brandIntro"></div>
         </section>
 
@@ -1521,7 +1523,7 @@ async function loadPlanData(planId) {
         rewardEnabled: Boolean(planData.rewardThreshold),
         rewardAmount: String(planData.rewardThreshold ?? ''),
         rewardPercent: String(planData.rewardPercent ?? ''),
-        fundNote: 1,
+        fundNote: "1",
         reportSelected: parseReportSelectedMulti(planData.otherStatement),
         otherReport: {},
       });
@@ -2846,7 +2848,7 @@ async function handleCompanySubmit() {
     await NewAlert.show('成功', '公司資料提交成功');
     await getAllPlanByUser()
   } else {
-    await NewAlert.show('失敗', response.message + ',提交失敗，請洽客服人員。');
+    await NewAlert.show('失敗', response.message + ',提交失敗，請確認是否填寫完整，若有問題請洽客服人員。');
   }
   showCompanyDialog.value = false;
 }

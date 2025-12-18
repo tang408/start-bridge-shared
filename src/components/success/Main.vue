@@ -4,6 +4,7 @@
     :items="items"
     :page-size="16"
     :show-filter="false"
+    :show-fab-actions="false"
     @card-click="openDetail"
     @favorite-change="onFavoriteChange"
   />

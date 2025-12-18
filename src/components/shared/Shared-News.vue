@@ -52,6 +52,7 @@
         <h5 class="title">{{ item.title }}</h5>
 
         <SharedFabActions
+            v-if="showFabActions"
             :favorite="item.favorite"
             :showTrash="false"
             iconType="heart"
@@ -144,6 +145,8 @@ const props = defineProps({
   subCategoryField: { type: String, default: "industrySubType" }, // 新增子類型欄位
   filterFn: { type: Function, default: null },
   initialCategory: { type: [String, Object], default: "" },
+  // 🆕 新增 prop 控制是否顯示 FAB 按鈕
+  showFabActions: { type: Boolean, default: true },
 });
 
 const emit = defineEmits([

@@ -52,7 +52,308 @@
     </SharedTable>
   </div>
 
-  <!-- 其他 Modal 保持不變 -->
+  <SharedModal
+      v-model="showModal"
+      :title="'會員詳細資訊'"
+      :mode="'close'"
+      @save="handleSave"
+      @update:modelValue="handleClose"
+      class="member-modal form"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <!-- 基本資料 -->
+      <div class="modal-section">
+        <div class="doc-label">基本資料</div>
+        <div>姓名：{{ selectedMemberDetail.name }}</div>
+        <div>手機號碼：{{ selectedMemberDetail.phone }}</div>
+        <div>電子信箱：{{ selectedMemberDetail.email }}</div>
+        <div>出生年月日：{{ selectedMemberDetail.birthday }}</div>
+        <div>其他聯繫方式(Line)：{{ selectedMemberDetail.line }}</div>
+        <div>會員身分：
+          <span v-if="selectedMemberDetail.type?.includes(1)">創業者</span>
+          <span v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.type?.includes(2)">、</span>
+          <span v-if="selectedMemberDetail.type?.includes(2)">共創者</span>
+        </div>
+        <div>已參與專案數量：
+          創業: {{ selectedMemberDetail.planCountInfo?.founderPlanCount || 0 }} 、
+          共創: {{ selectedMemberDetail.planCountInfo?.coreFounderPlanCount || 0 }}
+        </div>
+      </div>
+
+      <!-- 創業者資訊 - 只有當用戶是創業者時才顯示 -->
+      <template v-if="selectedMemberDetail.type?.includes(1) && selectedMemberDetail.founderInfo">
+        <hr/>
+        <div class="modal-section">
+          <div class="doc-label">創業者資訊</div>
+          <div class="doc-label">
+            預計加盟產業：{{ selectedMemberDetail.founderInfo.industryTypeName || '未設定' }}
+          </div>
+          <div>
+            所在地區：{{ cities.find(city => city.id === selectedMemberDetail.founderInfo.city)?.name || '未設定' }}
+          </div>
+          <div>
+            工作狀態：{{ selectedMemberDetail.founderInfo.workStatus }}
+          </div>
+          <div>
+            最高學歷/專長背景：{{ selectedMemberDetail.founderInfo.education }}
+          </div>
+          <div>
+            工作經驗描述：{{ selectedMemberDetail.founderInfo.workExperience || '未設定' }}
+          </div>
+          <div>
+            自我介紹：{{ selectedMemberDetail.founderInfo.introduce || '未設定' }}
+          </div>
+          <div class="doc-label">
+            創業預算：{{ formatAmount(selectedMemberDetail.founderInfo.budget) }} 元
+          </div>
+          <div>
+            <span class="doc-label">上傳資訊：</span>
+            <span
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.pcrUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.pcrUrl
+              }"
+                @click="openDocDialog('pcr', selectedMemberDetail.founderInfo.fileInfo.pcrUrl)"
+            >
+            良民證
+          </span>
+            <span
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.identifyUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.identifyUrl
+              }"
+                @click="selectedMemberDetail.founderInfo.fileInfo?.identifyUrl && openDocDialog('identify', selectedMemberDetail.founderInfo.fileInfo.identifyUrl)"
+            >
+              身分證明
+            </span>
+            <span
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.fileInfo?.assetsUrl,
+                'disabled': !selectedMemberDetail.founderInfo.fileInfo?.assetsUrl
+              }"
+                @click="openDocDialog('assets', selectedMemberDetail.founderInfo.fileInfo.assetsUrl)"
+            >
+            資產證明
+          </span>
+            <span
+                class="doc-tag px-1"
+                :class="{
+                'clickable': selectedMemberDetail.founderInfo.companyInfo?.companyName,
+                'disabled': !selectedMemberDetail.founderInfo.companyInfo?.companyName
+              }"
+                @click="openCompanyDialog(selectedMemberDetail.founderInfo.companyInfo)"
+            >
+            公司資料
+          </span>
+          </div>
+
+          <SharedDropdown
+              v-model="selectedMemberDetail.founderInfo.identifyStatus"
+              label="身分驗證狀態"
+              :options="[
+               { label: '無須審核', value: 0 },
+              { label: '業務初審', value: 1 },
+              { label: '管理員審核', value: 2 },
+              { label: '通過', value: 3 },
+              { label: '不通過', value: 4 },
+            ]"
+              placeholder="身分檢核文件"
+              class="form-group"
+              readonly="true"
+          />
+        </div>
+      </template>
+
+      <!-- 共創者資訊 - 只有當用戶是共創者時才顯示 -->
+      <template v-if="selectedMemberDetail.type?.includes(2) && selectedMemberDetail.coreFounderInfo">
+        <hr/>
+        <div class="modal-section">
+          <div class="doc-label">共創者資訊</div>
+          <div class="doc-label">
+            預計參與產業：{{ selectedMemberDetail.coreFounderInfo.industryTypeName || '未設定' }}
+          </div>
+          <div class="doc-label">
+            共創預算：{{ formatAmount(selectedMemberDetail.coreFounderInfo.budget) }} 元
+          </div>
+          <div>
+            所在地區：{{ cities.find(city => city.id === selectedMemberDetail.coreFounderInfo.city)?.name || '未設定' }}
+          </div>
+          <div>
+            工作狀態：{{ selectedMemberDetail.coreFounderInfo.workStatus || '未設定' }}
+          </div>
+          <div>
+            最低可投入資產：{{ formatAmount(selectedMemberDetail.coreFounderInfo.minBudget) }} 元
+          </div>
+          <div>
+            最高可投入資產：{{ formatAmount(selectedMemberDetail.coreFounderInfo.maxBudget) }} 元
+          </div>
+          <div>
+            可接受投入參與年限：{{ selectedMemberDetail.coreFounderInfo.investLimitYearShow ? selectedMemberDetail.coreFounderInfo.investLimitYear + ' 年' : '不公開' }}
+          </div>
+          <div>
+            理財經驗描述：{{ selectedMemberDetail.coreFounderInfo.experienceShow ? selectedMemberDetail.coreFounderInfo.experience : '不公開' }}
+          </div>
+          <div>
+            自我介紹：{{ selectedMemberDetail.coreFounderInfo.introduceShow ? selectedMemberDetail.coreFounderInfo.introduce : '不公開' }}
+          </div>
+          <div>
+
+          </div>
+          <div>
+            <span class="doc-label">上傳資訊：</span>
+            <span
+                v-if="selectedMemberDetail.coreFounderInfo.fileInfo?.identifyUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('identify', selectedMemberDetail.coreFounderInfo.fileInfo.identifyUrl)"
+            >
+            身分證明
+          </span>
+            <span
+                v-if="selectedMemberDetail.coreFounderInfo.fileInfo?.secondaryUrl"
+                class="doc-tag clickable px-1"
+                @click="openDocDialog('secondary', selectedMemberDetail.coreFounderInfo.fileInfo.secondaryUrl)"
+            >
+            第二證件
+          </span>
+          </div>
+
+          <SharedDropdown
+              v-model="selectedMemberDetail.coreFounderInfo.identifyStatus"
+              label="身分驗證狀態"
+              :options="[
+              { label: '無須審核', value: 0 },
+              { label: '業務初審', value: 1 },
+              { label: '管理員審核', value: 2 },
+              { label: '通過', value: 3 },
+              { label: '不通過', value: 4 },
+            ]"
+              placeholder="身分檢核文件"
+              class="form-group"
+              readonly="true"
+          />
+        </div>
+      </template>
+
+      <!-- 參與專案明細 -->
+      <hr/>
+      <div class="modal-section mt-2">
+        <div class="doc-label">參與專案明細</div>
+        <div v-if="selectedMemberDetail.participantPlanInfo?.length > 0">
+          <div
+              v-for="plan in selectedMemberDetail.participantPlanInfo"
+              :key="plan.id"
+              class="doc-label mb-2"
+          >
+            {{ plan.planName }} |
+            狀態: {{ plan.statusInfo }} |
+            金額: {{ formatAmount(plan.amount) }} 元
+            <span v-if="plan.remark" class="text-muted"> ({{ plan.remark }})</span>
+          </div>
+        </div>
+        <div v-else class="text-muted">
+          目前沒有參與任何專案
+        </div>
+      </div>
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showPlanDialog"
+      title="專案詳情"
+      mode="project"
+      @manage="handleManage"
+      @update:modelValue="handleClosePlanDialog"
+      class="project-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section">
+        <div class="doc-label">專案名稱：{{ planDetail.planName || '未設定' }}</div>
+        <div>專案狀態：{{ getPlanStatusText(planDetail.planStatus) }}</div>
+        <div>創業者：{{ planDetail.userName || '未知' }}</div>
+        <div>專案總預算：{{ formatAmount(planDetail.planStartupBudget) }} 元</div>
+        <div>自備款：{{ formatAmount(planDetail.planSelfFunded) }} 元</div>
+        <div>總募資金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
+        <div>共創者人數：{{ planDetail.planPartnerCount || 0 }} 人</div>
+        <div class="color-1">尚缺募資金額：{{ formatAmount(planDetail.shortAmount) }} 元</div>
+        <div class="color-1">尚缺募資人數：{{ planDetail.planStatus >= 12 ? 0 : planDetail.shortPartnerCount }} 人</div>
+
+        <hr/>
+
+        <div class="doc-label">共創者名單</div>
+        <div v-if="planDetail.participantPlanInfo && planDetail.participantPlanInfo.length > 0">
+          <div
+              v-for="(participant, index) in planDetail.participantPlanInfo"
+              :key="participant.id"
+              class="doc-label mb-2"
+          >
+
+            {{ participant.name }} | {{ participant.sex }} | {{ participant.salesName }} | {{ participant.createdAt }}
+            <br/>
+            投入金額：{{ formatAmount(participant.amount) }} 元 -
+            狀態：{{ getParticipantStatus(participant.status) }}
+          </div>
+        </div>
+        <div v-else class="text-muted">
+          目前沒有共創者
+        </div>
+      </div>
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showDocDialog"
+      :title="docDialogTitle"
+      mode="close"
+      @update:modelValue="handleCloseDocDialog"
+      class="doc-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section text-center">
+        <!-- 根據文件類型顯示不同內容 -->
+        <iframe
+            v-if="isCurrentDocPdf"
+            :src="docDialogUrl"
+            class="doc-pdf"
+        ></iframe>
+        <img
+            v-else
+            :src="docDialogUrl"
+            alt="文件預覽"
+            class="doc-image"
+        />
+      </div>
+    </div>
+  </SharedModal>
+
+  <SharedModal
+      v-model="showCompanyDialog"
+      title="公司資料"
+      mode="close"
+      @update:modelValue="val => showCompanyDialog = val"
+      class="company-modal"
+      titleAlign="center"
+  >
+    <div class="modal-content-wrapper">
+      <div class="modal-section">
+        <div>公司名稱：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyName || '未設定' }}</div>
+        <div>公司名稱(英文)：{{selectedMemberDetail.founderInfo?.companyInfo?.companyEngName || '未設定'}}</div>
+        <div>統一編號：{{ selectedMemberDetail.founderInfo?.companyInfo?.businessId || '未設定' }}</div>
+        <div>銀行帳戶名稱：{{ selectedMemberDetail.founderInfo?.companyInfo?.BankInfo?.bankAccountName || '未設定' }}</div>
+        <div>銀行帳戶號碼：{{ selectedMemberDetail.founderInfo?.companyInfo?.BankInfo?.bankAccountNumber || '未設定' }}</div>
+        <div>公司簡介：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyInfo || '未設定' }}</div>
+        <div>公司詳細介紹：{{ selectedMemberDetail.founderInfo?.companyInfo?.companyProfile || '未設定' }}</div>
+        <div>Facebook：{{ selectedMemberDetail.founderInfo?.companyInfo?.facebookUrl || '未設定' }}</div>
+        <div>Instagram：{{ selectedMemberDetail.founderInfo?.companyInfo?.instagramUrl || '未設定' }}</div>
+        <div>官方網站：{{ selectedMemberDetail.founderInfo?.companyInfo?.websiteUrl || '未設定' }}</div>
+      </div>
+    </div>
+  </SharedModal>
 </template>
 
 <script setup>
