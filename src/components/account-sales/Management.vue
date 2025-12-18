@@ -180,13 +180,16 @@
       </button>
     </div>
 
-    <div v-if="shouldShowCheckResourceButtons()" class="review-btn-group">
-      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">確認到位</button>
-    </div>
+<!--    <div v-if="shouldShowCheckResourceButtons()" class="review-btn-group">-->
+<!--      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">確認到位</button>-->
+<!--    </div>-->
 
     <div v-else-if="shouldShowEndButtons()" class="review-btn-group">
       <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">結案</button>
-      <button class="btn-fail" @click="handleApproveClick(selectedProject, false)">退案</button>
+    </div>
+
+    <div v-else-if="shouldShowHandOverButtons()" class="review-btn-group">
+      <button class="btn-pass" @click="handleApproveClick(selectedProject, true)">已交接品牌</button>
     </div>
 
     <!-- 其他狀態：顯示「通過/不通過」按鈕 -->
@@ -826,17 +829,28 @@ const shouldShowReviewButtons = () => {
       return false;
     }
 
-    // 🆕 Step 15 需要額外檢查 companyStatus
-    if (planInfo.value.planStatus === 15) {
-      // companyStatus 必須等於 1 (已填寫公司資料)
-      if (planInfo.value.companyStatus !== 1) {
-        return false;
-      }
-    }
 
-    const founderReviewableSteps = [1, 15];
+    const founderReviewableSteps = [1];
     return founderReviewableSteps.includes(planInfo.value.planStatus);
   }
+}
+
+const shouldShowHandOverButtons = () => {
+  if (!planInfo.value) return false;
+  if (!planInfo.value.planStatus) return false;
+
+  // 🆕 Step 15 需要額外檢查 companyStatus
+  if (planInfo.value.planStatus === 15) {
+    // companyStatus 必須等於 1 (已填寫公司資料)
+    if (planInfo.value.companyStatus !== 1) {
+      return false;
+    }
+  }
+
+  // 創業者可交接的步驟
+  const founderHandOverSteps = [15];
+  return founderHandOverSteps.includes(planInfo.value.planStatus);
+
 }
 
 const shouldShowEndButtons = () => {
@@ -1106,6 +1120,12 @@ const docDialogTitle = ref('');
 const planDetail = ref({});
 
 async function openPlanDetailDialog(plan) {
+
+  if (plan.documentUrl !== null && plan.documentUrl !== '' ) {
+    window.open(plan.documentUrl, '_blank')
+    return;
+  }
+
   docDialogTitle.value = '創業計劃書';
   showDocDialog.value = true;
   const formData = {

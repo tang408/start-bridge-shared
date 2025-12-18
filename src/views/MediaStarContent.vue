@@ -19,6 +19,6 @@ function handleDataLoaded(receivedData) {
 }
 
 const title = computed(() => {
-  return partnerData.value?.name || '合作夥伴';
+  return partnerData.value?.title || '合作夥伴';
 });
 </script>

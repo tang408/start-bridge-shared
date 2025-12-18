@@ -246,7 +246,7 @@ const formData = reactive({
     rewardAmount: "",
     rewardPercent: "",
 
-    fundNote: "",
+    fundNote: "1",
     reportOptions: [
       {value: "pos", text: "提供店內 POS 帳號並開啟營業報表權限"},
       {value: "monthly", text: "每月/季「現金流量表」，需於次月 15 日前提供"},
@@ -394,12 +394,6 @@ async function loadPlanData() {
         q9LocationNote: parseCoFounderValue(planData.coFounderAddedValue).note,
       });
 
-      // ✅ 加入這些 log 來檢查
-      console.log('=== Step4 Q5 資料賦值 ===');
-      console.log('expectedNumberPeople:', planData.expectedNumberPeople);
-      console.log('formData.step4.q5:', formData.step4.q5);
-      console.log('formData.step4.q5.total:', formData.step4.q5.total);
-
       // Step5 - 財務規劃
       Object.assign(formData.step5, {
         prepBudget: [
@@ -493,7 +487,7 @@ async function loadPlanData() {
         rewardEnabled: Boolean(planData.rewardThreshold),
         rewardAmount: String(planData.rewardThreshold || ''),
         rewardPercent: String(planData.rewardPercent || ''),
-        fundNote: 1,
+        fundNote: "1",
         reportSelected: parseReportSelected(planData.otherStatement),
         otherReport: parseOtherReport(planData.otherStatement),
       });
@@ -525,6 +519,8 @@ async function loadPlanData() {
     await NewAlert.show('錯誤', '載入計劃資料失敗')
   }
 }
+
+console.log
 
 
 // ==================== 解析函數 ====================

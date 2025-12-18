@@ -26,7 +26,7 @@
             <div v-else class="title-content">不提供</div>
           </li>
           <li class="col-12 col-md-6">
-            <div class="title">媒合時間</div>
+            <div class="title">媒合花費時間</div>
             <div v-if="matchTime" class="title-content">{{ matchTime }}</div>
             <div v-else class="title-content">不提供</div>
           </li>

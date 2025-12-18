@@ -17,12 +17,12 @@ const local = reactive({ ...props.modelValue });
 
 let isRecalculating = false;
 
-// 🆕 計算月營業額目標
+// 計算月營業額目標
 const targetRevenue = computed(() => {
   return Number(local.targetRevenue) || 0;
 });
 
-// 🆕 檢查是否超過月營業額
+// 檢查是否超過月營業額
 const isOverBudget = computed(() => {
   const totalAmount = local.costStruct
       .filter(item => item.item !== '總計')
@@ -31,7 +31,7 @@ const isOverBudget = computed(() => {
   return totalAmount > targetRevenue.value && targetRevenue.value > 0;
 });
 
-// 🆕 獲取超額金額
+// 獲取超額金額
 const overBudgetAmount = computed(() => {
   if (!isOverBudget.value) return 0;
 
@@ -49,7 +49,7 @@ watch(local, (val) => {
   }
 }, { deep: true });
 
-// 🆕 監聽成本結構的 percent 變化 → 計算 amount
+// 監聽 percent 變化 → 計算 amount
 watch(
     () => local.costStruct.map(r => r.percent),
     () => {
@@ -57,21 +57,6 @@ watch(
         isRecalculating = true;
         nextTick(() => {
           updateAmountsFromPercents();
-          isRecalculating = false;
-        });
-      }
-    },
-    { deep: true }
-);
-
-// 🆕 監聽成本結構的 amount 變化 → 計算 percent
-watch(
-    () => local.costStruct.map(r => r.amount),
-    () => {
-      if (!isRecalculating && targetRevenue.value > 0) {
-        isRecalculating = true;
-        nextTick(() => {
-          updatePercentsFromAmounts();
           isRecalculating = false;
         });
       }
@@ -122,61 +107,85 @@ async function recalcPrepBudget() {
   isRecalculating = false;
 }
 
-// 🆕 根據百分比計算金額
+// 根據百分比計算金額
 function updateAmountsFromPercents() {
   const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
 
-  // 計算淨利百分比
-  const totalCostPercent = local.costStruct
-      .filter(r => costItems.includes(r.item))
-      .reduce((sum, r) => sum + Number(r.percent || 0), 0);
+  let totalCostAmount = 0;
 
-  const netProfitRow = local.costStruct.find(r => r.item === "淨利");
-  if (netProfitRow) {
-    netProfitRow.percent = String(100 - totalCostPercent);
-  }
-
-  // 計算所有行的金額
+  // 計算成本項目的金額
   local.costStruct.forEach(row => {
-    if (row.item !== '總計') {
+    if (costItems.includes(row.item)) {
       const percent = Number(row.percent) || 0;
-      row.amount = String(Math.round((targetRevenue.value * percent) / 100));
+      const amount = Math.round((targetRevenue.value * percent) / 100);
+      row.amount = String(amount);
+      totalCostAmount += amount;
     }
   });
+
+  // 🔧 淨利用減法計算（確保總和正確）
+  const netProfitRow = local.costStruct.find(r => r.item === "淨利");
+  if (netProfitRow) {
+    const totalCostPercent = local.costStruct
+        .filter(r => costItems.includes(r.item))
+        .reduce((sum, r) => sum + Number(r.percent || 0), 0);
+
+    netProfitRow.percent = String(Math.round((100 - totalCostPercent) * 100) / 100);
+
+    // 🔧 淨利金額 = 營業額 - 成本總額（避免誤差）
+    const netProfitAmount = targetRevenue.value - totalCostAmount;
+    netProfitRow.amount = String(netProfitAmount);
+  }
 
   // 計算總計
   calculateTotal();
 }
 
-// 🆕 根據金額計算百分比
+// 🔧 根據金額計算百分比（blur 時觸發）
 function updatePercentsFromAmounts() {
+  if (!targetRevenue.value || targetRevenue.value <= 0) return;
+
   const costItems = ["物料成本", "人事成本", "租金成本", "經營管理成本"];
 
-  // 計算可編輯項目的百分比
+  let totalCostAmount = 0;
+
+  // 🔧 只計算百分比，不修改金額
   local.costStruct.forEach(row => {
     if (costItems.includes(row.item)) {
       const amount = Number(row.amount) || 0;
+      totalCostAmount += amount;
       const percent = (amount / targetRevenue.value) * 100;
       row.percent = String(Math.round(percent * 100) / 100);
     }
   });
 
-  // 計算淨利
-  const totalCostPercent = local.costStruct
-      .filter(r => costItems.includes(r.item))
-      .reduce((sum, r) => sum + Number(r.percent || 0), 0);
-
+  // 🔧 淨利金額 = 營業額 - 成本總額（關鍵！）
   const netProfitRow = local.costStruct.find(r => r.item === "淨利");
   if (netProfitRow) {
-    netProfitRow.percent = String(100 - totalCostPercent);
-    netProfitRow.amount = String(Math.round((targetRevenue.value * (100 - totalCostPercent)) / 100));
+    const netProfitAmount = targetRevenue.value - totalCostAmount;
+    netProfitRow.amount = String(netProfitAmount);
+
+    // 計算淨利百分比
+    const netProfitPercent = (netProfitAmount / targetRevenue.value) * 100;
+    netProfitRow.percent = String(Math.round(netProfitPercent * 100) / 100);
   }
 
   // 計算總計
   calculateTotal();
 }
 
-// 🆕 計算總計
+// 🔧 處理金額輸入失去焦點
+function handleAmountBlur() {
+  if (isRecalculating || !targetRevenue.value) return;
+
+  isRecalculating = true;
+  nextTick(() => {
+    updatePercentsFromAmounts();
+    isRecalculating = false;
+  });
+}
+
+// 計算總計
 function calculateTotal() {
   let totalPercent = 0;
   let totalAmount = 0;
@@ -202,7 +211,7 @@ function submitStep() {
     props.errors.targetRevenue = "請輸入營業額目標";
   }
 
-  // 🆕 檢查是否超額
+  // 檢查是否超額
   if (isOverBudget.value) {
     props.errors.costStruct = `成本結構總金額超過月營業額目標 ${overBudgetAmount.value.toLocaleString()} 元`;
   }
@@ -219,11 +228,11 @@ function submitStep() {
       (row) => row.item === "總計"
   )?.amount;
 
-  // 🔧 修正總計驗證邏輯
+  // 修正總計驗證邏輯（允許小誤差）
   const totalAmountNum = Number(costStructTotalAmount) || 0;
   const targetRevenueNum = Number(local.targetRevenue) || 0;
 
-  if (Math.abs(totalAmountNum - targetRevenueNum) > 1) { // 允許 1 元的誤差
+  if (Math.abs(totalAmountNum - targetRevenueNum) > 1) {
     props.errors.costStruct = "成本結構總計金額須等於營業額目標金額";
   }
 
@@ -241,6 +250,19 @@ function submitStep() {
     emit("next", "step6");
   }
 }
+
+watch(
+    () => local.rewardPercent,
+    (newValue) => {
+      let percent = Number(newValue);
+      if (isNaN(percent) || percent < 0) {
+        percent = 0;
+      } else if (percent > 100) {
+        percent = 100;
+      }
+      local.rewardPercent = String(percent);
+    }
+);
 </script>
 
 <template>
@@ -299,11 +321,6 @@ function submitStep() {
       <div>
         <div class="mb-3">
           <label class="fg-label">2. 「營運期間」損益成本結構 (%數)</label>
-
-          <!-- 🆕 超額警告 -->
-          <div v-if="isOverBudget && !readonly" class="alert alert-danger mb-3">
-            ⚠️ 警告：總金額已超過月營業額目標 {{ overBudgetAmount.toLocaleString() }} 元！
-          </div>
 
           <!-- 手機版：表格外顯示 -->
           <div class="revenue-target-mobile">
@@ -385,6 +402,7 @@ function submitStep() {
                     type="text"
                     :format-number="true"
                     v-model="row.amount"
+                    @blur="handleAmountBlur"
                     placeholder="金額"
                     class="p-510"
                     :readonly="readonly || row.item === '總計' || row.item === '淨利'"
@@ -474,7 +492,6 @@ function submitStep() {
 </template>
 
 <style lang="scss" scoped>
-// 🆕 新增樣式
 .alert {
   padding: 12px 16px;
   border-radius: 8px;
@@ -496,6 +513,7 @@ function submitStep() {
     font-weight: 700;
   }
 }
+
 .btn-back {
   background: transparent;
   border: 1px solid #ddd;
@@ -511,11 +529,13 @@ function submitStep() {
     border-color: #999;
   }
 }
+
 .inline-input {
   display: inline-block;
   width: 100px;
   margin: 0 4px;
 }
+
 .records-table {
   border-collapse: collapse;
   width: 100%;
@@ -584,6 +604,7 @@ function submitStep() {
   align-items: flex-start;
   gap: 8px;
   margin-top: 8px;
+
   .d-flex {
     align-items: start;
   }
@@ -592,6 +613,7 @@ function submitStep() {
     margin-top: 11px;
     transform: scale(1.2);
     cursor: pointer;
+
     @media (max-width: 576px) {
       margin-top: 10px;
     }
@@ -685,12 +707,10 @@ function submitStep() {
   }
 }
 
-// 預設隱藏手機版
 .revenue-target-mobile {
   display: none;
 }
 
-// 手機版：顯示手機版，隱藏桌面版
 @media (max-width: 576px) {
   .revenue-target-mobile {
     display: block;

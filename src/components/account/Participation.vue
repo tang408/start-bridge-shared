@@ -29,7 +29,9 @@
 
           <div class="gap-1 d-grid">
             <div class="title">{{ p.title }}</div>
-            <div class="content mt-2">{{ p.content }}</div>
+            <div class="content mt-2">
+              {{ p.customContent || statusLabel(p.status) }}
+            </div>
           </div>
 
           <!-- 🆕 修改進度條部分 -->
@@ -637,12 +639,40 @@ function formatStatusKey(status) {
 
 // 映射計畫狀態
 function mapPlanStatus(currentStep) {
-  if (currentStep === 9) return 'running';
-  if (currentStep === 10) return 'running';
-  if (currentStep === 11 || currentStep === 2) return 'match-failed';
-  if (currentStep >= 12) return 'match-success';
-  if (currentStep < 0) return 'match-failed';
-  return 'pending-start';
+  const statusMap = {
+    9: 'running',
+    10: 'running',
+    11: 'match-failed',
+    2: 'match-failed',
+  };
+
+  // 12 ~ 22 之間 (排除 13)
+  if (currentStep >= 12 && currentStep <= 22) {
+    return 'match-success';
+  }
+
+  // 負數
+  if (currentStep < 0) {
+    return 'match-failed';
+  }
+
+  // 其他情況
+  return statusMap[currentStep] || 'pending-start';
+}
+
+// 🆕 新增：獲取特定 currentStep 的自定義內容
+function getCustomContent(currentStep) {
+  const customContentMap = {
+    13: '創業者前置準備中',
+    17: '創業者已進入加盟流程',
+    21: '媒合完成 - 結案'
+    // 🔧 在這裡添加你想要自定義的 currentStep 和對應的內容
+    // 例如:
+    // 14: '文件審核中',
+    // 15: '等待付款確認',
+  };
+
+  return customContentMap[currentStep] || null; // 如果沒有自定義內容,返回 null
 }
 
 // ==================== API 調用 ====================
@@ -694,6 +724,7 @@ async function getAllParticipantPlanByUser() {
           lastUpdate: calculateTimeRemaining(plan.endDate),
           title: plan.planName,
           content: statusLabel(status),
+          customContent: getCustomContent(plan.currentStep), // 🆕 添加自定義內容
           progress: progress,
           completedProgress: plan.completedProgress || 0,
           pendingProgress: plan.pendingProgress || 0,
@@ -805,6 +836,7 @@ async function getParticipantPlan() {
         lastUpdate: calculateTimeRemaining(plan.endDate),
         title: plan.planName,
         content: statusLabel(status),
+        customContent: getCustomContent(plan.currentStep), // 🆕 添加自定義內容
         minimumAmount: plan.minimumAmount,
         limitPartner: plan.limitPartner,
         amountRange: plan.amountRange,

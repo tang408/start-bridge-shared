@@ -2,7 +2,7 @@
   <div class="project-content">
     <div class="container">
       <SharedProjectContent
-        :photo="partnerInterviewData.photo"
+        :photo="partnerInterviewData.logo"
         :description="partnerInterviewData.description"
       />
     </div>
@@ -11,7 +11,7 @@
         <div class="row">
           <div
             class="col-md-4"
-            v-for="(image, index) in partnerInterviewData.brandImages || []"
+            v-for="(image, index) in partnerInterviewData.images || []"
             :key="index"
           >
             <img :src="image" alt="Project Image" />
@@ -22,74 +22,6 @@
 
     <div class="success-content">
       <div class="container">
-        <h3>案例資訊</h3>
-        <ul class="row list-unstyled small text-body">
-          <li class="col-12 col-md-6">
-            <div class="title">聯絡資訊</div>
-            <div
-                v-if="partnerInterviewData.contact"
-                class="title-content"
-                style="white-space: pre-line;"
-            >
-              {{ partnerInterviewData.contact }}
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">官方網址</div>
-            <div v-if="partnerInterviewData.website"class="title-content">
-              {{ partnerInterviewData.website }}
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">產業類型</div>
-            <div v-if="partnerInterviewData.industryType" class="title-content">
-              {{
-                industryTypesData.find(
-                  (type) => type.id === partnerInterviewData.industryType
-                )?.name || "未分類"
-              }}
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">社群網址</div>
-            <div v-if="partnerInterviewData.facebook"class="title-content">
-              {{ partnerInterviewData.facebook }}
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">資本額</div>
-            <div v-if="partnerInterviewData.capital" class="title-content">
-              {{ formatAmount(partnerInterviewData.capital) }} 元
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">加盟金</div>
-            <div v-if="partnerInterviewData.franchiseFee" class="title-content">
-              {{ formatAmount(partnerInterviewData.franchiseFee) }} 元
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-          <li class="col-12 col-md-6">
-          </li>
-          <li class="col-12 col-md-6">
-            <div class="title">合作特約優惠</div>
-            <div v-if="partnerInterviewData.specialOffer" class="title-content">
-              {{ formatAmount(partnerInterviewData.specialOffer) }} 元
-            </div>
-            <div v-else class="title-content">不提供</div>
-          </li>
-
-
-
-        </ul>
-        <hr class="hr-basic w-100" />
         <h3>合作品牌專訪(背景經歷/營運狀況分享...)</h3>
         <div v-if="partnerInterviewData.interview" v-html="partnerInterviewData.interview"></div>
         <p v-else>尚無專訪內容</p>

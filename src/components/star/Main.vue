@@ -4,6 +4,7 @@
     :items="items"
     :page-size="16"
     :show-filter="false"
+    :show-fab-actions="false"
     @card-click="openDetail"
     @favorite-change="onFavoriteChange"
   />
@@ -38,7 +39,7 @@ const response = await partnerInterviewApi.getPartnerInterviewPhotos()
   if (response.code === 0) {
     items.value = response.data.map((item) => ({
       id: item.id,
-      title: item.name,
+      title: item.title,
       cover: item.photo,
     }))
   } else {

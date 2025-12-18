@@ -106,8 +106,6 @@ const reportOptionsList = computed(() => [
   { key: 'other', text: '其他', withInput: true },
 ])
 
-console.log('local in PDFStep5Part2:', local)
-
 // 格式化金額
 function formatCurrency(amount) {
   if (!amount) return '0'
