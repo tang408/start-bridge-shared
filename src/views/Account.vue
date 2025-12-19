@@ -55,7 +55,7 @@ import { userApi } from '@/api/modules/user.js'
 import { fileApi } from '@/api/modules/file.js' // 確保引入 fileApi
 import { useAuth } from '@/composables/useAuth.js'
 import { useNotifications } from '@/composables/useNotifications.js'
-
+import { NewAlert } from '@/composables/useAlert.js' // 🆕 引入提示
 const { initUnreadCounts } = useNotifications('user')
 
 const router = useRouter()
@@ -153,9 +153,37 @@ function onSelect(item) {
     router.push({ name: item.key })
   }
 }
+const { logout} = useAuth();
 
-function onLogout() {
-  router.push({ name: 'login' })
+async function onLogout() {
+  try {
+    // 1. 關閉移動端側邊欄
+    if (mobileAccountSidebarOpen.value) {
+      toggleMobileAccountSidebar(false)
+    }
+
+    // 2. 清除通知計數
+    if (typeof clearUnreadCounts === 'function') {
+      clearUnreadCounts()
+    }
+
+    // 3. 清除用戶資料
+    user.value = {
+      name: '',
+      avatar: '',
+      type: 0
+    }
+
+    // 4. 執行登出
+    await logout()
+
+    // 5. 跳轉到首頁（不顯示提示）
+    await router.push({ path: '/' })
+
+  } catch (error) {
+    console.error('登出失敗:', error)
+    await NewAlert.show('登出失敗', '登出時發生錯誤，請稍後再試')
+  }
 }
 </script>
 

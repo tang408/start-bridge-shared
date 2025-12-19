@@ -68,7 +68,7 @@
       <div>創業者姓名：{{ planInfo.userName }}</div>
       <div>專案總預算：{{ formatAmount(planInfo.planStartupBudget) }} 元</div>
       <div>自備款：{{ formatAmount(planInfo.planSelfFunded) }} 元</div>
-      <div>總募款金額：{{ formatAmount(planInfo.planAmount) }} 元</div>
+      <div>總媒合金額：{{ formatAmount(planInfo.planAmount) }} 元</div>
       <div>需求人數：{{ planInfo.planPartnerCount }} 人</div>
       <div v-if="planInfo.paymentStatus || planInfo.contractStatus">
         證明上傳狀態：
@@ -598,12 +598,37 @@ const getCityName = (cityId) => {
 // 獲取步驟名稱（根據 planType 決定使用哪個步驟列表）
 const getStepName = (row) => {
   if (row.planType === 1) {
-    // 創業者：使用 currentStep
+    // ========== 創業者邏輯 ==========
+    // 直接使用 currentStep
     const step = planSteps.value.find(s => s.id === row.currentStep);
     return step ? step.step : '未知狀態';
+
   } else {
-    // 共創者：使用 currentCoreStep
-    const step = corePlanStep.value.find(s => s.id === row.currentCoreStep);
+    // ========== 共創者邏輯 ==========
+    const status = row.currentCoreStep;
+    const planCurrentStep = row.currentStep; // 創業者計畫步驟 (從 API 的 currentStep)
+
+    // 🔧 如果 status > 0 且不等於 2 或 9，且 planCurrentStep >= 13
+    if (status > 0 && status !== 2 && status !== 9) {
+      if (planCurrentStep && planCurrentStep >= 13) {
+        // 優先顯示自定義內容
+        const customContent = getCustomContent(planCurrentStep);
+        if (customContent) {
+          return customContent;
+        }
+
+        // 如果沒有自定義內容，查找創業者計畫步驟
+        const planStep = planSteps.value.find((s) => s.id === planCurrentStep);
+        if (planStep) {
+          return planStep.step;
+        }
+
+        return `步驟 ${planCurrentStep}`;
+      }
+    }
+
+    // 否則顯示共創者的步驟
+    const step = corePlanStep.value.find(s => s.id === status);
     return step ? step.step : '未知狀態';
   }
 }
@@ -631,44 +656,57 @@ const statusOptions = computed(() => {
 const displayedProjects = computed(() => {
   let list = [...plans.value];
 
-  // 城市篩選
+  // 1. 城市篩選
   if (projectFilter.city) {
     list = list.filter(p => p.city === projectFilter.city);
   }
 
-  // 狀態篩選和排序
+  // 2. 狀態篩選（類型篩選）
   if (projectFilter.status) {
-    const [type, order] = projectFilter.status.split('-');
+    const [type] = projectFilter.status.split('-');
 
-    // 先篩選類型
     if (type === 'founder') {
       list = list.filter(p => p.planType === 1);
-
-      // 再排序
-      if (order === 'asc') {
-        list.sort((a, b) => a.currentStep - b.currentStep);
-      } else if (order === 'desc') {
-        list.sort((a, b) => b.currentStep - a.currentStep);
-      }
     } else if (type === 'core') {
       list = list.filter(p => p.planType === 2);
-
-      // 再排序
-      if (order === 'asc') {
-        list.sort((a, b) => a.currentCoreStep - b.currentCoreStep);
-      } else if (order === 'desc') {
-        list.sort((a, b) => b.currentCoreStep - a.currentCoreStep);
-      }
     }
   }
 
-  // 日期排序 (只在沒有選擇狀態排序時才用日期排序)
-  if (projectFilter.dateOrder && !projectFilter.status) {
-    if (projectFilter.dateOrder === 'desc') {
-      list.sort((a, b) => new Date(b.date) - new Date(a.date));
-    } else if (projectFilter.dateOrder === 'asc') {
-      list.sort((a, b) => new Date(a.date) - new Date(b.date));
-    }
+  // 3. 🔧 排序邏輯：後選的覆蓋前面的
+
+  // 3.1 如果有日期排序,優先使用日期排序（後選的）
+  if (projectFilter.dateOrder) {
+    list.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+
+      if (projectFilter.dateOrder === 'desc') {
+        return dateB - dateA; // 新→舊
+      } else {
+        return dateA - dateB; // 舊→新
+      }
+    });
+  }
+  // 3.2 如果沒有日期排序,才使用狀態排序
+  else if (projectFilter.status) {
+    const [type, statusOrder] = projectFilter.status.split('-');
+
+    list.sort((a, b) => {
+      let stepA, stepB;
+      if (type === 'founder') {
+        stepA = a.currentStep;
+        stepB = b.currentStep;
+      } else if (type === 'core') {
+        stepA = a.currentCoreStep;
+        stepB = b.currentCoreStep;
+      }
+
+      if (statusOrder === 'asc') {
+        return stepA - stepB; // 由近到遠
+      } else {
+        return stepB - stepA; // 由遠到近
+      }
+    });
   }
 
   return list;
@@ -737,10 +775,60 @@ function formatAmount(amount) {
   return amount.toLocaleString('zh-TW');
 }
 
-// 獲取共創者狀態文字（用於 Modal 中的參與者列表）
-function getParticipantStatus(stepId) {
-  const step = corePlanStep.value.find(s => s.id === stepId);
-  return step ? step.step : '未知狀態';
+const getCustomContent = (currentStep) => {
+  const customContentMap = {
+    13: '創業者前置準備中',
+    14: '創業者前置準備中',
+    15: '創業者已進入加盟流程',
+    16: '創業者已進入加盟流程',
+    17: '創業者已進入選址流程',
+    18: '創業者已進入選址流程',
+    19: '媒合完成 - 進入結案流程',
+    20: '創業者已結案，平台審核中',
+    21: '媒合完成 - 結案',
+    23: '媒合成功 - 雙方簽約中'
+  };
+
+  return customContentMap[currentStep] || null;
+}
+
+// 🔧 修改 getParticipantStatus 函數
+function getParticipantStatus(participant) {
+  // participant 可能是步驟 ID (number) 或完整的參與者對象 (object)
+  let status, planCurrentStep;
+
+  if (typeof participant === 'number') {
+    // 如果傳入的是步驟 ID
+    status = participant;
+    planCurrentStep = planInfo.value?.planStatus;
+  } else {
+    // 如果傳入的是完整對象
+    status = participant.status;
+    planCurrentStep = planInfo.value?.planStatus;
+  }
+
+  // 🔧 如果 status > 0 且不等於 2 或 9，且 planCurrentStep >= 13
+  if (status > 0 && status !== 2 && status !== 9) {
+    if (planCurrentStep && planCurrentStep >= 13) {
+      // 優先顯示自定義內容
+      const customContent = getCustomContent(planCurrentStep);
+      if (customContent) {
+        return customContent;
+      }
+
+      // 如果沒有自定義內容，查找創業者計畫步驟
+      const planStep = planSteps.value.find((s) => s.id === planCurrentStep);
+      if (planStep) {
+        return planStep.step;
+      }
+
+      return `步驟 ${planCurrentStep}`;
+    }
+  }
+
+  // 否則顯示共創者的步驟
+  const coreStep = corePlanStep.value.find((s) => s.id === status);
+  return coreStep ? coreStep.step : '未知狀態';
 }
 
 // 審核相關
@@ -812,7 +900,7 @@ const shouldShowReviewButtons = () => {
     }
 
     // 共創者可審核的步驟（排除步驟 10）
-    const participantReviewableSteps = [1, 15];
+    const participantReviewableSteps = [1];
     return participantReviewableSteps.includes(planInfo.value.participantPlanStep);
   } else {
     // 創業者邏輯
@@ -858,6 +946,8 @@ const shouldShowEndButtons = () => {
 
 
   if (!planInfo.value.planStatus) return false;
+
+  if (planInfo.value.participantPlanId) return false;
 
   // 創業者可結案的步驟
   const founderEndSteps = [19];

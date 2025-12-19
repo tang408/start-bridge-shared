@@ -842,21 +842,25 @@ section {
 }
 
 .m-account-overlay {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top: 100px; /* 如果這是為了避開 Header */
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 5;
+  z-index: 1050;
+  width: 100%;
+  height: calc(100% - 100px); /* 建議用 calc 確保高度精確 */
+
+  /* ⭐ 關鍵修改：置中設定 */
   display: flex;
-  justify-content: flex-end;
-  align-items: stretch;
-  background: rgba(255, 255, 255, 0.9);
+  justify-content: center; /* 水平置中 */
+  align-items: center;     /* 垂直置中 */
+
   border-radius: 30px;
 }
 
 .m-account-panel {
-  width: min(88vw, 320px);
+  width: 95%;
   height: 100%;
   background: #fff;
   border-radius: 30px;

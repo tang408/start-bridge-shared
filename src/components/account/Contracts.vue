@@ -47,10 +47,10 @@
   </section>
 
   <!-- 宣告 Modal -->
-  <SharedModal 
-    v-model="showDisclaimerModal" 
-    title="注意" 
-    mode="long" 
+  <SharedModal
+    v-model="showDisclaimerModal"
+    title="注意"
+    mode="long"
     @confirm="handleDisclaimerConfirm"
   >
     <div style="text-align: left;">
@@ -67,13 +67,21 @@
         <button class="close-btn" @click="closeModal">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="pdf-container">
-          <iframe
-              v-if="selectedContract"
-              :src="selectedContract.standardContractUrl"
-              class="pdf-viewer"
-              title="PDF 預覽"
-          ></iframe>
+        <div class="preview-container">
+          <template v-if="selectedContract">
+            <iframe
+                v-if="isPdf(selectedContract.standardContractUrl)"
+                :src="selectedContract.standardContractUrl"
+                class="content-viewer pdf-viewer"
+                title="PDF 預覽"
+            ></iframe>
+            <img
+                v-else
+                :src="selectedContract.standardContractUrl"
+                class="content-viewer img-viewer"
+                alt="預覽圖片"
+            />
+          </template>
         </div>
       </div>
       <div class="modal-footer">
@@ -150,7 +158,7 @@ function openModal(row, action) {
 
 function handleDisclaimerConfirm() {
   showDisclaimerModal.value = false;
-  
+
   if (currentAction.value === 'preview') {
     showModal.value = true;
     // 防止背景滾動
@@ -165,6 +173,13 @@ function closeModal() {
   selectedContract.value = null;
   // 恢復背景滾動
   document.body.style.overflow = 'auto';
+}
+
+function isPdf(url) {
+  if (!url) return false;
+  // 簡單判斷副檔名，或檢查 content-type (如果這是一個真實的 Object URL)
+  // 這裡假設 URL 結尾有 .pdf
+  return url.toLowerCase().includes('.pdf');
 }
 
 const userData = ref({})
@@ -186,8 +201,7 @@ const getUserInfo = async () => {
 
 // 強制下載檔案
 async function downloadFile(contract) {
-  console.log(founderData.value)
-  if (founderData.value.status < 1 || coreFounderData.value.status < 1  ) {
+  if (founderData.value.status < 1 && coreFounderData.value.status < 1  ) {
       await NewAlert.show("注意！", "請先完成創業者或共創者認證，才能下載合約內容");
     return;
   }
@@ -200,7 +214,19 @@ async function downloadFile(contract) {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${contract.name}.pdf`; // 使用合約名稱作為檔名
+    
+    // 判斷副檔名
+    const isPdfFile = isPdf(contract.standardContractUrl);
+    const ext = isPdfFile ? '.pdf' : '.jpg'; // 預設非 PDF 為 jpg，或是從 URL 擷取更精確的
+    
+    // 嘗試從 URL 獲取真實副檔名
+    let finalExt = ext;
+    const match = contract.standardContractUrl.match(/\.([a-zA-Z0-9]+)(\?|$)/);
+    if (match) {
+        finalExt = '.' + match[1];
+    }
+
+    link.download = `${contract.name}${finalExt}`; 
     document.body.appendChild(link);
     link.click();
 
@@ -218,7 +244,17 @@ async function downloadFile(contract) {
 function fallbackDownload(contract) {
   const link = document.createElement('a');
   link.href = contract.standardContractUrl;
-  link.download = `${contract.name}.pdf`;
+  
+  // 嘗試從 URL 獲取真實副檔名
+  let finalExt = '.pdf';
+  const match = contract.standardContractUrl.match(/\.([a-zA-Z0-9]+)(\?|$)/);
+  if (match) {
+      finalExt = '.' + match[1];
+  } else if (!isPdf(contract.standardContractUrl)) {
+      finalExt = '.jpg';
+  }
+
+  link.download = `${contract.name}${finalExt}`;
   link.target = '_blank';
 
   // 設置 Content-Disposition header (如果可能的話)
@@ -357,17 +393,30 @@ onMounted(async () => {
   border-left: 4px solid #007bff;
 }
 
-.pdf-container {
+.preview-container {
   flex: 1;
   border: 1px solid #ddd;
   border-radius: 4px;
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
 }
 
-.pdf-viewer {
+.content-viewer {
   width: 100%;
   height: 100%;
   border: none;
+}
+
+.img-viewer {
+  object-fit: contain;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.pdf-viewer {
   background: #f5f5f5;
 }
 

@@ -882,7 +882,8 @@ $bg-light: #fafafa;
 
   @media (max-width: 768px) {
     width: 100%;
-    justify-content: space-between;
+    margin-top: -10px;
+    justify-content: flex-end;
   }
 }
 

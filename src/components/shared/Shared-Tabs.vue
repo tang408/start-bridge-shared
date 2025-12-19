@@ -51,8 +51,11 @@ defineEmits(["update:modelValue"]);
   line-height: $lh-19;
   cursor: pointer;
 
+  white-space: nowrap;
+
   @media (max-width: 576px) {
     padding: 10px;
+    font-size: 14px;
   }
 }
 
