@@ -277,7 +277,7 @@
         <div>創業者：{{ planDetail.userName || '未知' }}</div>
         <div>專案總預算：{{ formatAmount(planDetail.planStartupBudget) }} 元</div>
         <div>自備款：{{ formatAmount(planDetail.planSelfFunded) }} 元</div>
-        <div>總募資金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
+        <div>總媒合金額：{{ formatAmount(planDetail.planAmount) }} 元</div>
         <div>共創者人數：{{ planDetail.planPartnerCount || 0 }} 人</div>
         <div class="color-1">尚缺募資金額：{{ formatAmount(planDetail.shortAmount) }} 元</div>
         <div class="color-1">尚缺募資人數：{{ planDetail.planStatus >= 12 ? 0 : planDetail.shortPartnerCount }} 人</div>

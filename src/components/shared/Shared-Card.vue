@@ -353,7 +353,7 @@ async function toggleFavorite(newVal) {
     cursor: pointer;
     background: #fff;
     border-radius: $br-15;
-    padding: 15px;
+    padding: 5px;
     margin: 5px 0;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     text-align: left;
@@ -366,9 +366,9 @@ async function toggleFavorite(newVal) {
     height: 320px; // 固定高度，可依需求調整
 
     @media (max-width: 767px) {
-      width: 90%;
+      width: 100%;
       height: auto; // 手機版保持自適應高度
-      margin: auto;
+      margin: 0;
       gap: $gap-5;
     }
     

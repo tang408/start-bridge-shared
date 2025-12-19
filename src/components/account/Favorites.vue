@@ -417,7 +417,19 @@ onMounted(() => {
 .dialog-body {
   padding: 24px;
   overflow-y: auto;
+  overflow-x: hidden; // 🆕 防止水平溢出
   flex: 1;
+  max-height: 600px;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+    max-height: 500px;
+  }
+
+  @media (max-width: 576px) {
+    padding: 12px;
+    max-height: 400px;
+  }
 }
 
 .no-data {
@@ -429,29 +441,49 @@ onMounted(() => {
     margin: 0;
     font-size: 16px;
   }
+
+  @media (max-width: 576px) {
+    padding: 30px 16px;
+
+    p {
+      font-size: 14px;
+    }
+  }
 }
 
 .details {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%; // 🆕 確保寬度為 100%
+
+  @media (max-width: 576px) {
+    gap: 12px;
+  }
 }
 
 .article-card {
-  min-width: 450px;
+  width: 100%; // 🆕 確保卡片寬度為 100%
+  max-width: 100%; // 🆕 防止超出容器
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.2s;
+  box-sizing: border-box; // 🆕 包含 border 在寬度內
 
   &:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-color: #d1d5db;
   }
+
+  @media (max-width: 576px) {
+    border-radius: 8px;
+  }
 }
 
 .summary {
-  width: 100%;
+  width: 100%; // 🆕 確保按鈕寬度為 100%
+  max-width: 100%; // 🆕 防止超出容器
   padding: 20px 16px;
   background: white;
   border: none;
@@ -461,83 +493,87 @@ onMounted(() => {
   flex-direction: column;
   gap: 16px;
   transition: background-color 0.2s;
+  box-sizing: border-box; // 🆕 包含 padding 在寬度內
 
   &:hover {
     background-color: #f9fafb;
   }
-}
 
-.card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.4;
+    word-wrap: break-word; // 🆕 長文字換行
+    word-break: break-word; // 🆕 強制換行
+  }
 
-.status-pill {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-
-  &.status-pending {
-    background-color: #f3f4f6;
+  .content {
+    font-size: 14px;
     color: #6b7280;
+    line-height: 1.6;
+    word-wrap: break-word; // 🆕 長文字換行
   }
 
-  &.status-running {
-    background-color: #dbeafe;
-    color: #ff6634;
-  }
+  @media (max-width: 576px) {
+    padding: 16px 12px;
+    gap: 12px;
 
-  &.status-success {
-    background-color: #d1fae5;
-    color: #065f46;
-  }
+    .title {
+      font-size: 15px;
+      line-height: 1.5;
+    }
 
-  &.status-failed {
-    background-color: #fee2e2;
-    color: #991b1b;
+    .content {
+      font-size: 13px;
+    }
   }
 }
 
 .time {
   font-size: 12px;
-  color: #6b7280;
-  font-weight: 500;
+  color: #ff6634;
+  font-weight: 600;
+
+  @media (max-width: 576px) {
+    font-size: 11px;
+  }
 }
 
 .gap-1 {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
+  width: 100%; // 🆕 確保寬度為 100%
 
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  line-height: 1.4;
-}
-
-.content {
-  font-size: 12px;
-  color: #6b7280;
-  line-height: 1.6;
+  @media (max-width: 576px) {
+    gap: 6px;
+  }
 }
 
 .progress-wrap {
   margin-top: 8px;
+  width: 100%; // 🆕 確保寬度為 100%
+  max-width: 100%; // 🆕 防止超出容器
+
+  @media (max-width: 576px) {
+    margin-top: 12px;
+  }
 }
 
 .progress-bar {
   position: relative;
-  height: 20px;
+  width: 100%; // 🆕 確保寬度為 100%
+  height: 28px;
   background-color: #f3f4f6;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 576px) {
+    height: 32px;
+    border-radius: 16px;
+  }
 }
 
 .progress-inner {
@@ -545,6 +581,10 @@ onMounted(() => {
   background: linear-gradient(90deg, #fb956d, #ff6634);
   transition: width 0.3s ease;
   border-radius: 20px;
+
+  @media (max-width: 576px) {
+    border-radius: 16px;
+  }
 }
 
 .progress-text {
@@ -557,6 +597,11 @@ onMounted(() => {
   color: #111827;
   z-index: 1;
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  white-space: nowrap; // 🆕 防止文字換行
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+  }
 }
 
 .progress-footer {
@@ -566,6 +611,17 @@ onMounted(() => {
   font-size: 14px;
   margin-top: 12px;
   padding: 0 4px;
+  width: 100%; // 🆕 確保寬度為 100%
+  box-sizing: border-box; // 🆕 包含 padding 在寬度內
+
+  @media (max-width: 576px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    margin-top: 10px;
+    padding: 0 2px;
+  }
 }
 
 .dollar {
@@ -574,34 +630,38 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  word-wrap: break-word; // 🆕 長數字換行
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+  }
 }
 
 .remain {
   color: #dc2626;
   font-weight: 500;
+  word-wrap: break-word; // 🆕 長數字換行
+
+  @media (max-width: 576px) {
+    font-size: 13px;
+  }
 }
 
 @media (max-width: 768px) {
+  .dialog-body {
+    max-height: 500px;
+  }
+
   .summary {
     padding: 16px 20px;
   }
 
-  .title {
-    font-size: 16px;
-  }
-
   .progress-bar {
-    height: 36px;
+    height: 30px;
   }
 
   .progress-text {
-    font-size: 14px;
-  }
-
-  .progress-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    font-size: 13px;
   }
 }
 </style>

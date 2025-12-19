@@ -103,7 +103,7 @@
             <div class="agree-row">
               <input id="agree" type="checkbox" v-model="form.agree" />
               <label for="agree">我已閱讀並同意</label>
-              <RouterLink to="/terms/platform" target="_blank" class="agree-link">平台合約</RouterLink>
+              <RouterLink to="/terms/platform" target="_blank" class="agree-link">平台聲明</RouterLink>
               <RouterLink to="/terms/service" target="_blank" class="agree-link">服務條款</RouterLink>
               及
               <RouterLink to="/privacy" target="_blank" class="agree-link">隱私權政策</RouterLink>            </div>

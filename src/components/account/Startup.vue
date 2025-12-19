@@ -756,83 +756,83 @@
         :error="paymentErrors.companyNameEn"
     />
 
-    <SharedUpload
-        label="上傳公司LOGO"
-        accept=".pdf,.jpg,.jpeg,.png"
-        :max-size="5"
-        name="companyLogo"
-        v-model="companyForm.companyLogo"
-        :error="paymentErrors.companyLogo"
-        @upload-success="(result) => handleUploadSuccess('companyLogo', result)"
-        required
-        :account="uploadAccount"
-        :type="'公司LOGO'"
-        :id="currentUser.value"/>
+<!--    <SharedUpload-->
+<!--        label="上傳公司LOGO"-->
+<!--        accept=".pdf,.jpg,.jpeg,.png"-->
+<!--        :max-size="5"-->
+<!--        name="companyLogo"-->
+<!--        v-model="companyForm.companyLogo"-->
+<!--        :error="paymentErrors.companyLogo"-->
+<!--        @upload-success="(result) => handleUploadSuccess('companyLogo', result)"-->
+<!--        required-->
+<!--        :account="uploadAccount"-->
+<!--        :type="'公司LOGO'"-->
+<!--        :id="currentUser.value"/>-->
 
-    <SharedInput
-        id="slogan"
-        label="公司標語"
-        type="textarea"
-        placeholder="請填寫公司標語"
-        v-model="companyForm.slogan"
-        :error="paymentErrors.slogan"
-    />
-    <SharedInput
-        id="bankAccountName"
-        label="銀行帳戶名稱"
-        type="textarea"
-        placeholder="請填寫銀行帳戶名稱"
-        v-model="companyForm.bankAccountName"
-        :error="paymentErrors.bankAccountName"
-    />
-    <SharedInput
-        id="bankAccountNumber"
-        label="銀行帳戶號碼"
-        type="textarea"
-        placeholder="請填寫銀行帳戶號碼"
-        v-model="companyForm.bankAccountNumber"
-        :error="paymentErrors.bankAccountNumber"
-    />
-    <SharedInput
-        id="profile"
-        label="公司簡介"
-        type="textarea"
-        placeholder="請填寫公司簡介"
-        v-model="companyForm.profile"
-        :error="paymentErrors.profile"
-    />
-    <SharedInput
-        id="info"
-        label="公司詳細介紹"
-        type="textarea"
-        placeholder="請填寫公司詳細介紹"
-        v-model="companyForm.info"
-        :error="paymentErrors.info"
-    />
-    <SharedInput
-        id="officialUrl"
-        label="公司官方網站"
-        type="textarea"
-        placeholder="請填寫公司官方網站"
-        v-model="companyForm.officialUrl"
-        :error="paymentErrors.officialUrl"
-    />
-    <SharedInput
-        id="facebookUrl"
-        label="公司 Facebook 網址"
-        type="textarea"
-        placeholder="請填寫公司 Facebook 網址"
-        v-model="companyForm.facebookUrl"
-        :error="paymentErrors.facebookUrl"
-    />
-    <SharedInput
-        id="instagramUrl"
-        label="公司 Instagram 網址"
-        type="textarea"
-        placeholder="請填寫公司 Instagram 網址"
-        v-model="companyForm.instagramUrl"
-        :error="paymentErrors.instagramUrl"
-    />
+<!--    <SharedInput-->
+<!--        id="slogan"-->
+<!--        label="公司標語"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司標語"-->
+<!--        v-model="companyForm.slogan"-->
+<!--        :error="paymentErrors.slogan"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="bankAccountName"-->
+<!--        label="銀行帳戶名稱"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫銀行帳戶名稱"-->
+<!--        v-model="companyForm.bankAccountName"-->
+<!--        :error="paymentErrors.bankAccountName"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="bankAccountNumber"-->
+<!--        label="銀行帳戶號碼"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫銀行帳戶號碼"-->
+<!--        v-model="companyForm.bankAccountNumber"-->
+<!--        :error="paymentErrors.bankAccountNumber"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="profile"-->
+<!--        label="公司簡介"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司簡介"-->
+<!--        v-model="companyForm.profile"-->
+<!--        :error="paymentErrors.profile"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="info"-->
+<!--        label="公司詳細介紹"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司詳細介紹"-->
+<!--        v-model="companyForm.info"-->
+<!--        :error="paymentErrors.info"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="officialUrl"-->
+<!--        label="公司官方網站"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司官方網站"-->
+<!--        v-model="companyForm.officialUrl"-->
+<!--        :error="paymentErrors.officialUrl"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="facebookUrl"-->
+<!--        label="公司 Facebook 網址"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司 Facebook 網址"-->
+<!--        v-model="companyForm.facebookUrl"-->
+<!--        :error="paymentErrors.facebookUrl"-->
+<!--    />-->
+<!--    <SharedInput-->
+<!--        id="instagramUrl"-->
+<!--        label="公司 Instagram 網址"-->
+<!--        type="textarea"-->
+<!--        placeholder="請填寫公司 Instagram 網址"-->
+<!--        v-model="companyForm.instagramUrl"-->
+<!--        :error="paymentErrors.instagramUrl"-->
+<!--    />-->
   </SharedModal>
 
   <SharedModal
@@ -2847,10 +2847,11 @@ async function handleCompanySubmit() {
   if (response.code === 0) {
     await NewAlert.show('成功', '公司資料提交成功');
     await getAllPlanByUser()
+    showCompanyDialog.value = false;
   } else {
-    await NewAlert.show('失敗', response.message + ',提交失敗，請確認是否填寫完整，若有問題請洽客服人員。');
+    await NewAlert.show('失敗', response.message + '，請確認是否填寫完整，若有問題請洽客服人員。');
   }
-  showCompanyDialog.value = false;
+
 }
 
 async function handleUploadData(plan) {
