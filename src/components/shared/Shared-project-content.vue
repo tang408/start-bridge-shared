@@ -7,7 +7,7 @@
 
     <div class="col-md-8">
       <!-- 使用傳入的 description -->
-      <p v-html="description" v-if="description" />
+      <p class="ql-editor margin-left-3" v-html="description" v-if="description" />
     </div>
   </div>
 </template>

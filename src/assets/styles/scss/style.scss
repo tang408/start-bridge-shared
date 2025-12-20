@@ -43,6 +43,12 @@ body {
   overflow-x: hidden;
 }
 
+p {
+  @media (max-width: 576px) {
+    margin-bottom: 0 !important;
+  }
+}
+
 ol,
 ul {
   list-style: none;
@@ -682,7 +688,7 @@ section {
     border: none;
 
     &.previous {
-      background-color: #FFDCB9;
+      background-color: #ffdcb9;
       color: #373a36;
       width: 100%;
     }
@@ -854,7 +860,7 @@ section {
   /* ⭐ 關鍵修改：置中設定 */
   display: flex;
   justify-content: center; /* 水平置中 */
-  align-items: center;     /* 垂直置中 */
+  align-items: center; /* 垂直置中 */
 
   border-radius: 30px;
 }
@@ -866,3 +872,128 @@ section {
   border-radius: 30px;
   overflow-y: auto;
 }
+
+.ql-editor {
+  padding: 0;
+  min-height: auto;
+  font-size: 16px;
+  line-height: 1.6;
+
+  // 段落
+  p {
+    margin: 0.5em 0;
+    line-height: 1.8;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // 🆕 修正列表樣式 - 使用標準符號
+  ul {
+    list-style-type: disc;  // 顯示圓點
+    padding-left: 2em;      // 添加左邊距
+    margin: 1em 0;
+  }
+
+  ol {
+    list-style-type: decimal;  // 顯示數字
+    padding-left: 2em;
+    margin: 1em 0;
+  }
+
+  li {
+    display: block;
+    margin: 0.5em 0;
+    padding-left: 1.5em;  // 為偽元素留空間
+    position: relative;
+    line-height: 1.8;
+
+    // 🆕 用 CSS 添加自定義符號
+    &::before {
+      content: "•";  // 或使用 "·" 、 "■" 等
+      position: absolute;
+      left: 0;
+      color: #001529;  // 自定義顏色
+      font-weight: bold;
+    }
+  }
+
+  // 標題
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem;
+    color: #111827;
+
+    strong {
+
+      color: inherit;
+      font-weight: 700;
+    }
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem;
+    color: #374151;
+
+    strong {
+      color: inherit;
+      font-weight: inherit;
+    }
+
+    span {
+        font-size: 1.5rem;
+    }
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1rem 0 0.5rem;
+    color: #4b5563;
+  }
+
+  // Blockquote
+  blockquote {
+    border-left: 4px solid #ccc;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+  }
+
+  // 🆕 代碼塊樣式
+  pre {
+    background-color: #282c34;  // 深色背景
+    color: #abb2bf;             // 淺色文字
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    overflow-x: auto;           // 水平滾動
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre;           // 保留空格和換行
+
+    &.ql-syntax {
+      background-color: #282c34;
+      color: #abb2bf;
+    }
+  }
+
+
+  // 強調
+  strong {
+    font-weight: 700;
+  }
+
+  em {
+    font-style: italic;
+  }
+}
+

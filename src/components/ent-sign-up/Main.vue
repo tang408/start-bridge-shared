@@ -60,7 +60,7 @@
               v-model="form.name"
               :error="errors.name"
               hint="請輸入與身份證件（如護照）上完全一致的姓名。"
-              @input="handleNameInput"
+              @blur="handleNameBlur"
           />
 
           <SharedRadio
@@ -186,18 +186,16 @@ watch(
   }
 );
 
-function handleNameInput(event) {
-  const value = event.target.value;
+function handleNameBlur() {
+  const value = form.name;
   const filtered = value.replace(/[^\u4e00-\u9fa5a-zA-Z\s,]/g, '');
 
   // 如果輸入了非法字符，顯示提示
   if (value !== filtered) {
-    errors.name = '姓名只能包含中文或英文';
+    errors.name = '姓名只能包含中文或英文(逗號(,) 、空格( ) )';
   } else {
     errors.name = '';
   }
-
-  form.name = filtered;
 }
 
 function startTimer(state, total = 100) {
@@ -285,6 +283,14 @@ function validateForm() {
     errors.name = "請輸入姓名";
     if (!firstErrorRef) firstErrorRef = nameRef;
     isValid = false;
+  } else {
+    // 再次檢查姓名格式
+    const filtered = form.name.replace(/[^\u4e00-\u9fa5a-zA-Z\s,]/g, '');
+    if (form.name !== filtered) {
+      errors.name = '姓名只能包含中文或英文(逗號(,) 、空格( ) )';
+      if (!firstErrorRef) firstErrorRef = nameRef;
+      isValid = false;
+    }
   }
 
   // 6. 驗證性別

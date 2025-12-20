@@ -59,7 +59,7 @@
             </div>
           </div>
           <div class="tab-content-text">
-            <h1>創業夥伴流程</h1>
+            <h1>共同創業者流程</h1>
             <SharedFlow
               :sections="sectionsCoCreate"
               v-model:active="activeCoCreate"
@@ -140,7 +140,7 @@ const sectionsStartup = [
     key: "init",
     cols: 4,
     steps: [
-      { num: 1, title: "註冊會員", desc: "串聯社群、Email<br/>一鍵輕鬆登入" },
+      { num: 1, title: "註冊會員", desc: "以正常使用中的<br/>手機號碼註冊" },
       {
         num: 2,
         title: "申請創業",
@@ -187,7 +187,7 @@ const sectionsCoCreate = [
     key: "init",
     cols: 4,
     steps: [
-      { title: "註冊會員", desc: "串聯社群、Email<br/>一鍵輕鬆登入" },
+      { title: "註冊會員", desc: "以正常使用中的<br/>手機號碼註冊" },
       { title: "申請參與", desc: "選取有興趣的<br/>創業專案參與" },
       { title: "平台審核", desc: "提交身分驗證文件" },
       {

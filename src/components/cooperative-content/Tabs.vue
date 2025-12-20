@@ -62,17 +62,17 @@
           <div>
             <h2 class="title mb-2 mt-5">品牌資訊</h2>
             <h3 class="subtitle mb-2 mt-4">詳細介紹</h3>
-            <div v-if="projectData?.brandIntro" v-html="projectData.brandIntro"></div>
+            <div v-if="projectData?.brandIntro" class="ql-editor p-0" v-html="projectData.brandIntro"></div>
             <span v-else>暫無品牌介紹資料</span>
 
             <h3 class="subtitle mb-2 mt-4">經營理念</h3>
-            <div v-if="projectData?.businessPhilosophy" v-html="projectData.businessPhilosophy"></div>
+            <div v-if="projectData?.businessPhilosophy" class="ql-editor p-0" v-html="projectData.businessPhilosophy"></div>
             <span v-else>暫無經營理念資料</span>
           </div>
 
           <div>
             <h3 class="subtitle mb-2 mt-4">特色優勢</h3>
-            <div v-if="projectData?.advantages" v-html="projectData.advantages"></div>
+            <div v-if="projectData?.advantages" class="ql-editor p-0" v-html="projectData.advantages"></div>
             <span v-else>暫無特色優勢資料</span>
           </div>
 
@@ -88,7 +88,7 @@
 
           <div>
             <h3 class="subtitle mb-2 mt-4">當前規模(門店數)</h3>
-            <div v-if="projectData?.currentScale" v-html="projectData.currentScale"></div>
+            <div v-if="projectData?.currentScale" class="ql-editor p-0" v-html="projectData.currentScale"></div>
             <div v-else>
               <span>暫無當前規模資料</span>
             </div>
@@ -102,7 +102,7 @@
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
                 <template v-if="row.value">{{ row.value }}</template>
-                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <div v-else-if="row.html" class="html-content ql-editor p-0" v-html="row.html"></div>
                 <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
@@ -116,7 +116,7 @@
               <div class="ji-label">{{ row.label }}</div>
               <div class="ji-value">
                 <template v-if="row.value">{{ row.value }}</template>
-                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <div v-else-if="row.html" class="html-content ql-editor p-0" v-html="row.html"></div>
                 <span v-else class="text-muted">暫無資料</span>
               </div>
             </div>
@@ -651,11 +651,6 @@ span {
     :deep(p) {
       margin: 0;
       padding: 0;
-    }
-
-    :deep(ul), :deep(ol) {
-      margin: 0;
-      padding-left: 1.5em;
     }
 
     :deep(strong) {

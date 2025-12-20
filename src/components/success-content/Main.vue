@@ -56,7 +56,7 @@
         </ul>
         <hr class="hr-basic w-100" />
         <h3>創業者專訪(背景經歷/營運狀況分享...)</h3>
-        <div v-if="successPlanData.interview" v-html="successPlanData.interview"></div>
+        <div v-if="successPlanData.interview" class="ql-editor p-0" v-html="successPlanData.interview"></div>
         <p v-else>尚無專訪內容</p>
       </div>
     </div>

@@ -41,7 +41,7 @@
       <div class="tab-card">
         <div class="tab-card-content">
           <h5 class="title">{{ item.title }}</h5>
-          <p v-html="item.content"></p>
+          <div v-html="item.content" class="ql-editor p-0"></div>
         </div>
         <div class="tab-card-image" v-if="item.photo">
           <img :src="item.photo" :alt="item.name" />

@@ -1224,6 +1224,7 @@ async function successMatchingPlanByUser(t, p) {
   const formData = {
     userId: currentUser.value,
     planId: p.id,
+    planType: 2
   }
 
   const response = await userCheckApi.successMatchingPlanByUser(formData)
@@ -1703,7 +1704,15 @@ async function handleCorePlanFinalContractSubmit() {
     color: #555555;
     @media (max-width: 576px) {
       display: grid;
-      gap: 5px;
+      gap: 8px;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      padding: 8px 0; // 增加一點垂直間距
+      border-bottom: 1px dashed #eee; // 手機版增加分隔線讓每筆紀錄更清楚
+
+      &:last-child {
+        border-bottom: none;
+      }
     }
 
     .tx-date {
@@ -1714,6 +1723,10 @@ async function handleCorePlanFinalContractSubmit() {
       letter-spacing: 2px;
       @media (max-width: 576px) {
         width: 100%;
+        grid-column: 1 / -1; // 佔滿第一行
+        font-size: 14px;
+        color: #999;
+        margin-bottom: 2px;
       }
     }
 
@@ -1721,12 +1734,26 @@ async function handleCorePlanFinalContractSubmit() {
       width: 35%;
       text-align: center;
 
+      @media (max-width: 576px) {
+        width: 100%;
+        text-align: start;
+        grid-column: 1 / -1; // 佔滿第二行
+        margin-bottom: 6px;
+      }
+
       button {
         border-radius: 50px;
         border: none;
         background-color: #ff6634;
         color: #fff;
         padding: 0 15px;
+        white-space: nowrap; // 防止文字換行
+
+        @media (max-width: 576px) {
+          width: 100%;       // 手機版按鈕滿寬
+          padding: 8px 15px; // 增加點擊區域
+          white-space: normal; // 手機版允許換行
+        }
       }
     }
 
@@ -1739,8 +1766,11 @@ async function handleCorePlanFinalContractSubmit() {
       line-height: 19px;
       letter-spacing: 0.04em;
       @media (max-width: 576px) {
-        width: 100%;
+        width: auto;
         text-align: start;
+        grid-column: 1 / 2; // 第三行 左邊
+        font-weight: 500;
+        padding-right: 0;
       }
     }
 
@@ -1753,8 +1783,9 @@ async function handleCorePlanFinalContractSubmit() {
       line-height: 19px;
       letter-spacing: 0.04em;
       @media (max-width: 576px) {
-        width: 100%;
-        text-align: start;
+        width: auto;
+        text-align: center;
+        grid-column: 2 / 3; // 第三行 中間
       }
     }
 
@@ -1765,8 +1796,11 @@ async function handleCorePlanFinalContractSubmit() {
       font-size: 16px;
       line-height: 19px;
       @media (max-width: 576px) {
-        width: 100%;
-        text-align: start;
+        width: auto;
+        text-align: end;
+        grid-column: 3 / 4; // 第三行 右邊
+        color: #ff6634; // 金額強調色
+        font-weight: 600;
       }
     }
   }

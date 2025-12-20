@@ -938,42 +938,42 @@
         <!-- HTML 內容區塊（需要 v-html） -->
         <section class="info-section">
           <h2>詳細介紹</h2>
-          <div v-html="partnerData?.brandIntro"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.brandIntro"></div>
         </section>
 
         <section class="info-section">
           <h3>品牌描述</h3>
-          <div v-html="partnerData?.description"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.description"></div>
         </section>
 
         <section class="info-section">
           <h3>經營理念</h3>
-          <div v-html="partnerData?.businessPhilosophy"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.businessPhilosophy"></div>
         </section>
 
         <section class="info-section">
           <h3>品牌優勢</h3>
-          <div v-html="partnerData?.advantages"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.advantages"></div>
         </section>
 
         <section class="info-section">
           <h3>開店條件</h3>
-          <div v-html="partnerData?.storeCondition"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.storeCondition"></div>
         </section>
 
         <section class="info-section">
           <h3>加盟門檻</h3>
-          <div v-html="partnerData?.threshold"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.threshold"></div>
         </section>
 
         <section class="info-section">
           <h3>目前規模</h3>
-          <div v-html="partnerData?.currentScale"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.currentScale"></div>
         </section>
 
         <section class="info-section">
           <h3>聯絡方式</h3>
-          <div v-html="partnerData?.contact"></div>
+          <div class="ql-editor p-0" v-html="partnerData?.contact"></div>
         </section>
 
         <!-- 圖片陣列 -->
@@ -1046,7 +1046,7 @@
           <h3>{{ partnerData?.customContents.startup_projects?.categoryName }}</h3>
           <div
               v-html="partnerData?.customContents.startup_projects?.content"
-              class="info-item"
+              class="info-item ql-editor p-0"
           >
           </div>
         </section>
@@ -1055,7 +1055,7 @@
           <h3>{{ partnerData?.customContents.manufacturing_schedule?.categoryName }}</h3>
           <div
               v-html="partnerData?.customContents.manufacturing_schedule?.content"
-              class="info-item"
+              class="info-item ql-editor p-0"
           >
           </div>
         </section>
@@ -1064,7 +1064,7 @@
           <h3>{{ partnerData?.customContents.others?.categoryName }}</h3>
           <div
               v-html="partnerData?.customContents.others?.content"
-              class="info-item"
+              class="info-item ql-editor p-0"
           >
           </div>
         </section>
@@ -1073,7 +1073,7 @@
           <h3>{{ partnerData?.customContents.business_model?.categoryName }}</h3>
           <div
               v-html="partnerData?.customContents.business_model?.content"
-              class="info-item"
+              class="info-item ql-editor p-0"
           >
           </div>
         </section>
@@ -1082,7 +1082,7 @@
           <h3>{{ partnerData?.customContents.franchise_training?.categoryName }}</h3>
           <div
               v-html="partnerData?.customContents.franchise_training?.content"
-              class="info-item"
+              class="info-item ql-editor p-0"
           >
           </div>
         </section>
@@ -3240,6 +3240,7 @@ async function successMatchingPlanByUser(p) {
   const formData = {
     userId: currentUser.value,
     planId: p.id,
+    planType:1,
   }
 
   const response = await userCheckApi.successMatchingPlanByUser(formData)

@@ -23,7 +23,7 @@
     <div class="success-content">
       <div class="container">
         <h3>合作品牌專訪(背景經歷/營運狀況分享...)</h3>
-        <div v-if="partnerInterviewData.interview" v-html="partnerInterviewData.interview"></div>
+        <div v-if="partnerInterviewData.interview" class="ql-editor p-0" v-html="partnerInterviewData.interview"></div>
         <p v-else>尚無專訪內容</p>
       </div>
     </div>

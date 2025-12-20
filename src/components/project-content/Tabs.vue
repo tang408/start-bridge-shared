@@ -57,7 +57,7 @@
             <h3 class="section-title">品牌介紹</h3>
             <div
                 v-if="props.planData?.planDetail.brandIntro"
-                class="brand-intro-content"
+                class="brand-intro-content ql-editor p-2"
                 v-html="props.planData?.planDetail.brandIntro"
             ></div>
             <p v-else class="text-muted">暫無品牌介紹</p>
@@ -66,7 +66,7 @@
             <h3 class="section-title">預計開業區域/坪數/店面狀況：</h3>
             <div
                 v-if="props.planData?.expectedOpeningInfo"
-                class="brand-intro-content"
+                class="brand-intro-content ql-editor p-0"
             >{{ props.planData?.expectedOpeningInfo}}</div>
             <p v-else class="text-muted">未提供</p>
           </div>
@@ -74,7 +74,7 @@
             <h3 class="section-title">預計開業時間：</h3>
             <div
                 v-if="props.planData?.expectedOpeningDate"
-                class="brand-intro-content"
+                class="brand-intro-content ql-editor p-0"
             >{{ props.planData?.expectedOpeningDate}}</div>
             <p v-else class="text-muted">未提供</p>
           </div>
@@ -147,7 +147,7 @@
           <div class="founder-section">
             <h3 class="section-title">創業者介紹</h3>
             <div class="founder-intro">
-              <p v-if="props.planData?.planDetail.founderIntro">
+              <p v-if="props.planData?.planDetail.founderIntro" class="ql-editor p-0">
                 {{ props.planData?.planDetail.founderIntro }}
               </p>
               <p v-else class="text-muted">暫無創業者介紹</p>
@@ -178,7 +178,7 @@
                 <!-- 純文本值 -->
                 <template v-if="row.value">{{ row.value }}</template>
                 <!-- HTML 內容 -->
-                <div v-else-if="row.html" class="html-content" v-html="row.html"></div>
+                <div v-else-if="row.html" class="html-content ql-editor p-0" v-html="row.html"></div>
                 <!-- 空值提示 -->
                 <span v-else class="text-muted">暫無資料</span>
               </div>
@@ -195,7 +195,7 @@
               <!-- 顯示 info（HTML 內容）-->
               <div
                   v-if="planData.franchiseInfo.info"
-                  class="franchise-info-content"
+                  class="franchise-info-content ql-editor p-0"
                   v-html="planData.franchiseInfo.info"
               ></div>
 
@@ -228,7 +228,7 @@
               <!-- 顯示 info（HTML 內容）-->
               <div
                   v-if="planData.reportInfo.info"
-                  class="franchise-info-content"
+                  class="franchise-info-content ql-editor p-0"
                   v-html="planData.reportInfo.info"
               ></div>
 
@@ -408,7 +408,11 @@ async function goToParticipation() {
         } else if (result === 'push') {
           await router.push({
             path: "/account/profile",
-            query: { tab: "cofounder"}
+            query: {
+              tab: "cofounder",
+              returnTo: router.currentRoute.value.fullPath,
+              planId: props.planData?.id
+            }
           });
           return;
         }
@@ -431,7 +435,6 @@ async function goToParticipation() {
   });
 }
 
-// ... 其他函數保持不變 ...
 
 const handleViewBusinessPlan = async () => {
   if (!isLoggedIn.value) {
