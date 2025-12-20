@@ -344,8 +344,8 @@ const people = [
     justify-content: center;
     align-items: flex-end;
     @media (max-width: 767px) {
-      flex-flow: column;
-      align-items: center;
+      flex-wrap: wrap;
+      align-items: stretch;
     }
     img {
       padding-right: 1rem;
@@ -370,6 +370,11 @@ const people = [
       transition: transform 0.28s ease, box-shadow 0.28s ease,
         z-index 0.28s ease, background 0.28s ease;
       z-index: 1;
+      @media (max-width: 767px) {
+        flex: 0 0 calc(50% - 8px);
+        width: 120px;
+        height: auto;
+      }
       .letter {
         display: block;
         font-weight: 700;
@@ -377,6 +382,10 @@ const people = [
         line-height: 100px;
         margin-bottom: 8px;
         color: #373a36;
+        @media (max-width: 767px) {
+          font-size: 60px;
+          line-height: 80px;
+        }
       }
       p {
         font-weight: 700;
@@ -385,6 +394,12 @@ const people = [
         text-align: center;
         letter-spacing: 0.02em;
         color: #373a36;
+        @media (max-width: 767px) {
+          font-weight: 700;
+          font-size: 13px;
+          line-height: 19px;
+          letter-spacing: 0.01em;
+        }
       }
     }
 
@@ -549,9 +564,8 @@ const people = [
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35),
       inset 0 1px rgba(255, 255, 255, 0.08);
     @media (max-width: 576px) {
-      width: 230px;
-      height: 240px;
-      margin: 10px;
+      width: 100%;
+      height: 100%;
     }
     img {
       width: 80px;
@@ -587,6 +601,10 @@ const people = [
     font-weight: 500;
     font-size: 14px;
     line-height: 24px;
+    @media (max-width: 576px) {
+      font-size: 11px;
+      line-height: 19px;
+    }
   }
 
   .features-desc {
@@ -607,15 +625,15 @@ const people = [
   @media (max-width: 576px) {
     .features-inner {
       justify-content: center;
-      display: flex;
-      flex-flow: column;
+      grid-template-columns: 1fr 1fr;
       align-items: center;
+      gap: 16px;
     }
     .card {
-      padding: 22px;
+      padding: 20px 15px;
     }
     .card-title {
-      font-size: 18px;
+      font-size: 14px !important;
     }
     .card-icon {
       width: 52px;
