@@ -13,7 +13,7 @@
           {{ s.title }}
         </button>
 
-        <div class="desc" v-if="i === active && s.desc" v-html="s.desc"></div>
+        <div class="desc ql-editor p-0" v-if="i === active && s.desc" v-html="s.desc"></div>
       </li>
     </ul>
   </section>

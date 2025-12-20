@@ -17,7 +17,7 @@
         <div class="col-md-8 introduction">
           <h1>{{ projectData?.name || '顏太煮奶茶' }}</h1>
           <!-- 使用 v-html 渲染 HTML 內容 -->
-          <div v-if="projectData?.description" v-html="projectData.description"></div>
+          <div v-if="projectData?.description" class="ql-editor p-0" v-html="projectData.description"></div>
           <p v-else>
             於2022年創立「顏太煮奶茶」，從古穿越至今，打造獨家特色厚奶茶系列飲品，菜單料多實在增加更多豐富選項。<br />
             【一杯顏太煮 生活不會苦】。

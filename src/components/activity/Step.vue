@@ -10,7 +10,7 @@
         <span class="badge">{{ s.num }}</span>
         <button class="box" @click="setActive('init', i)">{{ s.title }}</button>
         <div
-          class="desc"
+          class="desc ql-editor p-0"
           v-if="active.lane === 'init' && i === active.idx && s.desc"
           v-html="s.desc"
         />
@@ -31,7 +31,7 @@
           {{ s.title }}
         </button>
         <div
-          class="desc"
+          class="desc ql-editor p-0"
           v-if="active.lane === 'success' && i === active.idx && s.desc"
           v-html="s.desc"
         />
@@ -50,7 +50,7 @@
         <span class="badge">{{ s.num }}</span>
         <button class="box" @click="setActive('fail', i)">{{ s.title }}</button>
         <div
-          class="desc"
+          class="desc ql-editor p-0"
           v-if="active.lane === 'fail' && i === active.idx && s.desc"
           v-html="s.desc"
         />

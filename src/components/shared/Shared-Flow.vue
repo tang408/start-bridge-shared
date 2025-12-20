@@ -24,7 +24,7 @@
           </button>
 
           <div
-            class="desc"
+            class="desc ql-editor p-0"
             v-if="isActive(sec.key ?? sIdx, i) && step.desc"
             v-html="step.desc"
           />

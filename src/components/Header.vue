@@ -9,7 +9,7 @@
           <button
               class="navbar-toggler"
               type="button"
-              @click.stop="isMenuOpen = !isMenuOpen"
+              @click.stop="toggleMenu"
           >
             <span class="navbar-toggler-icon"></span>
           </button>
@@ -19,7 +19,7 @@
               class="user-toggler d-lg-none"
               type="button"
               aria-label="open account user page"
-              @click.stop="toggleMobileAccountSidebar()"
+              @click.stop="toggleMobileSidebar"
           >
             <img src="@/assets/icon/user.png" alt="user" />
           </button>
@@ -169,9 +169,27 @@ const closeAllMenusOnMobile = () => {
   }
 };
 
+const toggleMenu = () => {
+  if (!isMenuOpen.value) {
+    toggleMobileAccountSidebar(false);
+  }
+  isMenuOpen.value = !isMenuOpen.value;
+};
+
+const toggleMobileSidebar = () => {
+  isMenuOpen.value = false;
+  openIndex.value = null;
+  toggleMobileAccountSidebar();
+};
+
 const toggleSubMenu = (index) => {
   if (isBelowLg()) {
     openIndex.value = openIndex.value === index ? null : index;
+  }
+  
+  // 如果子選單打開，確保 AccountSidebar 關閉 (雖然理論上此時已經是在 menu open 狀態，但加強保險)
+  if (openIndex.value !== null) {
+      toggleMobileAccountSidebar(false);
   }
 };
 

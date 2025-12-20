@@ -143,4 +143,22 @@ function onPush() {
     mask-image: url("@/assets/icon/eye.png");
   }
 }
+
+@media (max-width: 767px) {
+  .fab-actions {
+    gap: 8px;
+
+    .circle-btn {
+      width: 40px !important;
+      height: 40px !important;
+      inline-size: 40px !important;
+      block-size: 40px !important;
+
+      .icon {
+        inline-size: 20px !important;
+        block-size: 20px !important;
+      }
+    }
+  }
+}
 </style>

@@ -924,6 +924,8 @@ async function submitForUser() {
 // 🆕 儲存返回路徑
 const returnTo = ref(route.query.returnTo || null);
 const brandId = ref(route.query.brandId || null);
+
+// 處理創業者資料提交
 async function submitForFounderAndCompany() {
   if (!hasChanges.value) {
     await NewAlert.show(
@@ -1063,6 +1065,24 @@ async function submitForCoreFounder() {
       );
       hasChanges.value = false;
       saveOriginalData();
+
+      // 🆕 提交成功後檢查是否需要跳轉回來源頁面
+      if (returnTo.value) {
+        const planIdVal = route.query.planId;
+        await NewAlert.show(
+            "資料已完善",
+            "現在將為您返回專案頁面，您可以繼續參與專案"
+        );
+
+        // 跳轉回來源頁面
+        await router.push({
+          path: returnTo.value,
+          query: planIdVal ? { planId: planIdVal, openParticipation: 'true' } : {}
+        });
+      } else {
+        window.location.reload();
+      }
+
     } else {
       await NewAlert.show(
           "錯誤",
