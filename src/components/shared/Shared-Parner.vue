@@ -101,6 +101,9 @@ function handleImageError(event) {
   &-partners {
     padding: 4rem 0;
     min-height: 60vh;
+    @media (max-width: 767px) {
+      margin-top: 100px !important;
+    }
     .container {
       gap: 50px;
       display: grid;
@@ -109,6 +112,7 @@ function handleImageError(event) {
   &-title {
     text-align: center;
     letter-spacing: 0.1em;
+    z-index: 10;
     h1 {
       font-weight: 700;
       font-size: 36px;

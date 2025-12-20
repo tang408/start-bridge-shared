@@ -43,6 +43,12 @@ body {
   overflow-x: hidden;
 }
 
+p {
+  @media (max-width: 576px) {
+    margin-bottom: 0 !important;
+  }
+}
+
 ol,
 ul {
   list-style: none;
