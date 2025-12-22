@@ -977,6 +977,40 @@ async function handleIncrease(plan) {
     return;
   }
 
+  // 🆕 檢查剩餘可投資金額
+  if (amount > plan.remainingAmount) {
+    await NewAlert.show("輸入錯誤", `您輸入的追加金額超過可媒合額度： ${fmtMoney(plan.remainingAmount)} 元，若欲增加媒合額度，請聯繫客服人員諮詢。`);
+    return;
+  }
+
+  // 🆕 獲取計畫詳細資訊以檢查金額級距和最小金額
+  try {
+    const planDetailResponse = await planApi.getParticipantPlan({
+      userId: currentUser.value,
+      planId: plan.id,
+    });
+
+    if (planDetailResponse.code === 0) {
+      const planDetail = planDetailResponse.data;
+
+      // 🆕 檢查金額級距
+      if (planDetail.amountRange && amount % planDetail.amountRange !== 0) {
+        await NewAlert.show("輸入錯誤", `追加金額須為額度級距 ${fmtMoney(planDetail.amountRange)} 元 的整數倍。`);
+        return;
+      }
+
+      // 🆕 檢查最小金額（追加金額也應該符合最小金額要求）
+      if (planDetail.minimumAmount && amount < planDetail.minimumAmount) {
+        await NewAlert.show("輸入錯誤", `您輸入的追加金額低於最低媒合額度： ${fmtMoney(planDetail.minimumAmount)} 元，若欲調整媒合額度，請聯繫客服人員諮詢。`);
+        return;
+      }
+    }
+  } catch (error) {
+    console.error('獲取計畫詳情錯誤:', error);
+    await NewAlert.show("錯誤", "無法獲取計畫詳情，請稍後再試。");
+    return;
+  }
+
   try {
     const response = await planApi.participantPlan({
       userId: currentUser.value,

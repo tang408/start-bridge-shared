@@ -265,6 +265,7 @@ const formData = reactive({
     shareCalcOther: {},
     sharePay: "",
     sharePayOther: {},
+    exitMechanism: "",
     agree: "",
   },
   step8: {agree: 'agree'},
@@ -499,6 +500,7 @@ async function loadPlanData() {
         shareCalcOther: parseProfitCalc(planData.profitCalculationMethod).other,
         sharePay: parseProfitPay(planData.profitPaymentMethod).value,
         sharePayOther: parseProfitPay(planData.profitPaymentMethod).other,
+        exitMechanism: planData.exitMechanismConditions || '',
         agree: '',
       });
 

@@ -1558,6 +1558,7 @@ async function loadPlanData(planId) {
         shareCalcOther: parseProfitCalc(planData.profitCalculationMethod).other,
         sharePay: parseProfitPay(planData.profitPaymentMethod).value,
         sharePayOther: parseProfitPay(planData.profitPaymentMethod).other,
+        exitMechanism: planData.exitMechanismConditions || '',
         agree: '',
       });
 
@@ -1954,6 +1955,7 @@ const formData = reactive({
     shareCalcOther: {},
     sharePay: "",
     sharePayOther: {},
+    exitMechanism: "",
     agree: "",
   },
   step8: {agree: "agree"},
@@ -1994,6 +1996,7 @@ const formErrors = reactive({
     sharePeriod: "",
     shareCalc: "",
     sharePay: "",
+    exitMechanism: "",
     agree: "",
   },
   step8: {agree: ""},
@@ -2484,7 +2487,8 @@ otherCostsTitle: (() => {
     // 合作條件 (Step6)
     profitDistributionCycle: getProfitCycleText(step6.sharePeriod),
     profitCalculationMethod: getProfitCalcText(step6.shareCalc, step6.shareCalcOther),
-    profitPaymentMethod: getProfitPayText(step6.sharePay, step6.sharePayOther)
+    profitPaymentMethod: getProfitPayText(step6.sharePay, step6.sharePayOther),
+    exitMechanismConditions: step6.exitMechanism || ''
   };
 }
 

@@ -479,6 +479,10 @@
                     <label>支付方式：</label>
                     <span>{{ planDetail.planProfitSharing.profitPaymentMethod }}</span>
                   </div>
+                  <div class="info-item">
+                    <label>退場機制：</label>
+                    <span>{{ planDetail.planProfitSharing.exitMechanismConditions}}</span>
+                  </div>
                 </div>
               </div>
             </div>

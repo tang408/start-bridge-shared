@@ -57,7 +57,7 @@
             <h3 class="section-title">品牌介紹</h3>
             <div
                 v-if="props.planData?.planDetail.brandIntro"
-                class="brand-intro-content ql-editor p-2"
+                class="brand-intro-content ql-editor p-0"
                 v-html="props.planData?.planDetail.brandIntro"
             ></div>
             <p v-else class="text-muted">暫無品牌介紹</p>
@@ -188,7 +188,7 @@
 
 
 
-        <div v-else-if="t.key === 'terms'" class="d-flex-block">
+        <div v-else-if="t.key === 'terms'">
           <!-- 檢查 franchiseInfo 是否存在 -->
           <template v-if="planData?.franchiseInfo">
             <div class="franchise-section">
@@ -200,7 +200,7 @@
               ></div>
 
               <!-- 顯示 images（直接遍歷陣列）-->
-              <div v-if="planData.franchiseInfo.images?.length">
+              <div v-if="planData.franchiseInfo.images?.length" class="franchise-images-section">
                 <h4 class="images-title">相關圖片</h4>
                 <div class="franchise-images">
                   <img
@@ -221,8 +221,8 @@
           </div>
         </div>
 
-        <div v-else-if="t.key === 'project'" class="d-flex-block">
-          <!-- 檢查 franchiseInfo 是否存在 -->
+        <div v-else-if="t.key === 'project'">
+          <!-- 檢查 reportInfo 是否存在 -->
           <template v-if="planData?.reportInfo">
             <div class="franchise-section">
               <!-- 顯示 info（HTML 內容）-->
@@ -233,14 +233,14 @@
               ></div>
 
               <!-- 顯示 images（直接遍歷陣列）-->
-              <div v-if="planData.reportInfo.images?.length">
+              <div v-if="planData.reportInfo.images?.length" class="franchise-images-section">
                 <h4 class="images-title">相關圖片</h4>
                 <div class="franchise-images">
                   <img
                       v-for="(image, index) in planData.reportInfo.images"
                       :key="index"
                       :src="image"
-                      :alt="`加盟圖片 ${index + 1}`"
+                      :alt="`報表圖片 ${index + 1}`"
                       class="franchise-image"
                   />
                 </div>
@@ -549,6 +549,8 @@ const joinInfoData = computed(() => {
   margin-bottom: 30px;
   line-height: 1.8;
   color: #373a36;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   :deep(h1), :deep(h2), :deep(h3) {
     margin: 20px 0 10px;
@@ -567,18 +569,33 @@ const joinInfoData = computed(() => {
 
   :deep(li) {
     margin: 6px 0;
+    display: list-item;
+  }
+}
+
+.franchise-section {
+  width: 100%;
+}
+
+.franchise-images-section {
+  margin-top: 30px;
+  
+  .images-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #373a36;
+    margin-bottom: 16px;
   }
 }
 
 .franchise-images {
-  display: flex;
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
   margin-top: 20px;
 }
 
 .franchise-image {
-  display: flex;
   width: 100%;
   height: 300px;
   object-fit: cover;

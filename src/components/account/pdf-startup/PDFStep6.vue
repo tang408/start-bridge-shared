@@ -56,6 +56,22 @@
               :disabled="readonly"
           />
 
+          <div class="exit-mechanism-section">
+            <h2 class="section-title">五、退場機制</h2>
+            <p class="desc">
+              為保障創業者與共同創業者之權益，設立明確退場機制。合作期滿、雙方合意終止、店舖停止營運，或因個人與營運因素需提前退出時，皆可依底下條件申請退場。
+            </p>
+            <SharedTextarea
+                id="exitMechanism"
+                v-model="local.exitMechanism"
+                label="退場機制條件"
+                :rows="5"
+                placeholder="請輸入退場機制的具體條件..."
+                :error="errors.exitMechanism"
+                :readonly="readonly"
+            />
+          </div>
+
           <p class="note">※ 以上皆須在「公司章程」中載明</p>
         </div>
       </div>
@@ -75,6 +91,7 @@
 import { reactive, watch } from "vue";
 import { useRouter } from "vue-router";
 import SharedRadio from "@/components/shared/Shared-Radio.vue";
+import SharedTextarea from "@/components/shared/Shared-Textarea.vue";
 
 const props = defineProps({
   modelValue: { type: Object, required: true },
@@ -119,6 +136,10 @@ function submitStep() {
     props.errors.sharePay = "請選擇分潤支付方式";
   } else if (local.sharePay === "other" && !local.sharePayOther?.other) {
     props.errors.sharePay = "請填寫其他分潤支付方式";
+  }
+
+  if (!local.exitMechanism || !local.exitMechanism.trim()) {
+    props.errors.exitMechanism = "請填寫退場機制條件";
   }
 
   const hasError = Object.values(props.errors).some((e) => e);
@@ -185,6 +206,8 @@ watch(
   font-weight: 600;
   margin-bottom: 12px;
   color: #333;
+  padding-bottom: 16px;
+  border-bottom: 3px solid #ffcc41;
 }
 
 .desc {
@@ -206,6 +229,18 @@ watch(
   color: #666;
   margin-top: 8px;
   margin-bottom: 0;
+}
+
+.exit-mechanism-section {
+  margin-top: 32px;
+  margin-bottom: 24px;
+}
+
+.subsection-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
 }
 
 .btn-submit {
