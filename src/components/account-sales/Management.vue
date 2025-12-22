@@ -145,7 +145,7 @@
           >
             <div>
               姓名：{{ participant.name }} |
-              狀態：{{ getParticipantStatus(participant.status) }} |
+              狀態：{{ (planInfo.planStatus > 10 && participant.status > 0 && participant.status !== 2 && participant.status !== 9) ? formatPlanInfoStatus() : getParticipantStatus(participant.status) }} |
               投入金額：{{ formatAmount(participant.amount) }} 元
             </div>
           </div>
@@ -478,6 +478,10 @@
                   <div class="info-item">
                     <label>支付方式：</label>
                     <span>{{ planDetail.planProfitSharing.profitPaymentMethod }}</span>
+                  </div>
+                  <div class="info-item">
+                    <label>退場機制：</label>
+                    <span>{{ planDetail.planProfitSharing.exitMechanismConditions}}</span>
                   </div>
                 </div>
               </div>
@@ -846,16 +850,7 @@ const formatPlanInfoStatus = () => {
   return step ? step.step : '未知狀態';
 
 }
-const shouldShowCheckResourceButtons = () => {
-  if (!planInfo.value) return false;
 
-  if (!planInfo.value.planStatus) return false;
-
-  // 創業者可審核資源到位的步驟
-  const founderCheckResourceSteps = [13];
-  return founderCheckResourceSteps.includes(planInfo.value.planStatus);
-
-}
 // 判斷是否應該顯示審核按鈕
 const shouldShowContactedButton = () => {
   if (!planInfo.value) return false;

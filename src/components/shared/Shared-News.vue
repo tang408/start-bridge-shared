@@ -467,4 +467,23 @@ watch(
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+// ⭐ 調整手機版 FAB 按鈕大小
+@media (max-width: 768px) {
+  :deep(.fab-actions) {
+    .circle-btn {
+      width: 44px !important;
+      height: 44px !important;
+      display: grid;
+      place-items: center;
+
+      .icon {
+        width: 24px !important;
+        height: 24px !important;
+        inline-size: 24px !important;
+        block-size: 24px !important;
+      }
+    }
+  }
+}
 </style>

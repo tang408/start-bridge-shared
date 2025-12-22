@@ -147,30 +147,7 @@ function onPush() {
 @media (max-width: 767px) {
   .fab-actions {
     gap: 8px;
-
-    .circle-btn {
-      width: 40px !important;
-      height: 40px !important;
-      inline-size: 40px !important;
-      block-size: 40px !important;
-
-      .icon {
-        inline-size: 20px !important;
-        block-size: 20px !important;
-      }
-    }
-  }
-}
-
-@media (max-width: 767px) {
-  .fab-actions .circle-btn {
-    width: 40px !important;
-    height: 40px !important;
-    inline-size: 40px !important;
-    block-size: 40px !important;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    // Mobile styles removed to allow props to control size
   }
 }
 </style>
