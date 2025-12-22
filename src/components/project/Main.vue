@@ -197,7 +197,7 @@ const goToQA = () => {
     gap: 10px;
     @media (max-width: 576px) {
       padding: 0;
-      min-height: auto;
+      min-height: 230px;
     }
     &.block-text {
       position: relative;
