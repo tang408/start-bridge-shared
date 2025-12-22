@@ -164,6 +164,7 @@ tbody {
       border: 0;
       box-shadow: none;
       padding: 24px 0;
+      display: block;
     }
   }
 }
