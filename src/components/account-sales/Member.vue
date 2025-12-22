@@ -295,7 +295,7 @@
             {{ participant.name }} | {{ participant.sex }} | {{ participant.salesName }} | {{ participant.createdAt }}
             <br/>
             投入金額：{{ formatAmount(participant.amount) }} 元 -
-            狀態：{{ getParticipantStatus(participant.status) }}
+            狀態：{{participantDisplayStatus(participant)}}
           </div>
         </div>
         <div v-else class="text-muted">
@@ -426,6 +426,31 @@ const statusOptions = computed(() => [
   { label: '共創者狀態 (由近到遠)', value: 'core-asc' },
   { label: '共創者狀態 (由遠到近)', value: 'core-desc' }
 ]);
+
+const participantDisplayStatus = (participant) => {
+  const { status } = participant;
+  const { planStatus } = planDetail.value
+
+  console.log('計畫狀態:', planStatus, '參與者狀態:', status)
+
+  // 當計畫狀態 > 10 且參與者狀態為有效狀態時，顯示計畫整體狀態
+  if (planStatus > 10 && status > 0 && status !== 2 && status !== 9) {
+    return formatPlanInfoStatus();
+  }
+
+  // 否則顯示參與者個人狀態
+  return getParticipantStatus(status);
+};
+
+const formatPlanInfoStatus = () => {
+  if (!planDetail.value) return '未知狀態';
+
+  // 根據是否有 participantPlanId 決定查詢哪個步驟列表
+  // 創業者
+  const step = planSteps.value.find(s => s.id === planDetail.value.planStatus);
+  return step ? step.step : '未知狀態';
+
+}
 
 // ⭐ 修改後的篩選邏輯
 const displayedMembers = computed(() => {
