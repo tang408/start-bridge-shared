@@ -1767,12 +1767,18 @@ async function handleCorePlanFinalContractSubmit() {
     .tx-btn {
       width: 35%;
       text-align: center;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
 
       @media (max-width: 576px) {
         width: 100%;
         text-align: start;
         grid-column: 1 / -1; // 佔滿第二行
         margin-bottom: 6px;
+        flex-direction: column; // 手機版垂直排列
+        gap: 8px;
       }
 
       button {
@@ -1782,11 +1788,13 @@ async function handleCorePlanFinalContractSubmit() {
         color: #fff;
         padding: 0 15px;
         white-space: nowrap; // 防止文字換行
+        flex: 0 0 auto; // 桌面版按鈕不拉伸
 
         @media (max-width: 576px) {
           width: 100%;       // 手機版按鈕滿寬
           padding: 8px 15px; // 增加點擊區域
           white-space: normal; // 手機版允許換行
+          flex: 1 1 auto; // 手機版按鈕可拉伸
         }
       }
     }

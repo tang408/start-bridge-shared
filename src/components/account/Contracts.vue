@@ -69,18 +69,48 @@
       <div class="modal-body">
         <div class="preview-container">
           <template v-if="selectedContract">
+            <!-- PDF 預覽 -->
             <iframe
                 v-if="isPdf(selectedContract.standardContractUrl)"
                 :src="selectedContract.standardContractUrl"
                 class="content-viewer pdf-viewer"
                 title="PDF 預覽"
             ></iframe>
-            <img
-                v-else
-                :src="selectedContract.standardContractUrl"
-                class="content-viewer img-viewer"
-                alt="預覽圖片"
-            />
+            
+            <!-- 圖片預覽 -->
+            <div v-else class="image-viewer-wrapper">
+              <!-- 縮放控制按鈕 -->
+              <div class="zoom-controls">
+                <button @click="zoomIn" class="zoom-btn" title="放大">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+                <button @click="zoomOut" class="zoom-btn" title="縮小">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </button>
+                <button @click="resetZoom" class="zoom-btn" title="重置">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4 10h12M10 4v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                  </svg>
+                </button>
+                <span class="zoom-level">{{ Math.round(imageZoom * 100) }}%</span>
+              </div>
+              
+              <!-- 圖片容器 -->
+              <div class="image-scroll-container" @wheel.prevent="handleWheel">
+                <img
+                    :src="selectedContract.standardContractUrl"
+                    class="content-viewer img-viewer"
+                    :style="{ transform: `scale(${imageZoom})` }"
+                    alt="預覽圖片"
+                    @load="handleImageLoad"
+                />
+              </div>
+            </div>
           </template>
         </div>
       </div>
@@ -112,6 +142,7 @@ const {isLoggedIn, currentUser} = useAuth();
 
 const showModal = ref(false);
 const selectedContract = ref(null);
+const imageZoom = ref(1);
 
 const columns = [
   {
@@ -161,6 +192,7 @@ function handleDisclaimerConfirm() {
 
   if (currentAction.value === 'preview') {
     showModal.value = true;
+    imageZoom.value = 1; // 重置縮放
     // 防止背景滾動
     document.body.style.overflow = 'hidden';
   } else if (currentAction.value === 'download') {
@@ -171,8 +203,36 @@ function handleDisclaimerConfirm() {
 function closeModal() {
   showModal.value = false;
   selectedContract.value = null;
+  imageZoom.value = 1; // 重置縮放
   // 恢復背景滾動
   document.body.style.overflow = 'auto';
+}
+
+// 縮放控制函數
+function zoomIn() {
+  imageZoom.value = Math.min(imageZoom.value + 0.25, 3); // 最大 300%
+}
+
+function zoomOut() {
+  imageZoom.value = Math.max(imageZoom.value - 0.25, 0.5); // 最小 50%
+}
+
+function resetZoom() {
+  imageZoom.value = 1;
+}
+
+function handleWheel(event) {
+  // 使用滾輪縮放
+  if (event.deltaY < 0) {
+    zoomIn();
+  } else {
+    zoomOut();
+  }
+}
+
+function handleImageLoad() {
+  // 圖片載入完成後可以做一些處理
+  console.log('圖片已載入');
 }
 
 function isPdf(url) {
@@ -402,6 +462,7 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   background: #f5f5f5;
+  position: relative;
 }
 
 .content-viewer {
@@ -410,14 +471,110 @@ onMounted(async () => {
   border: none;
 }
 
+.image-viewer-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.zoom-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+
+  .zoom-btn {
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333;
+
+    &:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    svg {
+      pointer-events: none;
+    }
+  }
+
+  .zoom-level {
+    font-size: 12px;
+    color: #666;
+    min-width: 45px;
+    text-align: center;
+    font-weight: 500;
+  }
+}
+
+.image-scroll-container {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+
+    &:hover {
+      background: #555;
+    }
+  }
+}
+
 .img-viewer {
-  object-fit: contain;
   max-width: 100%;
   max-height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease-out;
+  cursor: grab;
+  display: block;
+  
+  &:active {
+    cursor: grabbing;
+  }
 }
 
 .pdf-viewer {
   background: #f5f5f5;
+  min-height: 500px;
+  
+  @media (max-width: 768px) {
+    min-height: 400px;
+  }
 }
 
 .modal-footer {
@@ -469,7 +626,33 @@ onMounted(async () => {
   }
 
   .modal-body {
-    padding: 15px;
+    padding: 10px;
+  }
+
+  .zoom-controls {
+    top: 5px;
+    right: 5px;
+    padding: 6px 8px;
+    gap: 6px;
+
+    .zoom-btn {
+      width: 28px;
+      height: 28px;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    .zoom-level {
+      font-size: 11px;
+      min-width: 40px;
+    }
+  }
+
+  .image-scroll-container {
+    padding: 10px;
   }
 
   .modal-footer {
@@ -481,5 +664,24 @@ onMounted(async () => {
       margin-bottom: 5px;
     }
   }
+
+  .pdf-viewer {
+    min-height: 300px;
+  }
 }
+
+// 小螢幕優化
+@media (max-width: 480px) {
+  .modal-content {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .zoom-controls {
+    flex-wrap: wrap;
+    max-width: calc(100% - 20px);
+  }
+}
+
 </style>
