@@ -161,4 +161,16 @@ function onPush() {
     }
   }
 }
+
+@media (max-width: 767px) {
+  .fab-actions .circle-btn {
+    width: 40px !important;
+    height: 40px !important;
+    inline-size: 40px !important;
+    block-size: 40px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
 </style>
