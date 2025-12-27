@@ -35,13 +35,26 @@
         </div>
       </div>
       <div class="col-sm-3 col-12 statement">
-        <RouterLink to="/terms/platform" class="agree-link" @click.stop
-          ><span>平台合約聲明</span></RouterLink
-        >
-        <RouterLink to="" class="agree-link" @click.stop
-          ><span>版權內容</span></RouterLink
-        >
-        <span></span>
+        <div>
+          <RouterLink to="/terms/platform" class="agree-link" @click.stop
+            ><span>平台合約聲明</span></RouterLink
+          >
+        </div>
+        <div>
+          <RouterLink to="" class="agree-link" @click.stop
+            ><span>版權內容</span></RouterLink
+          >
+        </div>
+        <div>
+          <RouterLink to="/terms/service" class="agree-link" @click.stop>
+            <span> 服務條款 </span>
+          </RouterLink>
+        </div>
+        <div>
+          <RouterLink to="/privacy" class="agree-link" @click.stop>
+            <span> 隱私權政策 </span>
+          </RouterLink>
+        </div>
       </div>
       <div class="col-sm-3 col-12 community mobile-none">
         <a
