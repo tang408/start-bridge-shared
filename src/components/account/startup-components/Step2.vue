@@ -57,7 +57,7 @@ function goNextStep() {
 }
 
 function downloadTemplate() {
-  window.open("http://43.213.118.243:8080/static/download_plan_document/plan-document.pdf", "_blank");
+  window.open("https://starbridge.com.tw/static/download_plan_document/plan-document.pdf", "_blank");
 }
 
 function handleUploadSuccess(fileType, result) {
