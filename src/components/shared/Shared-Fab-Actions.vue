@@ -86,16 +86,16 @@ function onPush() {
   gap: 12px;
 }
 .fab-actions.sm .circle-btn {
-  inline-size: 44px;
-  block-size: 44px;
+  width: 44px;
+  height: 44px;
 }
 .fab-actions.md .circle-btn {
-  inline-size: 56px;
-  block-size: 56px;
+  width: 56px;
+  height: 56px;
 }
 .fab-actions.lg .circle-btn {
-  inline-size: 64px;
-  block-size: 64px;
+  width: 64px;
+  height: 64px;
 }
 
 .circle-btn {
@@ -123,21 +123,20 @@ function onPush() {
   }
 
   .icon {
-    inline-size: 30px;
-    block-size: 30px;
-    background: #fff;
-    mask-position: center;
-    mask-size: contain;
-    mask-repeat: no-repeat;
+    width: 30px;
+    height: 30px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
   }
   .icon-star {
-    mask-image: url("@/assets/icon/back-star.png");
+    background-image: url("@/assets/icon/back-star.png");
   }
   .icon-trash {
-    mask-image: url("@/assets/icon/back-trash.png");
+    background-image: url("@/assets/icon/back-trash.png");
   }
   .icon-heart {
-    mask-image: url("@/assets/icon/back-heart.png");
+    background-image: url("@/assets/icon/back-heart.png");
   }
   .icon-eye {
     mask-image: url("@/assets/icon/eye.png");
@@ -145,9 +144,12 @@ function onPush() {
 }
 
 @media (max-width: 767px) {
-  .fab-actions {
-    gap: 8px;
-    // Mobile styles removed to allow props to control size
+  .fab-actions .circle-btn {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 </style>
