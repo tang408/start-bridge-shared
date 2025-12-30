@@ -579,7 +579,7 @@ const joinInfoData = computed(() => {
 
 .franchise-images-section {
   margin-top: 30px;
-  
+
   .images-title {
     font-size: 18px;
     font-weight: 600;
@@ -588,21 +588,16 @@ const joinInfoData = computed(() => {
   }
 }
 
-.franchise-images {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+.franchise-images{
+  display: block;
 }
-
-.franchise-image {
+.franchise-image{
   width: 100%;
-  height: 300px;
+  /* height: 300px; */
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
-  transition: transform 0.3s;
-
+  transition: transform .3s;
 }
 
 .no-franchise-info {
