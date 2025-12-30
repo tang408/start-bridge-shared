@@ -40,11 +40,11 @@
             ><span>平台合約聲明</span></RouterLink
           >
         </div>
-        <div>
-          <RouterLink to="" class="agree-link" @click.stop
-            ><span>版權內容</span></RouterLink
-          >
-        </div>
+<!--        <div>-->
+<!--          <RouterLink to="" class="agree-link" @click.stop-->
+<!--            ><span>版權內容</span></RouterLink-->
+<!--          >-->
+<!--        </div>-->
         <div>
           <RouterLink to="/terms/service" class="agree-link" @click.stop>
             <span> 服務條款 </span>
