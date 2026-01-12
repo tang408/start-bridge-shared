@@ -9,7 +9,7 @@ export default defineConfig(({ command, mode }) => {
   // 根據不同情況設定 base 路徑
   if (command === 'build') {
     if (mode === 'production') {
-      base = '/frontend/'; // 生產環境構建
+      base = '/'; // 生產環境構建
     } else if (mode === 'development') {
       base = './'; // 開發環境構建（如果需要）
     }

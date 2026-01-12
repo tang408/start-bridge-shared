@@ -5,13 +5,13 @@
       <form @submit.prevent="handleLogin" class="form">
         <div class="form-display">
           <SharedInput
-            id="username"
-            label="帳號*"
-            placeholder="請輸入手機號碼"
-            autocomplete="username"
-            v-model="username"
-            :error="errors.username"
-            required
+              id="username"
+              label="帳號*"
+              placeholder="請輸入手機號碼"
+              autocomplete="username"
+              v-model="username"
+              :error="errors.username"
+              required
           />
 
           <SharedInput
@@ -30,9 +30,12 @@
 
         <div class="links">
           <p>
-            登入有問題？<RouterLink to="/forgot-password">忘記密碼</RouterLink>
+            登入有問題？
+            <RouterLink to="/forgot-password">忘記密碼</RouterLink>
           </p>
-          <p>還沒有帳號？<RouterLink to="/entSignUp">註冊</RouterLink></p>
+          <p>還沒有帳號？
+            <RouterLink to="/entSignUp">註冊</RouterLink>
+          </p>
         </div>
       </form>
     </div>
@@ -40,21 +43,21 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import {ref} from "vue";
 import SharedInput from "@/components/shared/Shared-Input.vue";
 import {userApi} from "@/api/modules/user.js";
 import router from "@/router/index.js";
-import { useAuth } from "@/composables/useAuth.js";
+import {useAuth} from "@/composables/useAuth.js";
 import SharedMessageBox from "@/components/shared/Shared-Message-Box.vue";
 import {NewAlert} from "@/composables/useAlert.js";
 
-const { login, redirectTo } = useAuth();
+const {login, redirectTo} = useAuth();
 const username = ref("");
 const password = ref("");
-const errors = ref({ username: "", password: "" });
+const errors = ref({username: "", password: ""});
 
 async function handleLogin(title, content) {
-  errors.value = { username: "", password: "" };
+  errors.value = {username: "", password: ""};
 
   if (!username.value) {
     errors.value.username = "請輸入帳號";
@@ -100,20 +103,20 @@ async function handleLogin(title, content) {
           if (isSalesLogin) {
             // 銷售人員跳轉到銷售頁面
             if (router.currentRoute.value.path !== '/account-sales') {
-              window.location.href = '/account-sales';
+              router.push("/account-sales");
             }
           } else {
             // 一般用戶跳轉到個人資料頁面
             if (router.currentRoute.value.path !== '/account/profile') {
-              window.location.href = '/account/profile';
+              router.push("/account/profile");
             }
           }
         }, 100);
       } catch (routerError) {
         if (isSalesLogin) {
-          window.location.href = '/account-sales';
+         await router.push("/account-sales");
         } else {
-          window.location.href = '/account/profile';
+         await router.push("/account/profile");
         }
       }
     } else {
