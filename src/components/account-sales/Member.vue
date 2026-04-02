@@ -384,11 +384,15 @@ const columns = [
 ];
 
 function formatMemberType(types) {
-  if (!Array.isArray(types)) return '';
+  if (!Array.isArray(types)) return '一般用戶';
+
+  if (types.length === 0) return '一般用戶';
+
   const labels = [];
   if (types.includes(1)) labels.push('創業者');
   if (types.includes(2)) labels.push('共創者');
-  return labels.join('、');
+
+  return labels.length > 0 ? labels.join('、') : '一般用戶';
 }
 
 const members = reactive([]);
