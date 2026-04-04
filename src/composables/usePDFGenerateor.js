@@ -1,6 +1,92 @@
 ﻿import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+function cloneHandler(clonedDoc) {
+    // ✅ 注入覆蓋樣式，把 oklch 相關的 CSS 變數換掉
+    const overrideStyle = clonedDoc.createElement('style');
+    overrideStyle.textContent = `
+        *, *::before, *::after {
+            --tw-ring-color: rgba(59, 130, 246, 0.5) !important;
+            --tw-shadow-color: rgba(0, 0, 0, 0.1) !important;
+            color-scheme: light !important;
+        }
+    `;
+    clonedDoc.head.appendChild(overrideStyle);
+
+    // ✅ 移除所有包含 oklch 的樣式規則
+    Array.from(clonedDoc.styleSheets).forEach(sheet => {
+        try {
+            const rules = Array.from(sheet.cssRules || []);
+            // 反向遍歷避免 index 錯位
+            for (let i = rules.length - 1; i >= 0; i--) {
+                const rule = rules[i];
+                const ruleText = rule.cssText || '';
+                if (ruleText.includes('oklch')) {
+                    sheet.deleteRule(i);
+                }
+            }
+        } catch (e) {
+            // 跨域略過
+        }
+    });
+
+    // ✅ 原本的 textarea / input 替換
+    clonedDoc.querySelectorAll('textarea').forEach(el => {
+        const div = clonedDoc.createElement('div');
+        div.style.cssText = `
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.6;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: #f9f9f9;
+            width: 100%;
+            box-sizing: border-box;
+        `;
+        div.textContent = el.value;
+        el.parentNode.replaceChild(div, el);
+    });
+
+    clonedDoc.querySelectorAll('input[type="text"], input[type="number"], input:not([type])').forEach(el => {
+        const div = clonedDoc.createElement('div');
+        div.style.cssText = `
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: #f9f9f9;
+            width: 100%;
+            box-sizing: border-box;
+        `;
+        div.textContent = el.value || '—';
+        el.parentNode.replaceChild(div, el);
+    });
+
+    // ✅ 展開被截斷的容器
+    clonedDoc.querySelectorAll('*').forEach(el => {
+        if (el.scrollHeight > el.clientHeight + 2) {
+            el.style.height = 'auto';
+            el.style.maxHeight = 'none';
+            el.style.overflow = 'visible';
+        }
+    });
+
+    clonedDoc.querySelectorAll('*').forEach(el => {
+        const computed = window.getComputedStyle(el);
+
+        // 跳過 body、html、svg 內部元素
+        if (['HTML', 'BODY', 'SVG', 'PATH', 'G'].includes(el.tagName)) return;
+
+        el.style.overflow = 'visible';
+        el.style.maxHeight = 'none';
+
+        // 只對有明確高度限制的元素做 height: auto
+        if (computed.overflow === 'hidden' || computed.overflow === 'scroll' || computed.overflowY === 'hidden') {
+            el.style.height = 'auto';
+        }
+    });
+}
+
 /**
  * 改進版 PDF 生成工具 - 修正分頁對齊問題
  */
@@ -55,8 +141,18 @@ export function usePdfGenerator() {
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
-                    windowHeight: section.scrollHeight,
-                    height: section.scrollHeight
+                    // ✅ 不要預先傳 height，讓 onclone 處理後自動計算
+                    windowHeight: document.documentElement.scrollHeight,
+                    scrollY: -window.scrollY,
+                    onclone: (clonedDoc, clonedElement) => {
+                        // ✅ clonedElement 是被截圖的那個元素的複製
+                        cloneHandler(clonedDoc);
+
+                        // ✅ 強制撐開被截圖的元素本身
+                        clonedElement.style.height = 'auto';
+                        clonedElement.style.overflow = 'visible';
+                        clonedElement.style.maxHeight = 'none';
+                    }
                 });
 
                 const imgWidth = contentWidth;
@@ -245,8 +341,18 @@ export function usePdfGenerator() {
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
-                    windowHeight: section.scrollHeight,
-                    height: section.scrollHeight
+                    // ✅ 不要預先傳 height，讓 onclone 處理後自動計算
+                    windowHeight: document.documentElement.scrollHeight,
+                    scrollY: -window.scrollY,
+                    onclone: (clonedDoc, clonedElement) => {
+                        // ✅ clonedElement 是被截圖的那個元素的複製
+                        cloneHandler(clonedDoc);
+
+                        // ✅ 強制撐開被截圖的元素本身
+                        clonedElement.style.height = 'auto';
+                        clonedElement.style.overflow = 'visible';
+                        clonedElement.style.maxHeight = 'none';
+                    }
                 });
 
                 const imgWidth = contentWidth;
